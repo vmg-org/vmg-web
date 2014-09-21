@@ -1,0 +1,21 @@
+/node_modules/
+/bower_components/
+/.git/
+/.grunt/
+/.sass-cache/
+/dst/
+/dest/
+/dev/
+/doc/
+/devipad/
+/dstipad/
+/dstmetro/
+.ftppass
+
+# Linux temp and system files
+.directory
+*~
+*.swp
+*.swo
+
+run-dev.sh
