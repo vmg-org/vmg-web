@@ -1,0 +1,20 @@
+{
+  "name": "vmg-web",
+  "version": "0.1.0",
+  "homepage": "https://github.com/vmg-org/vmg-web",
+  "authors": [
+    "IvanRave <reyvart@hotmail.com>"
+  ],
+  "description": "VMG client for web",
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "devDependencies": {
+    "jquery": "~2.1.1"
+  }
+}
