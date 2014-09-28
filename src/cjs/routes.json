@@ -1,0 +1,31 @@
+{
+  "/welcome": {
+    "title": "%=page-welcome=%"
+  },
+  "/movies": {
+    "title": "%=page-movies=%"
+  },
+  "/movies/top": {
+    "title": "%=page-movies-top=%"
+  },
+  "/movies/category": {},
+  "/templates": {},
+  "/templates/top": {},
+  "/about": {},
+  "/me": {
+    "title": "%=page-me=%",
+    "protected": true
+  },
+  "/me/movie-templates": {
+    "title": "%=me-movie-templates=%",
+    "protected": true
+  },
+  "/me/settings": {
+    "title": "%=me-settings=%",
+    "protected": true
+  },
+  "/me/movie-records": {
+    "title": "%=me-movie-records=%",
+    "protected": true
+  }
+}

@@ -13,17 +13,16 @@ var exec = require('child_process').exec;
 //var emmitter = new events.EventEmitter();
 var gulpExec = require('gulp-exec');
 var http = require('http');
-var sass = require('gulp-ruby-sass');
-   var autoprefixer = require('gulp-autoprefixer');
-var    minifycss = require('gulp-minify-css');
-   var  rename = require('gulp-rename');
+var minifycss = require('gulp-minify-css');
+var rename = require('gulp-rename');
 
 
 // dev path contains unminified bundle js (for speed and debug with comments) and unminified css files 
 // and dev urls to other resources
 var paths = {
   dst: 'dev', // or dst (dist, release, bin ...) for release
-  src: 'src'
+  src: 'src',
+  appView: '../vmg-bem/desktop.bundles/index/'
 };
 
 // only js files (no directories)
@@ -40,7 +39,7 @@ gulp.task('clean', function(next) {
 });
 
 gulp.task('copy_html', ['clean'], function() {
-  return gulp.src(paths.src + '/index.html')
+  return gulp.src([paths.appView + 'index.html', paths.appView + 'index.css'])
     .pipe(gulp.dest(paths.dst + '/'));
 });
 
