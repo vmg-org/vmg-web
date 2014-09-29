@@ -8,11 +8,15 @@ var dhr = require('./dom-helper');
 // Build API from vmgSpec?
 console.log(vmgSpec);
 
+var vwjs = require('./vwjs.js');
+
 // when project is already loaded
 // load a mainObj
 // exclude secured data
 // try without JQuery
 function onReady() {
+  // add all bindings from view to js functions
+  vwjs.run();
   // need to define a path before page is loaded
   // if it's a protected page - redirect -> but its actually for static multipage sites
 

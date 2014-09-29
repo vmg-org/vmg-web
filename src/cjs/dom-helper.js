@@ -37,4 +37,12 @@ exports.getRoute = function() {
   return document.location.hash.substr(1);
 };
 
+exports.hidePopup = function(className){
+  $('.' +className).hide();
+};
+
+exports.showPopup = function(className){
+  $('.' +className).show();
+};
+
 module.exports = exports;
