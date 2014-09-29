@@ -15,6 +15,7 @@ var gulpExec = require('gulp-exec');
 //var http = require('http');
 //var minifycss = require('gulp-minify-css');
 //var rename = require('gulp-rename');
+var bemLayoutHtml = require('bem-layout-html');
 
 // dev path contains unminified bundle js (for speed and debug with comments) and unminified css files 
 // and dev urls to other resources
@@ -25,6 +26,7 @@ var paths = {
 
 paths.rootView = '../vmg-bem/';
 paths.indexView = paths.rootView + 'desktop.bundles/index/';
+paths.layoutView = paths.rootView + 'desktop.bundles/layout/';
 paths.fontsView = paths.rootView + 'fonts/';
 paths.bowerLibs = 'bower_components/';
 
@@ -139,6 +141,24 @@ gulp.task('browserify', ['jshint'], function() {
   //    console.log('bros');
   //    done();
   //  });
+});
+
+gulp.task('layout', ['jshint'], function() {
+  var layoutFilePath = paths.layoutView + 'layout.html';
+  return gulp.src([paths.indexView + 'index.html', paths.indexView + 'index.css'])
+    .pipe(bemLayoutHtml.run(layoutFilePath));
+  // get text from layout html file
+  // find elem "page__workspace" (to find elem need DOM lib, replace with some template strings)
+  // get text from index (and other) html file
+  // get content from "page" element
+  // add a script to the bottom with format "index-bundle.js"
+  // include instead "page_workspace"
+  // change a title of result page
+  // change a css of result page to "index.css"
+  //
+  // to create "index.css"
+  // concat "layout.css" and "index.css"
+  // during minification - remove same classes
 });
 
 gulp.task('connect', function() {
