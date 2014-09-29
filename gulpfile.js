@@ -7,40 +7,64 @@ var del = require('del');
 var jshint = require('gulp-jshint');
 var stylish = require('jshint-stylish');
 var notify = require('gulp-notify');
-var exec = require('child_process').exec;
+//var exec = require('child_process').exec;
 //var map = require('map-stream');
 //var events = require('events');
 //var emmitter = new events.EventEmitter();
 var gulpExec = require('gulp-exec');
-var http = require('http');
-var minifycss = require('gulp-minify-css');
-var rename = require('gulp-rename');
-
+//var http = require('http');
+//var minifycss = require('gulp-minify-css');
+//var rename = require('gulp-rename');
 
 // dev path contains unminified bundle js (for speed and debug with comments) and unminified css files 
 // and dev urls to other resources
 var paths = {
-  dst: 'dev', // or dst (dist, release, bin ...) for release
-  src: 'src',
-  appView: '../vmg-bem/desktop.bundles/index/'
+  dst: 'dev/', // or dst (dist, release, bin ...) for release
+  src: 'src/'
 };
 
-// only js files (no directories)
-paths.scripts = ['src/cjs/**/*.js'];
+paths.rootView = '../vmg-bem/';
+paths.indexView = paths.rootView + 'desktop.bundles/index/';
+paths.fontsView = paths.rootView + 'fonts/';
+paths.bowerLibs = 'bower_components/';
 
-gulp.task('default', ['copy_html', 'browserify'], function() {
+// only js files (no directories)
+paths.scripts = paths.src + 'cjs/**/*.js';
+
+paths.libs = {
+  jquery: paths.bowerLibs + 'jquery/dist/jquery.js',
+  modernizr: paths.bowerLibs + 'modernizr/modernizr.js'
+};
+
+gulp.task('default', ['copy_html', 'copy_fonts', 'copy_libs', 'browserify'], function() {
   // copy to dst
 
   // handle all files
 });
 
 gulp.task('clean', function(next) {
-  del([paths.dst], next);
+  del([paths.dst + '**/*'], next);
 });
 
-gulp.task('copy_html', ['clean'], function() {
-  return gulp.src([paths.appView + 'index.html', paths.appView + 'index.css'])
-    .pipe(gulp.dest(paths.dst + '/'));
+gulp.task('copy_html', function() {
+  return gulp.src([
+      paths.indexView + 'index.html',
+      paths.indexView + 'index.css'
+    ])
+    .pipe(gulp.dest(paths.dst));
+});
+
+gulp.task('copy_fonts', function() {
+  return gulp.src([paths.fontsView + '**/*'])
+    .pipe(gulp.dest(paths.dst + 'fonts/'));
+});
+
+gulp.task('copy_libs', function() {
+  return gulp.src([
+      paths.libs.jquery,
+      paths.libs.modernizr
+    ])
+    .pipe(gulp.dest(paths.dst + 'libs/'));
 });
 
 //var jsHintErrorReporter = map(function(file, cb) {
@@ -77,7 +101,7 @@ var jshintNotify = function(file) {
 };
 
 gulp.task('jshint', function() {
-  return gulp.src(paths.scripts)
+  return gulp.src(['gulpfile.js', paths.scripts])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter(stylish))
     .pipe(notify(jshintNotify));
@@ -89,10 +113,14 @@ gulp.task('jshint', function() {
 });
 
 gulp.task('browserify', ['jshint'], function() {
-  var bundlePath = paths.dst + '/bundle.js';
-  var shellCommand = 'browserify ' + paths.src + '/cjs/main.js -o ' + bundlePath;
+  var srcFile = paths.src + 'cjs/main.js';
+  var bundleFile = paths.dst + 'index-bundle.js';
+  var shellCommand = 'browserify ' + srcFile +
+    ' -o ' + bundleFile +
+    ' --exclude ' + paths.libs.modernizr +
+    ' --exclude ' + paths.libs.jquery;
 
-  gulp.src('./src/cjs/main.js')
+  gulp.src(srcFile)
     .pipe(gulpExec(shellCommand))
     .on('error', notify.onError(function(err) {
       return err.message;
@@ -118,6 +146,7 @@ gulp.task('connect', function() {
   var app = express();
   app.use(express.static(paths.dst));
   app.listen(4000);
+  console.log('http://localhost:4000');
 });
 
 gulp.task('watch', function() {

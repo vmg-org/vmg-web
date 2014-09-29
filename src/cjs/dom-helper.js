@@ -3,7 +3,10 @@
  * @module dom-helper
  * */
 
-var $ = require('../../bower_components/jquery/dist/jquery');
+/**
+ * Jquery is self-loaded (from dns or local)
+ */
+var $ = window.$;
 
 exports.alert = function(msg) {
   window.alert(msg);

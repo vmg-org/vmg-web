@@ -4,6 +4,7 @@
 var vmgSpec = require('vmg-spec/dst/full');
 var workspace = require('./workspace');
 var dhr = require('./dom-helper');
+//require('../../bower_components/modernizr/modernizr');
 // Build API from vmgSpec?
 console.log(vmgSpec);
 
