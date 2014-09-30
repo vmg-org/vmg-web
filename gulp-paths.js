@@ -24,7 +24,8 @@ var vwsRoot = '../vmg-bem/desktop.bundles/';
 pth.vws = {
   layout: vwsRoot + 'layout/',
   index: vwsRoot + 'index/',
-  watch: vwsRoot + 'watch/'
+  watch: vwsRoot + 'watch/',
+  template: vwsRoot + 'template/'
 };
 
 exports = pth;

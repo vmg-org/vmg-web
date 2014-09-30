@@ -11,6 +11,7 @@ var notify = require('gulp-notify');
 //var map = require('map-stream');
 //var events = require('events');
 //var emmitter = new events.EventEmitter();
+var exec = require('child_process').exec;
 var gulpExec = require('gulp-exec');
 //var http = require('http');
 var minifyCss = require('gulp-minify-css');
@@ -20,7 +21,7 @@ var translator = require('./translator-task');
 var concat = require('gulp-concat');
 var mkdirp = require('mkdirp');
 var gulpGhPages = require('gulp-gh-pages');
-
+var gitLog = require('git-log');
 var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 var dict = require('vmg-dict').getLocale('en');
@@ -37,7 +38,7 @@ gulp.task('clean', function(next) {
 
 var cssLayout = pth.vws.layout + 'layout.css';
 
-gulp.task('handle_css', ['css_index', 'css_watch'], function() {
+gulp.task('handle_css', ['css_index', 'css_watch', 'css_template'], function() {
   // concat and minify
 });
 
@@ -48,10 +49,15 @@ gulp.task('css_index', function() {
     .pipe(gulp.dest(pth.dst + 'css/'));
 });
 
-
 gulp.task('css_watch', function() {
-  return gulp.src([cssLayout, pth.vws.index + 'watch.css'])
+  return gulp.src([cssLayout, pth.vws.watch + 'watch.css'])
     .pipe(concat('watch-bundle.css'))
+    .pipe(minifyCss())
+    .pipe(gulp.dest(pth.dst + 'css/'));
+});
+gulp.task('css_template', function() {
+  return gulp.src([cssLayout, pth.vws.template + 'template.css'])
+    .pipe(concat('template-bundle.css'))
     .pipe(minifyCss())
     .pipe(gulp.dest(pth.dst + 'css/'));
 });
@@ -62,7 +68,7 @@ gulp.task('copy_fonts', function() {
 });
 
 gulp.task('copy_img', function() {
-  return gulp.src([pth.images + '**/*'])
+  return gulp.src(pth.images + '**/*')
     .pipe(gulp.dest(pth.dst + 'css/img/'));
 });
 
@@ -154,7 +160,7 @@ gulp.task('browserify_js', ['browserify_index'], function() {
 
 gulp.task('layout', ['jshint'], function() {
   var layoutFilePath = pth.vws.layout + 'layout.html';
-  return gulp.src([pth.vws.index + 'index.html', pth.vws.watch + 'watch.html'])
+  return gulp.src([pth.vws.index + 'index.html', pth.vws.watch + 'watch.html', pth.vws.template + 'template.html'])
     .pipe(bemLayoutHtml.run(layoutFilePath))
     .pipe(translator.run(dict))
     .pipe(gulp.dest(pth.dst));
@@ -193,4 +199,22 @@ gulp.task('uglify', function() {
 gulp.task('deploy', ['uglify'], function() {
   gulp.src(pth.dst + '**/*')
     .pipe(gulpGhPages());
+});
+
+gulp.task('gitlog', function(done) {
+  var tmpFilePath = 'doc/log-tmp.log';
+  var logFilePath = 'doc/log-201409.log';
+  var afterDate = new Date(2014, 8, 2); //new Date(Date.now() - (1000 * 60 * 60 * 24));
+  var beforeDate = new Date(2014, 9, 1);
+
+  var shellCommand = 'git log ' + gitLog.generateArgs(afterDate, beforeDate, tmpFilePath).join(' ');
+  console.log(shellCommand);
+
+  exec(shellCommand, function(err) {
+    if (err) {
+      return done(err);
+    }
+
+    gitLog.createLog(tmpFilePath, logFilePath, done);
+  });
 });

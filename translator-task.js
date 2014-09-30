@@ -22,7 +22,13 @@ exports.run = function(dict) {
     var arr = data.match(rgx);
 
     arr.forEach(function(item) {
-      data = data.replace(item, capitaliseFirstLetter(dict[item.substr(2, item.length - 4)]));
+      var key = dict[item.substr(2, item.length - 4)];
+      // if word in dictionary
+      if (key) {
+        data = data.replace(item, capitaliseFirstLetter(key));
+      } else {
+        console.log('no word in dict ' + item);
+      }
     });
 
     file.contents = new Buffer(data);
