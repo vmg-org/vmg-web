@@ -24,6 +24,7 @@
     "map-stream": "^0.1.0",
     "mkdirp": "^0.5.0",
     "through2": "*",
-    "vmg-spec": "git://github.com/vmg-org/vmg-spec"
+    "vmg-spec": "git://github.com/vmg-org/vmg-spec",
+    "vmg-dict": "git://github.com/vmg-org/vmg-dict"
   }
 }

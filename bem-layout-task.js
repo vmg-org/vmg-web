@@ -5,7 +5,7 @@ var fs = require('fs');
 var getBlockData = function(fileData) {
 
   var strBegin = '<body class="page">';
-  var strEnd = '</body>'
+  var strEnd = '</body>';
 
   var indStart = fileData.indexOf(strBegin) + strBegin.length;
   var indEnd = fileData.indexOf(strEnd);
@@ -63,7 +63,7 @@ function run(layoutFilePath) {
     //console.log(file.stat);  // file stat
     fs.readFile(layoutFilePath, 'utf8', cbkReadLayout.bind(this, file, enc, cb));
   });
-};
+}
 
 exports.run = run;
 

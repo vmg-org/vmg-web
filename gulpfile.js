@@ -16,11 +16,12 @@ var gulpExec = require('gulp-exec');
 var minifyCss = require('gulp-minify-css');
 //var rename = require('gulp-rename');
 var bemLayoutHtml = require('./bem-layout-task');
+var translator = require('./translator-task');
 var concat = require('gulp-concat');
 var mkdirp = require('mkdirp');
 var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
-
+var dict = require('vmg-dict').getLocale('en');
 // for dst - change 'browserify_js' to 'uglify' (it is included)
 gulp.task('build', ['layout', 'handle_css', 'copy_fonts', 'copy_libs', 'copy_img', 'browserify_js'], function() {
   // copy to dst or dev
@@ -105,7 +106,7 @@ var jshintNotify = function(file) {
 };
 
 gulp.task('jshint', function() {
-  return gulp.src(['gulpfile.js', pth.scripts])
+  return gulp.src(['./*.js', pth.scripts])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter(stylish))
     .pipe(notify(jshintNotify));
@@ -158,6 +159,7 @@ gulp.task('layout', ['jshint'], function() {
   var layoutFilePath = pth.vws.layout + 'layout.html';
   return gulp.src([pth.vws.index + 'index.html', pth.vws.watch + 'watch.html'])
     .pipe(bemLayoutHtml.run(layoutFilePath))
+    .pipe(translator.run(dict))
     .pipe(gulp.dest(pth.dst));
   // get text from layout html file
   // find elem "page__workspace" (to find elem need DOM lib, replace with some template strings)

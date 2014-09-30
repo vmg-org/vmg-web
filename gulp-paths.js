@@ -6,7 +6,7 @@
 var pth = {};
 
 pth.src = './src/'; // or dst (dist, release, bin ...) for release
-pth.dst = './dev/'
+pth.dst = './dev/';
 pth.fonts = '../vmg-bem/static/fonts/';
 pth.images = '../vmg-bem/static/img/';
 pth.bowerLibs = './bower_components/';
