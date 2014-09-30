@@ -1,13 +1,11 @@
 /** @module */
 
-var $ = window.$;
-
 exports.hideMenuPopup = function() {
-  $('.menu-popup').hide();
+  $('.menu-popup').addClass('hidden');
 };
 
 exports.showMenuPopup = function() {
-  $('.menu-popup').show();
+  $('.menu-popup').removeClass('hidden');
 };
 
 module.exports = exports;

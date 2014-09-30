@@ -1,7 +1,5 @@
 /** @module viewjs-helper */
 
-var $ = window.$;
-
 var jsvw = require('./jsvw');
 
 exports.run = function() {

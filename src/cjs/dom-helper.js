@@ -6,7 +6,6 @@
 /**
  * Jquery is self-loaded (from dns or local)
  */
-var $ = window.$;
 
 exports.alert = function(msg) {
   window.alert(msg);
@@ -37,12 +36,12 @@ exports.getRoute = function() {
   return document.location.hash.substr(1);
 };
 
-exports.hidePopup = function(className){
-  $('.' +className).hide();
+exports.hidePopup = function(className) {
+  $('.' + className).addClass('hidden');
 };
 
-exports.showPopup = function(className){
-  $('.' +className).show();
+exports.showPopup = function(className) {
+  $('.' + className).removeClass('hidden');
 };
 
 module.exports = exports;

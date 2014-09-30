@@ -1,7 +1,7 @@
 // todo #22! js docs
 // all API endpoints
 // definitions for all data schemes
-var vmgSpec = require('vmg-spec/dst/full');
+var vmgSpec = require('vmg-spec');
 var workspace = require('./workspace');
 var dhr = require('./dom-helper');
 //require('../../bower_components/modernizr/modernizr');

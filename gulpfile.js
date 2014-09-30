@@ -13,60 +13,62 @@ var notify = require('gulp-notify');
 //var emmitter = new events.EventEmitter();
 var gulpExec = require('gulp-exec');
 //var http = require('http');
-//var minifycss = require('gulp-minify-css');
+var minifyCss = require('gulp-minify-css');
 //var rename = require('gulp-rename');
-var bemLayoutHtml = require('bem-layout-html');
+var bemLayoutHtml = require('./bem-layout-task');
+var concat = require('gulp-concat');
+var mkdirp = require('mkdirp');
+var pth = require('./gulp-paths');
+var uglify = require('gulp-uglify');
 
-// dev path contains unminified bundle js (for speed and debug with comments) and unminified css files 
-// and dev urls to other resources
-var paths = {
-  dst: 'dev/', // or dst (dist, release, bin ...) for release
-  src: 'src/'
-};
-
-paths.rootView = '../vmg-bem/';
-paths.indexView = paths.rootView + 'desktop.bundles/index/';
-paths.layoutView = paths.rootView + 'desktop.bundles/layout/';
-paths.fontsView = paths.rootView + 'fonts/';
-paths.bowerLibs = 'bower_components/';
-
-// only js files (no directories)
-paths.scripts = paths.src + 'cjs/**/*.js';
-
-paths.libs = {
-  jquery: paths.bowerLibs + 'jquery/dist/jquery.js',
-  modernizr: paths.bowerLibs + 'modernizr/modernizr.js'
-};
-
-gulp.task('default', ['copy_html', 'copy_fonts', 'copy_libs', 'browserify'], function() {
-  // copy to dst
+// for dst - change 'browserify_js' to 'uglify' (it is included)
+gulp.task('build', ['layout', 'handle_css', 'copy_fonts', 'copy_libs', 'copy_img', 'browserify_js'], function() {
+  // copy to dst or dev
 
   // handle all files
 });
 
 gulp.task('clean', function(next) {
-  del([paths.dst + '**/*'], next);
+  del([pth.dst + '**/*'], next);
 });
 
-gulp.task('copy_html', function() {
-  return gulp.src([
-      paths.indexView + 'index.html',
-      paths.indexView + 'index.css'
-    ])
-    .pipe(gulp.dest(paths.dst));
+var cssLayout = pth.vws.layout + 'layout.css';
+
+gulp.task('handle_css', ['css_index', 'css_watch'], function() {
+  // concat and minify
+});
+
+gulp.task('css_index', function() {
+  return gulp.src([cssLayout, pth.vws.index + 'index.css'])
+    .pipe(concat('index-bundle.css'))
+    .pipe(minifyCss())
+    .pipe(gulp.dest(pth.dst + 'css/'));
+});
+
+
+gulp.task('css_watch', function() {
+  return gulp.src([cssLayout, pth.vws.index + 'watch.css'])
+    .pipe(concat('watch-bundle.css'))
+    .pipe(minifyCss())
+    .pipe(gulp.dest(pth.dst + 'css/'));
 });
 
 gulp.task('copy_fonts', function() {
-  return gulp.src([paths.fontsView + '**/*'])
-    .pipe(gulp.dest(paths.dst + 'fonts/'));
+  return gulp.src([pth.fonts + '**/*'])
+    .pipe(gulp.dest(pth.dst + 'static/fonts/'));
+});
+
+gulp.task('copy_img', function() {
+  return gulp.src([pth.images + '**/*'])
+    .pipe(gulp.dest(pth.dst + 'static/img/'));
 });
 
 gulp.task('copy_libs', function() {
   return gulp.src([
-      paths.libs.jquery,
-      paths.libs.modernizr
+      pth.libs.jquery,
+      pth.libs.modernizr
     ])
-    .pipe(gulp.dest(paths.dst + 'libs/'));
+    .pipe(gulp.dest(pth.dst + 'static/libs/'));
 });
 
 //var jsHintErrorReporter = map(function(file, cb) {
@@ -103,7 +105,7 @@ var jshintNotify = function(file) {
 };
 
 gulp.task('jshint', function() {
-  return gulp.src(['gulpfile.js', paths.scripts])
+  return gulp.src(['gulpfile.js', pth.scripts])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter(stylish))
     .pipe(notify(jshintNotify));
@@ -114,39 +116,49 @@ gulp.task('jshint', function() {
   // }));
 });
 
-gulp.task('browserify', ['jshint'], function() {
-  var srcFile = paths.src + 'cjs/main.js';
-  var bundleFile = paths.dst + 'index-bundle.js';
+gulp.task('mkdir-js', function(cb) {
+  mkdirp(pth.dst + 'js/', cb);
+});
+
+gulp.task('browserify_index', ['jshint', 'mkdir-js'], function() {
+  var srcFile = pth.src + 'cjs/main.js';
+  var bundleFile = pth.dst + 'js/index-bundle.js';
   var shellCommand = 'browserify ' + srcFile +
     ' -o ' + bundleFile +
-    ' --exclude ' + paths.libs.modernizr +
-    ' --exclude ' + paths.libs.jquery;
+    ' --exclude ' + pth.libs.modernizr +
+    ' --exclude ' + pth.libs.jquery;
 
-  gulp.src(srcFile)
+  return gulp.src(srcFile)
     .pipe(gulpExec(shellCommand))
     .on('error', notify.onError(function(err) {
       return err.message;
     }));
-  //    .pipe(gulpExec.reporter())
-  //  .pipe(notify(function(status) {
-  //  console.log('status', status);
-  // }));
-  //  exec(shellCommand, function(err) {
-  //    if (err) {
-  //      console.log(err);
-  //      // notify(err.message);
-  //      return;
-  //    }
-  //
-  //    console.log('bros');
-  //    done();
-  //  });
+  //.pipe(gulpExec.reporter())
+  //.pipe(notify(function(status) {
+  //}));
+  //exec(shellCommand, function(err) {
+  //if (err) {
+  // notify(err.message);
+  //}
+  // done();
+  //});
+});
+
+gulp.task('browserify_js', ['browserify_index'], function() {
+
+});
+
+gulp.task('uglify', ['browserify_js'], function() {
+  return gulp.src(pth.dst + 'js/*.js')
+    .pipe(uglify())
+    .pipe(gulp.dest(pth.dst + 'js/'));
 });
 
 gulp.task('layout', ['jshint'], function() {
-  var layoutFilePath = paths.layoutView + 'layout.html';
-  return gulp.src([paths.indexView + 'index.html', paths.indexView + 'index.css'])
-    .pipe(bemLayoutHtml.run(layoutFilePath));
+  var layoutFilePath = pth.vws.layout + 'layout.html';
+  return gulp.src([pth.vws.index + 'index.html', pth.vws.watch + 'watch.html'])
+    .pipe(bemLayoutHtml.run(layoutFilePath))
+    .pipe(gulp.dest(pth.dst));
   // get text from layout html file
   // find elem "page__workspace" (to find elem need DOM lib, replace with some template strings)
   // get text from index (and other) html file
@@ -164,11 +176,11 @@ gulp.task('layout', ['jshint'], function() {
 gulp.task('connect', function() {
   var express = require('express');
   var app = express();
-  app.use(express.static(paths.dst));
+  app.use(express.static(pth.dst));
   app.listen(4000);
   console.log('http://localhost:4000');
 });
 
 gulp.task('watch', function() {
-  gulp.watch(paths.scripts, ['browserify']);
+  gulp.watch(pth.scripts, ['uglify']);
 });
