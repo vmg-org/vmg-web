@@ -7,9 +7,7 @@ var dhr = require('./dom-helper');
 //require('../../bower_components/modernizr/modernizr');
 // Build API from vmgSpec?
 console.log(vmgSpec);
-
 var vwjs = require('./vwjs.js');
-
 // when project is already loaded
 // load a mainObj
 // exclude secured data
@@ -19,10 +17,6 @@ function onReady() {
   vwjs.run();
   // need to define a path before page is loaded
   // if it's a protected page - redirect -> but its actually for static multipage sites
-
-  // define an url path when whole DOM is ready
-  var route = dhr.getRoute();
-  console.log(route);
 
   // load list of AuthIssuer
   workspace.init();
@@ -35,4 +29,4 @@ function onReady() {
   });
 }
 
-onReady();
+$(document).ready(onReady);

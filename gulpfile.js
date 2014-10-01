@@ -178,16 +178,47 @@ gulp.task('layout', ['jshint'], function() {
   // during minification - remove same classes
 });
 
-gulp.task('connect', function() {
+var LR_PORT = 35729;
+var lr;
+
+function startLiveReload() {
+  lr = require('tiny-lr')();
+  lr.listen(LR_PORT);
+}
+
+function startExpress() {
   var express = require('express');
   var app = express();
+  app.use(require('connect-livereload')({
+    port: LR_PORT
+      //	  ignore: ['js', 'svg']
+  }));
   app.use(express.static(pth.dst));
   app.listen(4000);
   console.log('http://localhost:4000');
+}
+
+function notifyLiveReload(e) {
+  // `gulp.watch()` events provide an absolute path
+  // so we need to make it relative to the server root
+  var fileName = require('path').relative(pth.dst, e.path);
+
+  lr.changed({
+    body: {
+      files: [fileName]
+    }
+  });
+}
+
+gulp.task('connect', function() {
+  startLiveReload();
+  startExpress();
+  //  gulp.watch(pth.scripts, ['browserify_js'], notifyLiveReload);
+  gulp.watch(pth.dst + '**/*', notifyLiveReload);
 });
 
-gulp.task('watch', function() {
-  gulp.watch(pth.scripts, ['uglify']);
+gulp.task('watch_js', function() {
+  gulp.watch(pth.scripts, ['browserify_js']);
 });
 
 gulp.task('uglify', function() {

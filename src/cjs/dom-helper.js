@@ -31,17 +31,12 @@ exports.addEvent = function(className, eventName, cbk) {
   $(elem).on(eventName, cbk);
 };
 
-/** It is choose of a browser where to store routes (in simple hash # or in !# or in cookies etc.) */
-exports.getRoute = function() {
-  return document.location.hash.substr(1);
+exports.addClass = function(elem, className) {
+  $('.' + elem).addClass(className);
 };
 
-exports.hidePopup = function(className) {
-  $('.' + className).addClass('hidden');
-};
-
-exports.showPopup = function(className) {
-  $('.' + className).removeClass('hidden');
+exports.removeClass = function(elem, className) {
+  $('.' + elem).removeClass(className);
 };
 
 module.exports = exports;

@@ -1,11 +1,13 @@
 /** @module */
 
+var dhr = require('./dom-helper');
+
 exports.hideMenuPopup = function() {
-  $('.menu-popup').addClass('hidden');
+  dhr.addClass('menu-popup', 'hidden');
 };
 
 exports.showMenuPopup = function() {
-  $('.menu-popup').removeClass('hidden');
+  dhr.removeClass('menu-popup', 'hidden');
 };
 
 module.exports = exports;
