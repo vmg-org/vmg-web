@@ -14,91 +14,32 @@ var notify = require('gulp-notify');
 var exec = require('child_process').exec;
 var gulpExec = require('gulp-exec');
 //var http = require('http');
-var minifyCss = require('gulp-minify-css');
-//var rename = require('gulp-rename');
-var bemLayoutHtml = require('./bem-layout-task');
-var translator = require('./translator-task');
-var concat = require('gulp-concat');
 var mkdirp = require('mkdirp');
 var gulpGhPages = require('gulp-gh-pages');
 var gitLog = require('git-log');
 var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
-var dict = require('vmg-dict').getLocale('en');
-// for dst - change 'browserify_js' to 'uglify' (it is included)
-gulp.task('build', ['layout', 'handle_css', 'copy_fonts', 'copy_libs', 'copy_img', 'browserify_js'], function() {
-  // copy to dst or dev
 
-  // handle all files
-});
+// for dst - change 'browserify_js' to 'uglify' (it is included)
+gulp.task('build', ['copy_markup', 'copy_libs', 'browserify_js'], function() {});
 
 gulp.task('clean', function(next) {
   del([pth.dst + '**/*'], next);
 });
 
-var cssLayout = pth.vws.layout + 'layout.css';
-
-gulp.task('handle_css', ['css_index', 'css_watch', 'css_template'], function() {
-  // concat and minify
+gulp.task('copy_markup', ['clean'], function() {
+  return gulp.src(pth.markup + '**/*')
+    .pipe(gulp.dest(pth.dst));
 });
 
-gulp.task('css_index', function() {
-  return gulp.src([cssLayout, pth.vws.index + 'index.css'])
-    .pipe(concat('index-bundle.css'))
-    .pipe(minifyCss())
-    .pipe(gulp.dest(pth.dst + 'css/'));
-});
-
-gulp.task('css_watch', function() {
-  return gulp.src([cssLayout, pth.vws.watch + 'watch.css'])
-    .pipe(concat('watch-bundle.css'))
-    .pipe(minifyCss())
-    .pipe(gulp.dest(pth.dst + 'css/'));
-});
-gulp.task('css_template', function() {
-  return gulp.src([cssLayout, pth.vws.template + 'template.css'])
-    .pipe(concat('template-bundle.css'))
-    .pipe(minifyCss())
-    .pipe(gulp.dest(pth.dst + 'css/'));
-});
-
-gulp.task('copy_fonts', function() {
-  return gulp.src([pth.fonts + '**/*'])
-    .pipe(gulp.dest(pth.dst + 'css/fonts/'));
-});
-
-gulp.task('copy_img', function() {
-  return gulp.src(pth.images + '**/*')
-    .pipe(gulp.dest(pth.dst + 'css/img/'));
-});
 
 gulp.task('copy_libs', function() {
   return gulp.src([
       pth.libs.jquery,
       pth.libs.modernizr
     ])
-    .pipe(gulp.dest(pth.dst + 'static/libs/'));
+    .pipe(gulp.dest(pth.dst + 'libs/'));
 });
-
-//var jsHintErrorReporter = map(function(file, cb) {
-//  // console.log(file.jshint, file.path);
-//  if (!file.jshint.success) {
-//    file.jshint.results.forEach(function(err) {
-//      if (err) {
-//        var msg = [
-//          path.basename(file.path),
-//          'Line: ' + err.error.line,
-//          'Reason: ' + err.error.reason
-//        ];
-//
-//        // Emit this error event
-//        //        emmitter.emit('error', new Error(msg.join('\n')));
-//      }
-//    });
-//
-//  }
-//  cb(null, file);
-//});
 
 var jshintNotify = function(file) {
   if (file.jshint.success) {
@@ -118,11 +59,6 @@ gulp.task('jshint', function() {
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter(stylish))
     .pipe(notify(jshintNotify));
-
-  // If error pop up a notify alert
-  //    .on('error', notify.onError(function(error) {
-  //    return error.message;
-  // }));
 });
 
 gulp.task('mkdir-js', function(cb) {
@@ -157,26 +93,6 @@ gulp.task('browserify_js', ['browserify_index'], function() {
 
 });
 
-
-gulp.task('layout', ['jshint'], function() {
-  var layoutFilePath = pth.vws.layout + 'layout.html';
-  return gulp.src([pth.vws.index + 'index.html', pth.vws.watch + 'watch.html', pth.vws.template + 'template.html'])
-    .pipe(bemLayoutHtml.run(layoutFilePath))
-    .pipe(translator.run(dict))
-    .pipe(gulp.dest(pth.dst));
-  // get text from layout html file
-  // find elem "page__workspace" (to find elem need DOM lib, replace with some template strings)
-  // get text from index (and other) html file
-  // get content from "page" element
-  // add a script to the bottom with format "index-bundle.js"
-  // include instead "page_workspace"
-  // change a title of result page
-  // change a css of result page to "index.css"
-  //
-  // to create "index.css"
-  // concat "layout.css" and "index.css"
-  // during minification - remove same classes
-});
 
 var LR_PORT = 35729;
 var lr;
