@@ -2,7 +2,9 @@
 
 var ahr = require('./app-helper');
 var dhr = require('./dom-helper');
-var indexBem = require('../../bower_components/vmg-bem/dst/bemjson/index.bemjson');
+var bhLib = require('bh');
+var bh = new(bhLib.BH); // jshint ignore:line
+var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
 
 console.log(indexBem);
 
@@ -51,6 +53,37 @@ var fillMovieRecord = function(lists, dataItem) {
 
 };
 
+/*
+ * Map it
+ * @param {Object} sampleSchema - { block: 'asdf', content: []}
+ * @param {Object} dataItem - {name: 'asdfasdfa' }
+ */
+var mapSampleItem = function(sampleSchema, dataItem) {
+  var mdlName = 'movie_record'; // get from data
+
+  // find in schema - object where mdl = mdlName
+  var mdlObj = ahr.findJsonMatch(sampleSchema, 'mdl', mdlName);
+
+  console.log(mdlObj);
+
+  // all content of this object - with movie_record context
+  // change all matches with our data: @@name - dataItem.name
+  // stringify it or recurse?
+
+  var strSchema = ahr.stringify(sampleSchema);
+
+  var genSchema = strSchema.replace(/@@upper_name/g, dataItem.name);
+
+  return ahr.parseJson(genSchema);
+};
+
+// var demoData = [{
+//   name: 'requiem about dream'
+// }, {
+//   name: 'hard oreshek'
+// }, {
+//   name: 'Hatiko'
+// }];
 exports.fillMovieRecords = function(data) {
   var key = 'movie-records';
 
@@ -66,8 +99,22 @@ exports.fillMovieRecords = function(data) {
 
   console.log(result);
 
+  // add real items to result
+  var sampleSchema = result.content[0];
+
+  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema));
+
+  // retry it
+  result.content = fullArr;
+  // then - generate html
+
+  var readyHtml = bh.apply(result);
+
+  // @todo #12! Replace instead insert
+  $(lists).html(readyHtml);
+
   // need to know markup of movie-record
-  ahr.each(data, fillMovieRecord.bind(null, lists));
+  //  ahr.each(data, fillMovieRecord.bind(null, lists));
 };
 
 module.exports = exports;

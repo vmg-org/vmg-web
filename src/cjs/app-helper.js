@@ -14,6 +14,18 @@ ahr.each = function(arr, cbk) {
   }
 };
 
+ahr.map = function(arr, cbk) {
+  return arr.map(cbk);
+};
+
+ahr.stringify = function(obj) {
+  return JSON.stringify(obj);
+};
+
+ahr.parseJson = function(str) {
+  return JSON.parse(str);
+};
+
 ahr.isArray = function(obj) {
   return Array.isArray(obj);
 };
@@ -61,7 +73,8 @@ var handleItem = function(result, obj, reqName, reqValue, curName) {
 ahr.findJsonMatch = function(obj, reqName, reqValue) {
   var result = [];
   ahr.each(Object.keys(obj), handleItem.bind(null, result, obj, reqName, reqValue));
-  return result;
+  // only first match (if exists)
+  return result[0];
 };
 
 module.exports = ahr;
