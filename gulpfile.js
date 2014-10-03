@@ -32,7 +32,6 @@ gulp.task('copy_markup', ['clean'], function() {
     .pipe(gulp.dest(pth.dst));
 });
 
-
 gulp.task('copy_libs', function() {
   return gulp.src([
       pth.libs.jquery,

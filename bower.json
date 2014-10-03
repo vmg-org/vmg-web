@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "homepage": "https://github.com/vmg-org/vmg-web",
   "authors": [
-    "IvanRave <reyvart@hotmail.com>"
+    "IvanRave"
   ],
   "description": "VMG client for web",
   "license": "MIT",
@@ -16,6 +16,7 @@
   ],
   "devDependencies": {
     "jquery": "~2.1.1",
-    "modernizr": "~2.8.3"
+    "modernizr": "~2.8.3",
+    "vmg-bem": "git://github.com/vmg-org/vmg-bem"
   }
 }
