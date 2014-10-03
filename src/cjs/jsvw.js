@@ -2,6 +2,9 @@
 
 var ahr = require('./app-helper');
 var dhr = require('./dom-helper');
+var indexBem = require('../../bower_components/vmg-bem/dst/bemjson/index.bemjson');
+
+console.log(indexBem);
 
 exports.hideMenuPopup = function() {
   dhr.addClass('.menu-popup', 'hidden');
@@ -19,6 +22,10 @@ function cec(block, elem) {
 }
 
 function buildMoviePreview(name) {
+  // get index.bemjson.json
+  // find first 'movie-preview' block (a markuper creates a sample block)
+  // 
+
   var blockClass = 'movie-preview';
   var block = dhr.div();
   var elemWatch = dhr.div(cec(blockClass, 'watch'));
@@ -33,6 +40,8 @@ function buildMoviePreview(name) {
 }
 
 var fillMovieRecord = function(lists, dataItem) {
+  // go to index.bemjson.json
+
   var movieRecordsItem = dhr.div('movie-records__item');
   movieRecordsItem.appendChild(buildMoviePreview(dataItem.name));
 
@@ -43,8 +52,21 @@ var fillMovieRecord = function(lists, dataItem) {
 };
 
 exports.fillMovieRecords = function(data) {
-  var lists = dhr.getElems('.movie-records'); // may be few lists with movie-records in a page (retry logic)
+  var key = 'movie-records';
 
+  var lists = dhr.getElems('.' + key); // may be few lists with movie-records in a page (retry logic)
+
+  // get an object where block == key
+  // get content of this object
+  // get first item of array (of content)
+  // create markup from this item
+  // put the data to the markup
+  // add it to the our elem
+  var result = ahr.findJsonMatch(indexBem, 'block', key);
+
+  console.log(result);
+
+  // need to know markup of movie-record
   ahr.each(data, fillMovieRecord.bind(null, lists));
 };
 

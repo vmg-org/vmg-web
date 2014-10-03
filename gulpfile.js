@@ -21,7 +21,7 @@ var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 
 // for dst - change 'browserify_js' to 'uglify' (it is included)
-gulp.task('build', ['copy_markup', 'copy_libs', 'browserify_js'], function() {});
+gulp.task('build', ['clean', 'copy_markup', 'copy_libs', 'browserify_js'], function() {});
 
 gulp.task('clean', function(next) {
   del([pth.dst + '**/*'], next);
@@ -32,7 +32,7 @@ gulp.task('copy_markup', ['clean'], function() {
     .pipe(gulp.dest(pth.dst));
 });
 
-gulp.task('copy_libs', function() {
+gulp.task('copy_libs', ['clean'], function() {
   return gulp.src([
       pth.libs.jquery,
       pth.libs.modernizr
@@ -60,11 +60,13 @@ gulp.task('jshint', function() {
     .pipe(notify(jshintNotify));
 });
 
-gulp.task('mkdir-js', function(cb) {
-  mkdirp(pth.dst + 'js/', cb);
+gulp.task('mkdir_js', ['clean'], function(cb) {
+  return mkdirp(pth.dst + 'js/', function() {
+    cb();
+  });
 });
 
-gulp.task('browserify_index', ['jshint', 'mkdir-js'], function() {
+gulp.task('browserify_index', ['clean', 'jshint', 'mkdir_js'], function() {
   var srcFile = pth.src + 'cjs/main.js';
   var bundleFile = pth.dst + 'js/index-bundle.js';
   var shellCommand = 'browserify ' + srcFile +
