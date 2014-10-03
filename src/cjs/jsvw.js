@@ -6,7 +6,7 @@ var bhLib = require('bh');
 var bh = new(bhLib.BH); // jshint ignore:line
 var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
 
-console.log(indexBem);
+//console.log(indexBem);
 
 exports.hideMenuPopup = function() {
   dhr.addClass('.menu-popup', 'hidden');
@@ -16,55 +16,23 @@ exports.showMenuPopup = function() {
   dhr.removeClass('.menu-popup', 'hidden');
 };
 
-/**
- * Creates class of an elem of a block
- */
-function cec(block, elem) {
-  return block + '__' + elem;
+function replacer(dataItem, match, p1) {
+  // with $1 object doesnt works
+  // todo @31! or throw an error
+  return '"' + (dataItem[p1] || ('@@' + p1)) + '"';
 }
-
-function buildMoviePreview(name) {
-  // get index.bemjson.json
-  // find first 'movie-preview' block (a markuper creates a sample block)
-  // 
-
-  var blockClass = 'movie-preview';
-  var block = dhr.div();
-  var elemWatch = dhr.div(cec(blockClass, 'watch'));
-  var elemTitle = dhr.div(cec(blockClass, 'title'));
-  dhr.html(elemTitle, name);
-  var elemRating = dhr.div(cec(blockClass, 'rating'));
-
-  block.appendChild(elemWatch);
-  block.appendChild(elemTitle);
-  block.appendChild(elemRating);
-  return block;
-}
-
-var fillMovieRecord = function(lists, dataItem) {
-  // go to index.bemjson.json
-
-  var movieRecordsItem = dhr.div('movie-records__item');
-  movieRecordsItem.appendChild(buildMoviePreview(dataItem.name));
-
-  ahr.each(lists, function(list) {
-    list.appendChild(movieRecordsItem);
-  });
-
-};
 
 /*
  * Map it
  * @param {Object} sampleSchema - { block: 'asdf', content: []}
  * @param {Object} dataItem - {name: 'asdfasdfa' }
  */
-var mapSampleItem = function(sampleSchema, dataItem) {
-  var mdlName = 'movie_record'; // get from data
+var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
 
   // find in schema - object where mdl = mdlName
-  var mdlObj = ahr.findJsonMatch(sampleSchema, 'mdl', mdlName);
+  // var mdlObj = ahr.findJsonMatch(sampleSchema, 'mdl', mdlName);
 
-  console.log(mdlObj);
+  //  console.log(mdlObj);
 
   // all content of this object - with movie_record context
   // change all matches with our data: @@name - dataItem.name
@@ -72,7 +40,15 @@ var mapSampleItem = function(sampleSchema, dataItem) {
 
   var strSchema = ahr.stringify(sampleSchema);
 
-  var genSchema = strSchema.replace(/@@upper_name/g, dataItem.name);
+  // change every key in dataItem
+
+  //  ahr.each(Object.keys(dataItem), implementEachData
+  //  console.log(strSchema);
+  //  var allMatches = strSchema.match(/"@@\w+"/g);
+  //  console.log(allMatches);
+  //var matches = strSchema.match(/@@(\w+/g);
+
+  var genSchema = strSchema.replace(/"@@(\w+)"/g, replacer.bind(null, dataItem));
 
   return ahr.parseJson(genSchema);
 };
@@ -102,7 +78,8 @@ exports.fillMovieRecords = function(data) {
   // add real items to result
   var sampleSchema = result.content[0];
 
-  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema));
+  var mdlName = 'movie_record'; // get from data
+  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema, mdlName));
 
   // retry it
   result.content = fullArr;

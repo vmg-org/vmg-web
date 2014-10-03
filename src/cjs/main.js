@@ -23,11 +23,20 @@ function onReady() {
 
 
   var demoData = [{
-    name: 'requiem about dream'
+    name: 'requiem about dream',
+    upper_name: 'REQUIEM FOR A DREAM',
+    img_preview_url: './css/img/movie-black.png',
+    url: './watch.html?v=requiem'
   }, {
-    name: 'hard oreshek'
+    name: 'hard die',
+    upper_name: 'DIE HARD',
+    img_preview_url: './css/img/movie-black.png',
+    url: './watch.html?v=die-hard'
   }, {
-    name: 'Hatiko'
+    name: 'Hatiko',
+    upper_name: 'HATIKO',
+    img_preview_url: './css/img/movie-black.png',
+    url: './watch.html?v=hatiko'
   }];
 
   jsvw.fillMovieRecords(demoData);
