@@ -7,7 +7,16 @@ var onReady = function() {
   // add all bindings from view to js functions
   vwjs.run();
 
-  prvJsvw.fillComments();
+  var demoData = [{
+    author_name: 'Rave',
+    comment_text: 'Super video'
+  },{
+	  
+    author_name: 'Rave',
+    comment_text: 'Super video'
+  }];
+
+  prvJsvw.fillComments(demoData);
 };
 
 $(document).ready(onReady);
