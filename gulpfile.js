@@ -1,4 +1,7 @@
-/** Gulp tasks */
+/** 
+ * Gulp tasks
+ * @todo #42! add a most popular jquery dns link instead local (on production)
+ */
 
 var gulp = require('gulp');
 // This will keeps pipes working after error event
@@ -20,8 +23,8 @@ var gitLog = require('git-log');
 var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 
-// for dst - change 'browserify_js' to 'uglify' (it is included)
-gulp.task('build', ['clean', 'copy_markup', 'copy_libs', 'browserify_js'], function() {});
+// for dst - change 'bwf_js' to 'uglify' (it is included)
+gulp.task('build', ['clean', 'copy_markup', 'copy_libs', 'bwf_js'], function() {});
 
 gulp.task('clean', function(next) {
   del([pth.dst + '**/*'], next);
@@ -54,7 +57,7 @@ var jshintNotify = function(file) {
 };
 
 gulp.task('jshint', function() {
-  return gulp.src(['./*.js', pth.scripts])
+  return gulp.src(['./*.js', pth.src + '**/*.js'])
     .pipe(jshint('.jshintrc'))
     .pipe(jshint.reporter(stylish))
     .pipe(notify(jshintNotify));
@@ -66,34 +69,31 @@ gulp.task('mkdir_js', ['clean'], function(cb) {
   });
 });
 
-gulp.task('browserify_index', ['clean', 'jshint', 'mkdir_js'], function() {
-  var srcFile = pth.src + 'cjs/main.js';
-  var bundleFile = pth.dst + 'js/index-bundle.js';
-  var shellCommand = 'browserify ' + srcFile +
-    ' -o ' + bundleFile +
+var cbkNotifyOnError = function(err) {
+  return err.message;
+};
+
+var runBwf = function(srcFile, bundleFile) {
+  var command = 'browserify <%= file.path %> -o ' + bundleFile +
     ' --exclude ' + pth.libs.modernizr +
     ' --exclude ' + pth.libs.jquery;
 
   return gulp.src(srcFile)
-    .pipe(gulpExec(shellCommand))
-    .on('error', notify.onError(function(err) {
-      return err.message;
-    }));
-  //.pipe(gulpExec.reporter())
-  //.pipe(notify(function(status) {
-  //}));
-  //exec(shellCommand, function(err) {
-  //if (err) {
-  // notify(err.message);
-  //}
-  // done();
-  //});
+    .pipe(gulpExec(command))
+    .on('error', notify.onError(cbkNotifyOnError));
+};
+
+gulp.task('pre_bwf', ['clean', 'jshint', 'mkdir_js']);
+
+gulp.task('bwf_index', ['pre_bwf'], function() {
+  return runBwf(pth.src + 'index/run.js', pth.dst + 'js/index-bundle.js');
 });
 
-gulp.task('browserify_js', ['browserify_index'], function() {
-
+gulp.task('bwf_watch', ['pre_bwf'], function() {
+  return runBwf(pth.src + 'watch/run.js', pth.dst + 'js/watch-bundle.js');
 });
 
+gulp.task('bwf_js', ['bwf_index', 'bwf_watch']);
 
 var LR_PORT = 35729;
 var lr;
@@ -130,12 +130,11 @@ function notifyLiveReload(e) {
 gulp.task('connect', function() {
   startLiveReload();
   startExpress();
-  //  gulp.watch(pth.scripts, ['browserify_js'], notifyLiveReload);
   gulp.watch(pth.dst + '**/*', notifyLiveReload);
 });
 
 gulp.task('watch_js', function() {
-  gulp.watch(pth.scripts, ['browserify_js']);
+  gulp.watch(pth.src + '**/*.js', ['bwf_js']);
 });
 
 gulp.task('uglify', function() {

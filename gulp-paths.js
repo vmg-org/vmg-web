@@ -12,7 +12,6 @@ pth.bowerLibs = './bower_components/';
 
 pth.markup = pth.bowerLibs + 'vmg-bem/dst/';
 
-pth.scripts = pth.src + 'cjs/**/*.js';
 // dev path contains unminified bundle js (for speed and debug with comments) and unminified css files 
 // and dev urls to other resources
 

@@ -1,7 +1,8 @@
 /** @module viewjs-helper */
 
-var jsvw = require('./jsvw');
-var dhr = require('./dom-helper');
+var jsvw = require('../vmg-scripts/jsvw');
+var dhr = require('../vmg-helpers/dom');
+
 exports.run = function() {
   dhr.on('.menu-view__close', 'click', jsvw.hideMenuPopup);
   dhr.on('.menu-call__full-icon', 'click', jsvw.showMenuPopup);

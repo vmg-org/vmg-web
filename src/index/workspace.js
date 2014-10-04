@@ -1,9 +1,9 @@
 /** @module workspace */
 'use strict';
 
-var movieTemplateService = require('./movie-template/service');
-var authIssuerService = require('./auth-issuer/service');
-var lgr = require('./lgr');
+var movieTemplateService = require('../vmg-services/movie-template');
+var authIssuerService = require('../vmg-services/auth-issuer');
+var lgr = require('../vmg-helpers/lgr');
 
 // Create an object with ready data or load data after initialization */
 var Model = function() {
@@ -17,7 +17,7 @@ var Model = function() {
   this.listOfMovieTemplate = [];
 };
 
-Model.prototype.checkIsUserAuthorized = function(){
+Model.prototype.checkIsUserAuthorized = function() {
   // when the user login to main page /welcome
   // load first public elems movie-templates and movie-records
   // then check is user auth

@@ -3,11 +3,11 @@
 // definitions for all data schemes
 var vmgSpec = require('vmg-spec');
 var workspace = require('./workspace');
-//require('../../bower_components/modernizr/modernizr');
 // Build API from vmgSpec?
 console.log(vmgSpec);
-var vwjs = require('./vwjs.js');
-var jsvw = require('./jsvw.js');
+
+var vwjs = require('../vmg-scripts/vwjs.js');
+var jsvw = require('../vmg-scripts/jsvw.js');
 // when project is already loaded
 // load a mainObj
 // exclude secured data

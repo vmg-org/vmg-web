@@ -1,7 +1,7 @@
 /** @module */
 
-var ahr = require('./app-helper');
-var dhr = require('./dom-helper');
+var ahr = require('../vmg-helpers/app');
+var dhr = require('../vmg-helpers/dom');
 var bhLib = require('bh');
 var bh = new(bhLib.BH); // jshint ignore:line
 var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
