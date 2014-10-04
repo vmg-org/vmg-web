@@ -46,7 +46,7 @@ var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
   return ahr.parseJson(genSchema);
 };
 
-exports.impl = function(bem, elemName, mdlName, data) {
+exports.impl = function(bem, elemName, mdlName, data, isEffect) {
   var lists = $('.' + elemName); // may be few lists with movie-records in a page (retry logic)
 
   // get an object where block == key
@@ -55,23 +55,30 @@ exports.impl = function(bem, elemName, mdlName, data) {
   // create markup from this item
   // put the data to the markup
   // add it to the our elem
-  var result = ahr.findJsonMatch(bem, 'block', elemName);
+  // 
+  // get object instead link
+  var result = ahr.extractJsonMatch(bem, 'block', elemName);
 
-  //  console.log(result);
-
-  // add real items to result
   var sampleSchema = result.content[0];
 
   var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema, mdlName));
 
-  // retry it
-  result.content = fullArr;
-  // then - generate html
+  //  console.log('fullArr', fullArr[0].content[0]);
 
+  result.content = fullArr;
   var readyHtml = bh.apply(result);
 
-  // @todo #12! Replace instead insert
-  $(lists).parent().html(readyHtml);
+  // bh can't generate html without a parent block
+  //   without parent block - their elements with wrong names
+  //   but we need only elements markup
+  var jqrNewElems = $(readyHtml).children();
+  if (isEffect) {
+    jqrNewElems.hide();
+  }
+  $(lists).append(jqrNewElems);
+  if (isEffect) {
+    jqrNewElems.slideDown();
+  }
 };
 
 exports.alert = function(msg) {

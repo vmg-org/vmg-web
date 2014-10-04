@@ -8,8 +8,13 @@ var dhr = require('../vmg-helpers/dom');
 exports.fillComments = function(data) {
   var key = 'movie-comments';
   var mdlName = 'movie_comment'; // get from data
-
   dhr.impl(bem, key, mdlName, data);
+};
+
+exports.addComments = function(data){
+  var key = 'movie-comments';
+  var mdlName = 'movie_comment'; // get from data
+  dhr.impl(bem, key, mdlName, data, true);
 };
 
 exports.fillMovieRecord = function(data) {
@@ -20,7 +25,7 @@ exports.fillMovieRecord = function(data) {
   dhr.impl(bem, key, mdlName, data);
 };
 
-exports.fillVideo = function(data){
+exports.fillVideo = function(data) {
 
   var key = 'movie-player-cover';
   var mdlName = 'movie_record';

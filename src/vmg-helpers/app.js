@@ -70,11 +70,17 @@ var handleItem = function(result, obj, reqName, reqValue, curName) {
  * @param {String} keyName - Any string for key: left side
  * @param {String} keyValue - Any string for value: right side
  */
-ahr.findJsonMatch = function(obj, reqName, reqValue) {
+ahr.extractJsonMatch = function(obj, reqName, reqValue) {
   var result = [];
   ahr.each(Object.keys(obj), handleItem.bind(null, result, obj, reqName, reqValue));
   // only first match (if exists)
-  return result[0];
+  if (result.length === 0) {
+    // simple null instead a link
+    return null;
+  } else {
+    // cloned object instead a link
+    return $.extend({}, result[0]);
+  }
 };
 
 module.exports = ahr;
