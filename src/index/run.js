@@ -6,8 +6,8 @@ var workspace = require('./workspace');
 // Build API from vmgSpec?
 console.log(vmgSpec);
 
-var vwjs = require('../vmg-scripts/vwjs.js');
-var jsvw = require('../vmg-scripts/jsvw.js');
+var vwjs = require('../vmg-helpers/vwjs.js');
+var pvtJsvw = require('./jsvw');
 // when project is already loaded
 // load a mainObj
 // exclude secured data
@@ -39,7 +39,7 @@ function onReady() {
     url: './watch.html?v=hatiko'
   }];
 
-  jsvw.fillMovieRecords(demoData);
+  pvtJsvw.fillMovieRecords(demoData);
 }
 
 $(document).ready(onReady);

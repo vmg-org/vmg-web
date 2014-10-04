@@ -23,26 +23,6 @@ var gitLog = require('git-log');
 var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 
-// for dst - change 'bwf_js' to 'uglify' (it is included)
-gulp.task('build', ['clean', 'copy_markup', 'copy_libs', 'bwf_js'], function() {});
-
-gulp.task('clean', function(next) {
-  del([pth.dst + '**/*'], next);
-});
-
-gulp.task('copy_markup', ['clean'], function() {
-  return gulp.src(pth.markup + '**/*')
-    .pipe(gulp.dest(pth.dst));
-});
-
-gulp.task('copy_libs', ['clean'], function() {
-  return gulp.src([
-      pth.libs.jquery,
-      pth.libs.modernizr
-    ])
-    .pipe(gulp.dest(pth.dst + 'libs/'));
-});
-
 var jshintNotify = function(file) {
   if (file.jshint.success) {
     return false;
@@ -55,19 +35,6 @@ var jshintNotify = function(file) {
   }).join("\n");
   return file.relative + " (" + file.jshint.results.length + " errors)\n" + errors;
 };
-
-gulp.task('jshint', function() {
-  return gulp.src(['./*.js', pth.src + '**/*.js'])
-    .pipe(jshint('.jshintrc'))
-    .pipe(jshint.reporter(stylish))
-    .pipe(notify(jshintNotify));
-});
-
-gulp.task('mkdir_js', ['clean'], function(cb) {
-  return mkdirp(pth.dst + 'js/', function() {
-    cb();
-  });
-});
 
 var cbkNotifyOnError = function(err) {
   return err.message;
@@ -82,18 +49,6 @@ var runBwf = function(srcFile, bundleFile) {
     .pipe(gulpExec(command))
     .on('error', notify.onError(cbkNotifyOnError));
 };
-
-gulp.task('pre_bwf', ['clean', 'jshint', 'mkdir_js']);
-
-gulp.task('bwf_index', ['pre_bwf'], function() {
-  return runBwf(pth.src + 'index/run.js', pth.dst + 'js/index-bundle.js');
-});
-
-gulp.task('bwf_watch', ['pre_bwf'], function() {
-  return runBwf(pth.src + 'watch/run.js', pth.dst + 'js/watch-bundle.js');
-});
-
-gulp.task('bwf_js', ['bwf_index', 'bwf_watch']);
 
 var LR_PORT = 35729;
 var lr;
@@ -127,14 +82,60 @@ function notifyLiveReload(e) {
   });
 }
 
+// =============== TASK DECLARATION ===============================
+// for dst - change 'bwf' to 'uglify' (it is included)
+gulp.task('build', ['copy_markup', 'copy_libs', 'jshint', 'bwf'], function() {});
+
+// This is a separate task, don't clean for every build - just replace
+// Clean a dst folder, if there are unrequired files
+gulp.task('clean', function(cbk) {
+  del([pth.dst + '**/*'], cbk);
+});
+
+// Create this folder after full clean - it is required for browserify
+gulp.task('mkdir_js', function(cbk) {
+  mkdirp(pth.dst + 'js/', cbk);
+});
+
+gulp.task('copy_markup', function() {
+  return gulp.src(pth.markup + '**/*')
+    .pipe(gulp.dest(pth.dst));
+});
+
+gulp.task('copy_libs', function() {
+  return gulp.src([
+      pth.libs.jquery,
+      pth.libs.modernizr
+    ])
+    .pipe(gulp.dest(pth.dst + 'libs/'));
+});
+
+gulp.task('jshint', function() {
+  return gulp.src(['./*.js', pth.src + '**/*.js'])
+    .pipe(jshint('.jshintrc'))
+    .pipe(jshint.reporter(stylish))
+    .pipe(notify(jshintNotify));
+});
+
+gulp.task('bwf_index', ['jshint'], function() {
+  return runBwf(pth.src + 'index/run.js', pth.dst + 'js/index-bundle.js');
+});
+
+gulp.task('bwf_watch', ['jshint'], function() {
+  return runBwf(pth.src + 'watch/run.js', pth.dst + 'js/watch-bundle.js');
+});
+
+gulp.task('bwf', ['bwf_index', 'bwf_watch']);
+
 gulp.task('connect', function() {
   startLiveReload();
   startExpress();
   gulp.watch(pth.dst + '**/*', notifyLiveReload);
 });
 
-gulp.task('watch_js', function() {
-  gulp.watch(pth.src + '**/*.js', ['bwf_js']);
+// Watch only scripts
+gulp.task('watch', function() {
+  gulp.watch(pth.src + '**/*.js', ['bwf']);
 });
 
 gulp.task('uglify', function() {

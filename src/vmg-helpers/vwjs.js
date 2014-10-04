@@ -1,16 +1,18 @@
 /** @module viewjs-helper */
 
-var jsvw = require('../vmg-scripts/jsvw');
+var jsvw = require('../vmg-helpers/jsvw');
 var dhr = require('../vmg-helpers/dom');
 
 exports.run = function() {
   dhr.on('.menu-view__close', 'click', jsvw.hideMenuPopup);
   dhr.on('.menu-call__full-icon', 'click', jsvw.showMenuPopup);
   dhr.on('.menu-popup', 'click', function(e) {
-    if (e.currentTarget === e.target) {
+    // pip-popup in menu-popup
+    if (e.currentTarget === e.target.parentElement) {
       jsvw.hideMenuPopup();
     }
   });
+
   dhr.on(document, 'keyup', function(e) {
     if (e.keyCode === 27) {
       jsvw.hideMenuPopup();
