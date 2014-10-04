@@ -71,7 +71,7 @@ exports.impl = function(bem, elemName, mdlName, data) {
   var readyHtml = bh.apply(result);
 
   // @todo #12! Replace instead insert
-  $(lists).html(readyHtml);
+  $(lists).parent().html(readyHtml);
 };
 
 exports.alert = function(msg) {

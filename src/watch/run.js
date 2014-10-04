@@ -10,13 +10,22 @@ var onReady = function() {
   var demoData = [{
     author_name: 'Rave',
     comment_text: 'Super video'
-  },{
-	  
+  }, {
+
     author_name: 'Rave',
     comment_text: 'Super video'
   }];
 
   prvJsvw.fillComments(demoData);
+
+  var movieRecordData = [{
+    movie_title: 'Big rabbit',
+    movie_description: 'eat a cucumber',
+    video_url: '/demo.webm'
+  }];
+
+  prvJsvw.fillMovieRecord(movieRecordData);
+  prvJsvw.fillVideo(movieRecordData);
 };
 
 $(document).ready(onReady);
