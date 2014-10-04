@@ -103,6 +103,14 @@ exports.removeClass = function(elem, className) {
   $(elem).removeClass(className);
 };
 
+exports.showElems = function(elems) {
+  $(elems).show();
+};
+
+exports.hideElems = function(elems) {
+  $(elems).hide();
+};
+
 exports.div = function(optClass) {
   var div = document.createElement('div');
   if (optClass) {

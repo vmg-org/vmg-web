@@ -9,11 +9,11 @@ var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
 //console.log(indexBem);
 
 exports.hideMenuPopup = function() {
-  dhr.addClass('.menu-popup', 'hidden');
+  dhr.hideElems('.menu-popup');
 };
 
 exports.showMenuPopup = function() {
-  dhr.removeClass('.menu-popup', 'hidden');
+  dhr.showElems('.menu-popup');
 };
 
 function replacer(dataItem, match, p1) {
