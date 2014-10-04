@@ -125,7 +125,11 @@ gulp.task('bwf_watch', ['jshint'], function() {
   return runBwf(pth.src + 'watch/run.js', pth.dst + 'js/watch-bundle.js');
 });
 
-gulp.task('bwf', ['bwf_index', 'bwf_watch']);
+gulp.task('bwf_template-editor', ['jshint'], function() {
+  return runBwf(pth.src + 'template-editor/run.js', pth.dst + 'js/template-editor-bundle.js');
+});
+
+gulp.task('bwf', ['bwf_index', 'bwf_watch', 'bwf_template-editor']);
 
 gulp.task('connect', function() {
   startLiveReload();
