@@ -2,45 +2,43 @@
 'use strict';
 
 var vwjs = require('../vmg-helpers/vwjs');
-
+var prvVwjs = require('./vwjs');
 var prvJsvw = require('./jsvw');
 
 var onReady = function() {
   vwjs.run();
 
-  $('.crt-movie-template__inp-name').on('keyup', function() {
-    console.log(this.value);
-    if (this.value.length > 5) {
-      $(this).addClass('crt-movie-template__inp-name_state_warning');
-    } else {
-      $(this).removeClass('crt-movie-template__inp-name_state_warning');
-    }
-  });
-
-
   var tags = [{
+    genre_id: 'nature',
     genre_name: 'Nature',
     genre_color: 'green',
     genre_icon_style: 'color: green'
   }, {
+    genre_id: 'hero',
     genre_name: 'Hero',
     genre_color: 'red',
     genre_icon_style: 'color: red'
   }, {
+    genre_id: 'city',
     genre_name: 'City',
     genre_color: 'gray',
     genre_icon_style: 'color: brown'
   }, {
+    genre_id: 'animal',
     genre_name: 'Animals',
     genre_color: 'yellow',
     genre_icon_style: 'color: yellow'
   }, {
+    genre_id: 'hollywood',
     genre_name: 'Hollywood',
     genre_color: 'purple',
     genre_icon_style: 'color: purple'
   }];
 
   prvJsvw.fillTags(tags);
+
+  // set events for tags after filling tags
+  prvVwjs.run();
 
   var demoTemplate = {
     name: 'Russian life',

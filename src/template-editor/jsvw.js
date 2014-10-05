@@ -11,4 +11,19 @@ exports.fillTags = function(data){
   dhr.impl(bem, key, mdlName, data);
 };
 
+exports.showHeroScope = function(){
+  dhr.showElems('.hero-scope');
+};
+
+exports.hideHeroScope = function(){
+  dhr.hideElems('.hero-scope');
+};
+
+exports.showAnimalScope = function(){
+  dhr.showElems('.animal-scope');
+};
+
+exports.hideAnimalScope = function(){
+  dhr.hideElems('.animal-scope');
+};
 module.exports = exports;
