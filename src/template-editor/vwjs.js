@@ -11,7 +11,7 @@ exports.run = function(app) {
     genre_of_movie: ''
   };
 
-  app.onSelectGenre = function(elem, heroScopeName, animalScopeName) {
+  app.onSelectGenre = function(elem, e, heroScopeName, animalScopeName) {
     console.log('app invoked', elem);
     if (elem.value === 'hero') {
       console.log('hero');
@@ -60,7 +60,7 @@ exports.run = function(app) {
     }
   };
 
-  app.loadGenresOfMovie = function(elem, targetName) {
+  app.loadGenresOfMovie = function(elem, e, targetName) {
 
     var tags = [{
       genre_id: 'nature',

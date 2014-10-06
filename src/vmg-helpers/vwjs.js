@@ -3,7 +3,7 @@
 var dhr = require('../vmg-helpers/dom');
 
 exports.run = function(app) {
-  app.turnPopup = function(elem, popupName) {
+  app.turnPopup = function(elem, e, popupName) {
     var targetElems = dhr.getElems('.' + popupName);
     if (dhr.isElems(targetElems, ':visible')) {
       dhr.hideElems(targetElems, 'fast');
@@ -24,13 +24,11 @@ exports.run = function(app) {
     }
   };
 
-  var googBtnClass = '.auth-no__auth-button_social_goog';
+  app.fireAuth = function(elem) {
+    dhr.alert('hello world from ' + elem.innerHTML);
+  };
 
   // add event during showing element -> if an user is not auth, or after logoff event (one time)
-  dhr.on(googBtnClass, 'click', function() {
-    dhr.alert('hello');
-    console.log(this);
-  });
 };
 
 module.exports = exports;
