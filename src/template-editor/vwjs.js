@@ -1,4 +1,7 @@
-/** @module template-editor/vwjs */
+/** 
+ * @module template-editor/vwjs
+ * @todo #44! If a user wants to change order of episodes
+ */
 'use strict';
 
 //var bem = require('../../bower_components/vmg-bem/bems/template-editor.bemjson');
@@ -8,7 +11,14 @@ var dhr = require('../vmg-helpers/dom');
 
 exports.run = function(app) {
   app.crtScope = {
-    genre_of_movie: ''
+    name_of_movie: '',
+    genre_of_movie: '',
+    episodes: [{
+        name: '',
+        story: '',
+        conditions: ''
+      }]
+      // todo #31! add others
   };
 
   app.onSelectGenre = function(elem, e, heroScopeName, animalScopeName) {
@@ -50,14 +60,48 @@ exports.run = function(app) {
     console.log('template is published', elem);
   };
 
-  app.checkInput = function(elem) {
-    if (elem.value.length > 50 || elem.value.length < 3) {
-      $(elem).addClass('crt-movie-template__inp-name_state_warning');
+  app.checkInputNameOfTemplate = function(elem) {
+    // how to get it?
+    // This data stores on model with other props, like name, story
+    // a radio button list sends a value to the function (it is like id)
+    var maxLength = 50;
+    var minLength = 3;
+    //    var required = true;
+    //    var rgx = /\w+/g;
+    //    var defaultValue = 'Best movie in the world'; // put to default or placeholder
+    if ((elem.value.length > maxLength) || (elem.value.length < minLength)) {
       // todo #44! show popup with limits
     } else {
-      $(elem).removeClass('crt-movie-template__inp-name_state_warning');
       // hide popup
     }
+
+    app.crtScope.name_of_movie = elem.value;
+  };
+
+  app.checkInputNameOfEpisode = function(elem, e, helpElemName) {
+    var maxLength = 30,
+      minLength = 3;
+
+
+    var orderNumber = parseInt(elem.getAttribute('data-bind'));
+    console.log(orderNumber);
+    var helpElems = $('.' + helpElemName);
+    //var helpElem = $('.' + helpElemName + ':eq(1)');
+    console.log('helpElem', helpElems);
+
+    if ((elem.value.length > maxLength) || (elem.value.length < minLength)) {
+      helpElems.show();
+      // change colors - ? no
+      // show ex sign with onhover(onclick) event with hover box with description
+      // todo #44! show popup with limits
+      // show this sign by default
+    } else {
+      helpElems.hide();
+      // hide this sign (icon)
+      // hide popup
+    }
+
+    //    app.crtScope.episodes[orderNumber - 1].name = elem.value;
   };
 
   app.loadGenresOfMovie = function(elem, e, targetName) {
@@ -91,6 +135,26 @@ exports.run = function(app) {
 
     var mdlName = 'movie_template'; // get from data
     dhr.impl(bem, targetName, mdlName, tags);
+  };
+
+  app.loadCrtEpisodes = function(elem, e, targetName) {
+    console.log('load episodes', targetName);
+    var data = [{
+      order: '1',
+      name_order: 'First episode',
+      ph_name: 'Episode name',
+      ph_story: 'Episode story',
+      ph_conds: 'Episode conditions'
+    }, {
+      order: '2',
+      name_order: 'Second episode',
+      ph_name: 'Episode name',
+      ph_story: 'Episode story',
+      ph_conds: 'Episode conditions'
+    }];
+
+    var mdlName = 'crt_episode';
+    dhr.impl(bem, targetName, mdlName, data);
   };
 };
 
