@@ -1,7 +1,8 @@
 /** @module */
 
 var dhr = require('../vmg-helpers/dom');
-var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
+//var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
+var bem = require('../../../vmg-bem/bems/index.bemjson');
 
 //console.log(indexBem);
 
@@ -16,7 +17,7 @@ exports.fillMovieRecords = function(data) {
   var key = 'movie-records';
   var mdlName = 'movie_record'; // get from data
 
-  dhr.impl(indexBem, key, mdlName, data);
+  dhr.impl(bem, key, mdlName, data);
 
   // need to know markup of movie-record
   //  ahr.each(data, fillMovieRecord.bind(null, lists));

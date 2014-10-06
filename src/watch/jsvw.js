@@ -2,7 +2,8 @@
 
 'use strict';
 
-var bem = require('../../bower_components/vmg-bem/bems/watch.bemjson');
+//var bem = require('../../bower_components/vmg-bem/bems/watch.bemjson');
+var bem = require('../../../vmg-bem/bems/watch.bemjson');
 var dhr = require('../vmg-helpers/dom');
 
 exports.fillComments = function(data) {

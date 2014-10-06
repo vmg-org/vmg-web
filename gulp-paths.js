@@ -10,7 +10,10 @@ pth.dst = './dst/';
 
 pth.bowerLibs = './bower_components/';
 
-pth.markup = pth.bowerLibs + 'vmg-bem/dst/';
+//pth.markup = pth.bowerLibs + 'vmg-bem/dst/';
+
+// todo: #41! change paths to bower_component (fot non-local development)
+pth.markup =  '../vmg-bem/dst/';
 
 // dev path contains unminified bundle js (for speed and debug with comments) and unminified css files 
 // and dev urls to other resources

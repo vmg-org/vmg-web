@@ -1,22 +1,9 @@
 /** @module template-editor/vwjs */
 'use strict';
 
-var prvJsvw = require('./jsvw');
+//var prvJsvw = require('./jsvw');
 
 exports.run = function() {
-
-  $('.movie-genres__checker').on('click', function() {
-    if (this.value === 'hero') {
-      console.log('hero');
-      prvJsvw.showHeroScope();
-    } else if (this.value === 'animal') {
-      console.log('animal');
-      prvJsvw.showAnimalScope();
-    } else {
-      prvJsvw.hideHeroScope();
-      prvJsvw.hideAnimalScope();
-    }
-  });
 
   //  var radios = document.getElementsByClassName('movie-genres__checker');
   //
@@ -39,6 +26,7 @@ exports.run = function() {
       // hide popup
     }
   });
+
 };
 
 module.exports = exports;

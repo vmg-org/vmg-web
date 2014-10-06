@@ -1,7 +1,8 @@
 /** @module */
 'use strict';
 
-var bem = require('../../bower_components/vmg-bem/bems/template-editor.bemjson');
+//var bem = require('../../bower_components/vmg-bem/bems/template-editor.bemjson');
+var bem = require('../../../vmg-bem/bems/template-editor.bemjson');
 
 var dhr = require('../vmg-helpers/dom');
 
