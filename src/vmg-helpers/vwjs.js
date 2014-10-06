@@ -1,23 +1,28 @@
 /** @module viewjs-helper */
 
-var jsvw = require('../vmg-helpers/jsvw');
 var dhr = require('../vmg-helpers/dom');
 
-exports.run = function() {
-  dhr.on('.menu-view__close', 'click', jsvw.hideMenuPopup);
-  dhr.on('.menu-call__full-icon', 'click', jsvw.showMenuPopup);
-  dhr.on('.menu-popup', 'click', function(e) {
-    // pip-popup in menu-popup
-    if (e.currentTarget === e.target.parentElement) {
-      jsvw.hideMenuPopup();
+exports.run = function(app) {
+  app.turnPopup = function(elem, popupName) {
+    var targetElems = dhr.getElems('.' + popupName);
+    if (dhr.isElems(targetElems, ':visible')) {
+      dhr.hideElems(targetElems, 'fast');
+    } else {
+      dhr.showElems(targetElems, 'fast');
     }
-  });
+  };
 
-  dhr.on(document, 'keyup', function(e) {
+  app.handlePageKeyUp = function(elem, e, popupName) {
     if (e.keyCode === 27) {
-      jsvw.hideMenuPopup();
+      dhr.hideElems('.' + popupName, 'fast');
     }
-  });
+  };
+
+  app.hidePopupIfOut = function(elem, e, popupName) {
+    if (e.currentTarget === e.target.parentElement) {
+      dhr.hideElems('.' + popupName, 'fast');
+    }
+  };
 
   var googBtnClass = '.auth-no__auth-button_social_goog';
 

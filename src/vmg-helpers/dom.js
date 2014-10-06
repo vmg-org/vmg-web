@@ -101,6 +101,10 @@ exports.on = function(elem, eventName, cbk) {
   $(elem).on(eventName, cbk);
 };
 
+exports.isElems = function(elems, prop) {
+  //jqrTargetElems.is(':visible') 
+  return $(elems).is(prop);
+};
 // elem - className or dom elem
 exports.addClass = function(elem, className) {
   $(elem).addClass(className);
@@ -110,12 +114,12 @@ exports.removeClass = function(elem, className) {
   $(elem).removeClass(className);
 };
 
-exports.showElems = function(elems) {
-  $(elems).show();
+exports.showElems = function(elems, effectName) {
+  $(elems).show(effectName);
 };
 
-exports.hideElems = function(elems) {
-  $(elems).hide();
+exports.hideElems = function(elems, effectName) {
+  $(elems).hide(effectName);
 };
 
 exports.div = function(optClass) {

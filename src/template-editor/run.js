@@ -7,6 +7,9 @@ var prvJsvw = require('./jsvw');
 
 window.app = {};
 
+// fill window.app with global methods for all pages
+vwjs.run(window.app);
+
 window.app.crtScope = {
   genre_of_movie: ''
 };
@@ -60,8 +63,9 @@ window.app.checkInput = function(elem) {
   }
 };
 
+
 var onReady = function() {
-  vwjs.run();
+//  vwjs.run();
 
   var tags = [{
     genre_id: 'nature',
