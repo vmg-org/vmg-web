@@ -12,7 +12,7 @@ exports.run = function(app) {
     }
   };
 
-  app.handlePageKeyUp = function(elem, e, popupName) {
+  app.hidePopupByEscape = function(elem, e, popupName) {
     if (e.keyCode === 27) {
       dhr.hideElems('.' + popupName, 'fast');
     }
