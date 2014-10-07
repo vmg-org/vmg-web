@@ -2,6 +2,8 @@
 
 'use strict';
 
+var moment = require('moment');
+
 var ahr = {};
 
 /**
@@ -81,6 +83,10 @@ ahr.extractJsonMatch = function(obj, reqName, reqValue) {
     // cloned object instead a link
     return $.extend({}, result[0]);
   }
+};
+
+ahr.getTimeStr = function(unixTimeStamp, timeFormat){
+  return moment.unix(unixTimeStamp).format(timeFormat);
 };
 
 module.exports = ahr;

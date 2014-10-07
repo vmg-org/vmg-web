@@ -24,6 +24,7 @@
     "jshint-stylish": "^1.0.0",
     "map-stream": "^0.1.0",
     "mkdirp": "^0.5.0",
+    "moment": "^2.8.3",
     "through2": "*",
     "tiny-lr": "^0.1.4",
     "vmg-dict": "git://github.com/vmg-org/vmg-dict",

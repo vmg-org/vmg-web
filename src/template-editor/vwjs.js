@@ -14,11 +14,18 @@ exports.run = function(app) {
     name_of_movie: '',
     genre_of_movie: '',
     episodes: [{
-        name: '',
-        story: '',
-        conditions: ''
-      }]
-      // todo #31! add others
+      name: '',
+      story: '',
+      conds: ''
+    }, {
+      name: '',
+      story: '',
+      conds: ''
+    }, {
+      name: '',
+      story: '',
+      conds: ''
+    }]
   };
 
   var inpLimit = {
@@ -42,13 +49,14 @@ exports.run = function(app) {
     }
   };
 
+  app.hideElems = function(elem, e, targetName) {
+    dhr.hideElems('.' + targetName);
+  };
+
   app.onSelectGenre = function(elem, e, heroScopeName, animalScopeName) {
-    console.log('app invoked', elem);
     if (elem.value === 'hero') {
-      console.log('hero');
       dhr.showElems('.' + heroScopeName, 'slow');
     } else if (elem.value === 'animal') {
-      console.log('animal');
       dhr.showElems('.' + animalScopeName, 'slow');
     } else {
       dhr.hideElems('.' + animalScopeName);
@@ -58,30 +66,79 @@ exports.run = function(app) {
     app.crtScope.genre_of_movie = elem.value;
   };
 
-  app.publishTemplate = function(elem) {
+  app.createTemplate = function(elem, e, notifName) {
     var scope = app.crtScope;
+
+    var arrErr = [];
     if (!scope.genre_of_movie) {
-      alert('Genre is required');
-      return false;
+      arrErr.push('Genre (type of movie) - required');
     }
 
+    arrErr = arrErr.concat(propErr(inpLimit.name_of_movie, scope.name_of_movie, 'Movie name'));
+
+    scope.episodes.forEach(function(eps, ind) {
+      arrErr = arrErr.concat(propErr(inpLimit.name_of_episode, eps.name, 'Episode ' + (ind + 1) + ' name'));
+      arrErr = arrErr.concat(propErr(inpLimit.story_of_episode, eps.story, 'Episode ' + (ind + 1) + ' story'));
+      arrErr = arrErr.concat(propErr(inpLimit.conds_of_episode, eps.conds, 'Episode ' + (ind + 1) + ' conditions'));
+    });
+
+
+    if (arrErr.length > 0) {
+      $('.' + notifName).html(arrErr.join('<br>')).show();
+      window.scrollTo(0, 0);
+      return false;
+    }
+    // app.crtScope = {
+    //   name_of_movie: '',
+    //   genre_of_movie: '',
+    //   episodes: [{
+    //     name: '',
+    //     story: '',
+    //     conds: ''
+    //   }, {
+    //     name: '',
+    //     story: '',
+    //     conds: ''
+    //   }, {
+    //     name: '',
+    //     story: '',
+    //     conds: ''
+    //   }]
+    // };
 
     // It might be few buttons with this function
     // Store all fields in every button - extra
     //
     // Every input control - saves his value to some specific place in global namespace. app.crtTemplate
-    //
     // this button just check this place!!!!!!!
-    //
-    //todo: #45! think about jsvw system without direct class names
-    //
-    // get name of movie ?
-    // get names of episodes ?
-    // radio button state (genre) ?
-    console.log('template is published', elem);
+    //    console.log('template is published', elem);
+    alert('Created! (demo)');
   };
 
-  app.checkInputNameOfTemplate = function(elem) {
+  var propErr = function(lim, value, propName) {
+    var arrErr = [];
+    if (lim.max_length) {
+      if (value.length > lim.max_length) {
+        arrErr.push(propName + ' - max length: ' + lim.max_length);
+      }
+    }
+
+    if (lim.min_length) {
+      if (value.length < lim.min_length) {
+        arrErr.push(propName + ' - min length: ' + lim.min_length);
+      }
+    }
+
+    if (lim.required) {
+      if (!value) {
+        arrErr.push(propName + ' - required');
+      }
+    }
+
+    return arrErr;
+  };
+
+  app.checkInputNameOfTemplate = function(elem, e, targetName) {
     // how to get it?
     // This data stores on model with other props, like name, story
     // a radio button list sends a value to the function (it is like id)
@@ -90,13 +147,17 @@ exports.run = function(app) {
     //    var required = true;
     //    var rgx = /\w+/g;
     //    var defaultValue = 'Best movie in the world'; // put to default or placeholder
-    if ((elem.value.length > inpLimit.name_of_movie.max_length) || (elem.value.length < inpLimit.name_of_movie.min_length)) {
-      // todo #44! show popup with limits
+    if (propErr(inpLimit.name_of_movie, elem.value).length > 0) {
+      $('.' + targetName).show();
     } else {
-      // hide popup
+      $('.' + targetName).hide();
     }
 
     app.crtScope.name_of_movie = elem.value;
+  };
+
+  app.showTipNameOfTemplate = function(elem, e, targetName) {
+    $('.' + targetName).show().delay(1500).hide('fast');
   };
 
   app.showTipNameOfEpisode = function(elem, e, targetName) {
@@ -104,34 +165,48 @@ exports.run = function(app) {
   };
 
   app.showTipStoryOfEpisode = function(elem, e, targetName) {
-    $('.' + targetName).show().delay(1500).hide('fast');
+    $('.' + targetName + ':eq(' + (parseInt(elem.getAttribute('data-bind')) - 1) + ')').show().delay(1500).hide('fast');
   };
 
   app.showTipCondsOfEpisode = function(elem, e, targetName) {
-    $('.' + targetName).show().delay(1500).hide('fast');
+    $('.' + targetName + ':eq(' + (parseInt(elem.getAttribute('data-bind')) - 1) + ')').show().delay(1500).hide('fast');
   };
 
   app.checkInputNameOfEpisode = function(elem, e, helpElemName) {
-
     var orderNumber = parseInt(elem.getAttribute('data-bind'));
-    console.log(orderNumber);
     var helpElems = $('.' + helpElemName + ':eq(' + (orderNumber - 1) + ')');
-    //var helpElem = $('.' + helpElemName + ':eq(1)');
-    //    console.log('helpElem', helpElems);
 
     if ((elem.value.length > inpLimit.name_of_episode.max_length) || (elem.value.length < inpLimit.name_of_episode.min_length)) {
       helpElems.show();
-      // change colors - ? no
-      // show ex sign with onhover(onclick) event with hover box with description
-      // todo #44! show popup with limits
-      // show this sign by default
     } else {
       helpElems.hide();
-      // hide this sign (icon)
-      // hide popup
     }
 
-    //    app.crtScope.episodes[orderNumber - 1].name = elem.value;
+    app.crtScope.episodes[orderNumber - 1].name = elem.value;
+  };
+
+  app.checkInputStoryOfEpisode = function(elem, e, helpElemName) {
+    var orderNumber = parseInt(elem.getAttribute('data-bind'));
+    var helpElems = $('.' + helpElemName + ':eq(' + (orderNumber - 1) + ')');
+    if ((elem.value.length > inpLimit.story_of_episode.max_length) || (elem.value.length < inpLimit.story_of_episode.min_length)) {
+      helpElems.show();
+    } else {
+      helpElems.hide();
+    }
+
+    app.crtScope.episodes[orderNumber - 1].story = elem.value;
+  };
+
+  app.checkInputCondsOfEpisode = function(elem, e, helpElemName) {
+    var orderNumber = parseInt(elem.getAttribute('data-bind'));
+    var helpElems = $('.' + helpElemName + ':eq(' + (orderNumber - 1) + ')');
+    if ((elem.value.length > inpLimit.conds_of_episode.max_length)) {
+      helpElems.show();
+    } else {
+      helpElems.hide();
+    }
+
+    app.crtScope.episodes[orderNumber - 1].conds = elem.value;
   };
 
   app.loadGenresOfMovie = function(elem, e, targetName) {
@@ -187,8 +262,7 @@ exports.run = function(app) {
   };
 
   app.loadCrtEpisodes = function(elem, e, targetName) {
-    console.log('load episodes', targetName);
-
+    // for these items all props can be different
     var data = [{
       order: '1',
       name_order: 'First episode',
@@ -201,6 +275,15 @@ exports.run = function(app) {
     }, {
       order: '2',
       name_order: 'Second episode',
+      ph_name: 'Episode name',
+      ph_story: 'Episode story',
+      ph_conds: 'Episode conditions',
+      tooltip_name: constructTip('name_of_episode'),
+      tooltip_story: constructTip('story_of_episode'),
+      tooltip_conds: constructTip('conds_of_episode')
+    }, {
+      order: '3',
+      name_order: 'Third episode',
       ph_name: 'Episode name',
       ph_story: 'Episode story',
       ph_conds: 'Episode conditions',
