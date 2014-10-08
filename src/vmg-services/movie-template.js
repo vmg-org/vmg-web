@@ -59,7 +59,7 @@ exports.getMovieTemplateWithEpisodes = function(idOfMovieTemplate, next) {
   data.duration_of_episodes_str = data.duration_of_episodes + ' seconds';
   data.created_str = ahr.getTimeStr(data.created, 'lll');
   data.finished_str = ahr.getTimeStr(data.finished, 'lll');
-
+  data.genre_tag.style = 'color: ' + data.genre_tag.color;
   //  ahr.each(data.episode_templates, function(item) {
   //    item.name_order = 'Episode ' + item.order_in_movie;
   //  });
