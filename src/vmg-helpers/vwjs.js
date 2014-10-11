@@ -27,13 +27,6 @@ exports.run = function(app, bem) {
     }
   };
 
-  app.renderAuth = function(authNoBlockName) {
-    // show it: an user can start auth with window.gapi
-    dhr.showElems('.' + authNoBlockName);
-    console.log('renderAuth');
-    console.log(window.gapi);
-  };
-
   var handleUserSession = function(authNoBlockName, authProfileBlockName, err, r) {
     if (err) {
       alert(err.message);
@@ -53,6 +46,27 @@ exports.run = function(app, bem) {
     dhr.showElems('.' + authProfileBlockName);
   };
 
+  window.googAsyncInit = function() {
+    console.log('goog is loaded');
+    var body = window.document.body;
+    var googBtnName = body.getAttribute('data-goog-btn');
+    dhr.showElems('.' + googBtnName);
+  };
+
+  window.fbAsyncInit = function() {
+    window.FB.init({
+      appId: config.FB_CLIENT_ID,
+      cookie: false, // enable cookies to allow the server to access 
+      // the session
+      xfbml: true, // parse social plugins on this page
+      version: 'v2.1' // use version 2.1
+    });
+
+    dhr.showElems('.' + window.document.body.getAttribute('data-fb-btn'));
+    // other events
+    console.log('fb is loaded');
+  };
+
   app.fireAuth = function() {
     var body = window.document.body;
 
@@ -62,15 +76,10 @@ exports.run = function(app, bem) {
 
     var sid = shr.getItem(config.AUTH_STORAGE_KEY);
     if (!sid) {
-      var po = document.createElement('script');
-      po.type = 'text/javascript';
-      po.async = true;
-      //  po.src = 'https://plus.google.com/js/client:plusone.js';
-      po.onload = app.renderAuth.bind(null, authNoBlockName);
-      //    script src="https://apis.google.com/js/client:platform.js" async defer></script>
-      po.src = "https://apis.google.com/js/client:plusone.js";
-      var s = document.getElementsByTagName('script')[0];
-      s.parentNode.insertBefore(po, s);
+      // load Goog lib
+      dhr.loadGoogLib('googAsyncInit');
+      dhr.loadFbLib(); // fbAsyncInit by default    
+      dhr.showElems('.' + authNoBlockName);
     } else {
       console.log('we have sid', sid);
       userSessionService.getUserSession(sid, handleUserSession.bind(null, authNoBlockName, authProfileBlockName));
@@ -114,8 +123,60 @@ exports.run = function(app, bem) {
     }
   };
 
+  // When Google lib is already loaded - run SingIn method
+  var googSignIn = function(authNoBlockName, authProfileBlockName) {
+
+    if (!window.gapi || !window.gapi.auth) {
+      alert('Auth provider error. Try later (few seconds)');
+      return;
+    }
+
+    //    console.log('gapi', window.gapi);
+    console.log('gapiauth', window.gapi.auth);
+
+    window.gapi.auth.signIn({
+      clientid: config.GOOG_CLIENT_ID,
+      scope: 'profile',
+      cookiepolicy: 'none',
+      callback: handleGoogSignIn.bind(null, authNoBlockName, authProfileBlockName)
+    });
+  };
+
+  var handleFbLoginStatus = function(authNoBlockName, authProfileBlockName, response) {
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+      console.log(response.authResponse);
+      var authResult = response.authResponse;
+      userSessionService.postUserSession('fb', authResult.accessToken,
+        handleUserSession.bind(null, authNoBlockName, authProfileBlockName));
+    } else {
+      console.log(response);
+      alert(response.status);
+    }
+    //    } else if (response.status === 'not_authorized') {
+    //      // The person is logged into Facebook, but not your app.
+    //      document.getElementById('status').innerHTML = '';
+    //      //	    'Please log ' +     'into this app.';
+    //    } else {
+    //      // The person is not logged into Facebook, so we're not sure if
+    //      // they are logged into this app or not.
+    //      document.getElementById('status').innerHTML = '';
+    //      //'Please log ' + 'into Facebook.';
+    //    }
+  };
+
+  var fbSignIn = function(authNoBlockName, authProfileBlockName) {
+    console.log('signin');
+    window.FB.getLoginStatus(handleFbLoginStatus.bind(null, authNoBlockName, authProfileBlockName));
+  };
+
   //  https://developers.google.com/+/web/signin/javascript-flow
   app.startAuth = function(elem) {
+    // todo: #42! disable it for prevent double-click events
     var authType = elem.getAttribute('data-bind');
     var body = window.document.body;
     var authNoBlockName = body.getAttribute('data-auth-no');
@@ -123,12 +184,9 @@ exports.run = function(app, bem) {
     console.log(authType);
 
     if (authType === 'goog') {
-      window.gapi.auth.signIn({
-        clientid: '885478038448-is0ieelv96rlokn5dmn6ltt9v8hfap5n.apps.googleusercontent.com',
-        scope: 'profile',
-        cookiepolicy: 'none',
-        callback: handleGoogSignIn.bind(null, authNoBlockName, authProfileBlockName)
-      });
+      googSignIn(authNoBlockName, authProfileBlockName);
+    } else if (authType === 'fb') {
+      fbSignIn(authNoBlockName, authProfileBlockName);
     }
   };
 

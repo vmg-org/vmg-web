@@ -134,4 +134,39 @@ exports.html = function(elem, htmlStr) {
   $(elem).html(htmlStr);
 };
 
+/**
+ * Load Google lib for SignIn and other methods
+ */
+exports.loadGoogLib = function(fname) {
+  var po = document.createElement('script');
+  po.type = 'text/javascript';
+  po.async = true;
+  po.defer = true;
+
+  // onload doesn't work right after. gapi.auth and gapi.client is undefined
+  //  po.src = 'https://plus.google.com/js/client:plusone.js';
+  //  po.onload = next;
+  //    script src="https://apis.google.com/js/client:platform.js" async defer></script>
+  // po.src = "https://apis.google.com/js/client:plusone.js";
+  po.src = "https://apis.google.com/js/client:platform.js?onload=" + fname;
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(po, s);
+};
+
+/**
+ * Load FB with default callback: window.fbAsyncInit
+ */
+exports.loadFbLib = function() {
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {
+      return;
+    }
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+};
+
 module.exports = exports;
