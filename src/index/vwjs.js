@@ -1,12 +1,10 @@
 /** @module index/vwjs */
 'use strict';
 
-//var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
-var bem = require('../../../vmg-bem/bems/index.bemjson');
 
 var dhr = require('../vmg-helpers/dom');
 
-exports.run = function(app) {
+exports.run = function(app, bem) {
   app.fillMovieRecords = function(elem, e, targetName) {
 
     var data = [{

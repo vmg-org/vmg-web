@@ -6,12 +6,17 @@
 // Build API from vmgSpec?
 //console.log(vmgSpec);
 
+//var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
+var bem = require('../../../vmg-bem/bems/index.bemjson');
+
 var commonVwjs = require('../vmg-helpers/vwjs.js');
 var vwjs = require('./vwjs');
+
+
 window.app = {};
 
-commonVwjs.run(window.app);
-vwjs.run(window.app);
+commonVwjs.run(window.app, bem);
+vwjs.run(window.app, bem);
 // when project is already loaded
 // load a mainObj
 // exclude secured data
