@@ -3,7 +3,9 @@
 
 var rqst = require('../vmg-helpers/rqst');
 
-var apiUrl = 'http://localhost:3000/api/';
+var config = require('../vmg-helpers/config');
+
+var apiUrl = config.API_ENDPOINT;
 
 exports.postUserSession = function(id_of_auth_issuer, social_token, next) {
   var opts = {
