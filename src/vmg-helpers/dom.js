@@ -101,6 +101,10 @@ exports.on = function(elem, eventName, cbk) {
   $(elem).on(eventName, cbk);
 };
 
+exports.trigger = function(elems, eventName) {
+  $(elems).trigger(eventName);
+};
+
 exports.isElems = function(elems, prop) {
   //jqrTargetElems.is(':visible') 
   return $(elems).is(prop);

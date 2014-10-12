@@ -23,6 +23,9 @@ var gitLog = require('git-log');
 var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 
+// add new pages only here
+var pages = ['index', 'upload', 'watch', 'template', 'template-editor'];
+
 var jshintNotify = function(file) {
   if (file.jshint.success) {
     return false;
@@ -117,22 +120,15 @@ gulp.task('jshint', function() {
     .pipe(notify(jshintNotify));
 });
 
-gulp.task('bwf_index', ['jshint'], function() {
-  return runBwf(pth.src + 'index/run.js', pth.dst + 'js/index-bundle.js');
+pages.forEach(function(pge) {
+  gulp.task('bwf_' + pge, ['jshint'], function() {
+    return runBwf(pth.src + pge + '/run.js', pth.dst + 'js/' + pge + '-bundle.js');
+  });
 });
 
-gulp.task('bwf_watch', ['jshint'], function() {
-  return runBwf(pth.src + 'watch/run.js', pth.dst + 'js/watch-bundle.js');
-});
-
-gulp.task('bwf_template', ['jshint'], function() {
-  return runBwf(pth.src + 'template/run.js', pth.dst + 'js/template-bundle.js');
-});
-gulp.task('bwf_template-editor', ['jshint'], function() {
-  return runBwf(pth.src + 'template-editor/run.js', pth.dst + 'js/template-editor-bundle.js');
-});
-
-gulp.task('bwf', ['bwf_index', 'bwf_watch', 'bwf_template', 'bwf_template-editor']);
+gulp.task('bwf', pages.map(function(pge) {
+  return 'bwf_' + pge;
+}));
 
 gulp.task('connect', function() {
   startLiveReload();
