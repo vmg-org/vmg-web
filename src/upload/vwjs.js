@@ -17,21 +17,24 @@ var showFile = function(file, uplVideoContent, uplPlayer, uplSelector) {
   dhr.hideElems('.' + uplSelector);
 
   var s3upload = new s3h.S3Upload({
-    s3_sign_put_url: config.API_ENDPOINT + 'storage',
+    s3_sign_put_url: config.API_ENDPOINT + 'w2002',
     onProgress: function(percent, message) {
       console.log('Upload progress: ' + percent + '% ' + message);
     },
     onFinishS3Put: function(public_url) {
       console.log('Successfully uploaded to <a href="' + public_url + '">' + public_url + '</a>');
+      var videoElem = dhr.getElem('.' + uplVideoContent);
+      videoElem.src = public_url;
+      dhr.showElems('.' + uplPlayer);
     },
     onError: function(status) {
-      console.log(status);
+      alert('error: ' + status);
+      //      console.log(status);
     }
   });
 
   s3upload.run([file]);
 
-  //  var videoElem = dhr.getElem('.' + uplVideoContent);
   //  var asdf = window.URL.createObjectURL(file);
   //
   //  videoElem.addEventListener('loadeddata', function() {
