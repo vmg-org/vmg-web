@@ -1,10 +1,21 @@
 /** @module upload/vwjs */
 'use strict';
-
+var demoSid = 'qwer';
 var dhr = require('../vmg-helpers/dom');
 var config = require('../vmg-helpers/config');
 // helper to work with AWS S3
 var s3h = require('../vmg-helpers/s3h');
+
+var handleFinishUpload = function(uplVideoContent, uplPlayer, bidMedia) {
+  var publicUrl = bidMedia.media_spec_item.media_file_arr[0].url;
+  console.log('Successfully uploaded to <a href="' + publicUrl + '">' + publicUrl + '</a>');
+  var videoElem = dhr.getElem('.' + uplVideoContent);
+  videoElem.src = publicUrl;
+  dhr.showElems('.' + uplPlayer);
+
+  // add mp4 (standad) and webm (2) to media_file_arr and send back as PUT request
+  // server send a job to ET to convert initial file
+};
 
 /**
  * Check limits and start upload
@@ -17,23 +28,44 @@ var showFile = function(file, uplVideoContent, uplPlayer, uplSelector) {
   dhr.hideElems('.' + uplSelector);
 
   var s3upload = new s3h.S3Upload({
-    s3_sign_put_url: config.API_ENDPOINT + 'w2002',
+    s3_sign_put_url: config.API_ENDPOINT + 'w2002?sid=' + demoSid,
     onProgress: function(percent, message) {
       console.log('Upload progress: ' + percent + '% ' + message);
     },
-    onFinishS3Put: function(public_url) {
-      console.log('Successfully uploaded to <a href="' + public_url + '">' + public_url + '</a>');
-      var videoElem = dhr.getElem('.' + uplVideoContent);
-      videoElem.src = public_url;
-      dhr.showElems('.' + uplPlayer);
-    },
+    onFinishS3Put: handleFinishUpload.bind(null, uplVideoContent, uplPlayer),
     onError: function(status) {
       alert('error: ' + status);
-      //      console.log(status);
     }
   });
 
-  s3upload.run([file]);
+  var bidMedia = {
+    "id_of_episode_bid": 5555,
+    "id_of_media_spec": null,
+    "moder_rating": 0, // 0 - not checked yet
+    "media_spec_item": {
+      "id": null,
+      "name": null, // from episode name or empty
+      "created": null, //autogen
+      "preview_img_url": null, // later
+      "is_ready": false,
+      "media_file_arr": [{
+        "id": null,
+        "id_of_media_spec": null,
+        "id_of_container_format": file.type, // required
+        "url": null,
+        "url_to_upload": null,
+        "size": null,
+        "duration": null,
+        "progress_creation": null,
+        "progress_cutting": null,
+        "cutting_start": null,
+        "cutting_stop": null,
+        "is_original": true // required
+      }]
+    }
+  };
+
+  s3upload.run([file], bidMedia);
 
   //  var asdf = window.URL.createObjectURL(file);
   //
@@ -99,3 +131,30 @@ exports.run = function(app) {
 };
 
 module.exports = exports;
+// var bidMedia = {
+//   "id_of_episode_bid": 5555,
+//   "id_of_media_spec": null,
+//   //    "id_of_user_profile": 123456789, // get from auth (demo) // attach to media
+//   "moder_rating": 0, // 0 - not checked yet
+//   "media_spec_item": {
+//     "id": null,
+//     "name": null, // from episode name or empty
+//     "created": null, //autogen
+//     "preview_img_url": null, // later
+//     "is_ready": false,
+//     "media_file_arr": [{
+//       "id": null,
+//       "id_of_media_spec": null,
+//       "id_of_container_format": file.type, // required
+//       "url": null,
+//       "url_to_upload": null,
+//       "size": null,
+//       "duration": null,
+//       "progress_creation": null,
+//       "progress_cutting": null,
+//       "cutting_start": null,
+//       "cutting_stop": null,
+//       "is_original": true // required
+//     }]
+//   }
+// };

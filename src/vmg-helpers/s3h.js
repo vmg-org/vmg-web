@@ -11,19 +11,6 @@ var S3Upload = function(options) {
   for (var option in options) {
     this[option] = options[option];
   }
-
-  //this.handleFileSelect(document.getElementById(this.file_dom_selector));
-};
-
-
-//S3Upload.prototype.s3_object_name = 'default_name';
-
-//S3Upload.prototype.s3_sign_put_url = '/signS3put';
-
-//S3Upload.prototype.file_dom_selector = 'file_upload';
-
-S3Upload.prototype.onFinishS3Put = function(public_url) {
-  return console.log('base.onFinishS3Put()', public_url);
 };
 
 S3Upload.prototype.onProgress = function(percent, status) {
@@ -34,28 +21,15 @@ S3Upload.prototype.onError = function(status) {
   return console.log('base.onError()', status);
 };
 
-S3Upload.prototype.run = function(files) {
+S3Upload.prototype.run = function(files, bidMedia) {
   this.onProgress(0, 'Upload started.');
   var _results = [];
 
   for (var _i = 0, _len = files.length; _i < _len; _i++) {
-    _results.push(this.uploadFile(files[_i]));
+    _results.push(this.uploadFile(files[_i], bidMedia));
   }
   return _results;
 };
-
-//S3Upload.prototype.handleFileSelect = function(file_element) {
-//  var f, files, output, _i, _len, _results;
-//  this.onProgress(0, 'Upload started.');
-//  files = file_element.files;
-//  output = [];
-//  _results = [];
-//  for (_i = 0, _len = files.length; _i < _len; _i++) {
-//    f = files[_i];
-//    _results.push(this.uploadFile(f));
-//  }
-//  return _results;
-//};
 
 S3Upload.prototype.createCORSRequest = function(method, url) {
   var xhr;
@@ -71,51 +45,10 @@ S3Upload.prototype.createCORSRequest = function(method, url) {
   return xhr;
 };
 
-S3Upload.prototype.executeOnSignedUrl = function(file, callback) {
+S3Upload.prototype.executeOnSignedUrl = function(file, bidMedia, callback) {
   var opts = {};
-
-  var episodeVariant = {
-    "id_of_episode_template": 4444,
-    "id_of_media_spec": null,
-    "id_of_user_profile": 123456789, // get from auth (demo)
-    "created": null, // auto-gen
-    "is_ready": null, // auto-gen to false
-    "moder_rating": 0, // 0 - not checked yet
-    "media_spec_item": {
-      "id": null,
-      "name": null, // from episode name or empty
-      "created": null, //autogen
-      "preview_img_url": null, // later
-      "media_file_arr": [{
-        "id": null,
-        "id_of_media_spec": null,
-        "id_of_container_format": file.type, // required
-        "url": null,
-        "url_to_upload": null,
-        "size": null,
-        "duration": null,
-        "progress_creation": null,
-        "progress_cutting": null,
-        "cutting_start": null,
-        "cutting_stop": null,
-        "is_original": true // required
-      }]
-    }
-  };
-
-  opts.data = JSON.stringify(episodeVariant);
-
-  rqst.send('POST', this.s3_sign_put_url, opts, function(err, result) {
-    if (err) {
-      console.log(err);
-      return;
-    }
-
-    var mediaFile = result.media_spec_item.media_file_arr[0];
-    console.log('myresult', result);
-
-    return callback(decodeURIComponent(mediaFile.url_to_upload), mediaFile.url);
-  });
+  opts.data = JSON.stringify(bidMedia);
+  rqst.send('POST', this.s3_sign_put_url, opts, callback);
 
 
   //  var this_s3upload, xhr;
@@ -144,7 +77,7 @@ S3Upload.prototype.executeOnSignedUrl = function(file, callback) {
   //  return xhr.send();
 };
 
-S3Upload.prototype.uploadToS3 = function(file, url, public_url) {
+S3Upload.prototype.uploadToS3 = function(file, url, public_url, bidMedia) {
   //  var fd = new FormData();
   //  var ths = this;
   //  fd.append('body', file);
@@ -187,7 +120,7 @@ S3Upload.prototype.uploadToS3 = function(file, url, public_url) {
     xhr.onload = function() {
       if (xhr.status === 200) {
         this_s3upload.onProgress(100, 'Upload completed.');
-        return this_s3upload.onFinishS3Put(public_url);
+        return this_s3upload.onFinishS3Put(bidMedia);
       } else {
         return this_s3upload.onError('Upload error: ' + xhr.status);
       }
@@ -195,40 +128,35 @@ S3Upload.prototype.uploadToS3 = function(file, url, public_url) {
     xhr.onerror = function() {
       return this_s3upload.onError('XHR error.');
     };
-//    xhr.upload.onprogress = function(e) {
-//      var percentLoaded;
-//      if (e.lengthComputable) {
-//        percentLoaded = Math.round((e.loaded / e.total) * 100);
-//        return this_s3upload.onProgress(percentLoaded, percentLoaded === 100 ? 'Finalizing.' : 'Uploading.');
-//      }
-//    };
+    //    xhr.upload.onprogress = function(e) {
+    //      var percentLoaded;
+    //      if (e.lengthComputable) {
+    //        percentLoaded = Math.round((e.loaded / e.total) * 100);
+    //        return this_s3upload.onProgress(percentLoaded, percentLoaded === 100 ? 'Finalizing.' : 'Uploading.');
+    //      }
+    //    };
   }
   xhr.setRequestHeader('Content-Type', file.type);
   xhr.setRequestHeader('x-amz-acl', 'public-read');
   return xhr.send(file);
 };
 
-S3Upload.prototype.uploadFile = function(file) {
-  var this_s3upload;
-  this_s3upload = this;
-  return this.executeOnSignedUrl(file, function(signedURL, publicURL) {
-    return this_s3upload.uploadToS3(file, signedURL, publicURL);
-  });
+S3Upload.prototype.handleSignedUrl = function(file, err, result) {
+  if (err) {
+    return this.onError(err.responseText);
+  }
+
+  var mediaFile = result.media_spec_item.media_file_arr[0];
+  console.log('myresult', result);
+
+  var signedURL = decodeURIComponent(mediaFile.url_to_upload);
+  var publicURL = mediaFile.url;
+  return this.uploadToS3(file, signedURL, publicURL, result); 
 };
 
-
-//(function() {
-//  window.S3Upload = (function() {
-//
-//    function S3Upload(options) {
-//    }
-//
-//
-//    return S3Upload;
-//
-//  })();
-//
-//}).call(this);
+S3Upload.prototype.uploadFile = function(file, bidMedia) {
+  return this.executeOnSignedUrl(file, bidMedia, this.handleSignedUrl.bind(this, file));
+};
 
 exports.S3Upload = S3Upload;
 

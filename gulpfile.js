@@ -1,6 +1,7 @@
 /** 
  * Gulp tasks
  * @todo #42! add a most popular jquery dns link instead local (on production)
+ * @todo #44! add tap for dragging files on mobile devices
  */
 
 var gulp = require('gulp');
