@@ -13,6 +13,28 @@ var handleFinishUpload = function(uplVideoContent, uplPlayer, jobSource) {
   videoElem.src = publicUrl;
   dhr.showElems('.' + uplPlayer);
 
+  // check jobSource status 
+  // if file_source_item exists (and media_file_item) that success
+  // else 'not uploaded' (retry it)
+  // Server get info from cloud, insert source_file and media file
+  // and return it
+
+  // var jobOutput = {
+  // id_of_media_spec: jobSource.id_of_media_spec,
+  // id: null
+  // };
+
+  //  POST jobOutput
+  // Server check auth by id_of_media_spec
+  // Server retrieves file_source with media_file with url - This url - INPUT
+  // Add standard OUTPUTS (now mp4 only)
+  // Start the job
+  // Return jobOutput with status 'Started' or simply without file_outputs
+  //
+  // GET jobOutput (some interval)
+  // when success job_output: {
+  //  file_output_arr: [{asdf}]
+
   // add mp4 (standad) and webm (2) to media_file_arr and send back as PUT request
   // server send a job to ET to convert initial file
   //
