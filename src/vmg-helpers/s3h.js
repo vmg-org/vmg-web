@@ -21,15 +21,6 @@ S3Upload.prototype.onError = function(status) {
   return console.log('base.onError()', status);
 };
 
-S3Upload.prototype.run = function(files, bidMedia) {
-  this.onProgress(0, 'Upload started.');
-  var _results = [];
-
-  for (var _i = 0, _len = files.length; _i < _len; _i++) {
-    _results.push(this.uploadFile(files[_i], bidMedia));
-  }
-  return _results;
-};
 
 S3Upload.prototype.createCORSRequest = function(method, url) {
   var xhr;
@@ -45,11 +36,10 @@ S3Upload.prototype.createCORSRequest = function(method, url) {
   return xhr;
 };
 
-S3Upload.prototype.executeOnSignedUrl = function(file, bidMedia, callback) {
+S3Upload.prototype.executeOnSignedUrl = function(file, jobSource, callback) {
   var opts = {};
-  opts.data = JSON.stringify(bidMedia);
+  opts.data = JSON.stringify(jobSource);
   rqst.send('POST', this.s3_sign_put_url, opts, callback);
-
 
   //  var this_s3upload, xhr;
   //  this_s3upload = this;
@@ -77,7 +67,7 @@ S3Upload.prototype.executeOnSignedUrl = function(file, bidMedia, callback) {
   //  return xhr.send();
 };
 
-S3Upload.prototype.uploadToS3 = function(file, url, public_url, bidMedia) {
+S3Upload.prototype.uploadToS3 = function(file, url, public_url, jobSource) {
   //  var fd = new FormData();
   //  var ths = this;
   //  fd.append('body', file);
@@ -120,7 +110,7 @@ S3Upload.prototype.uploadToS3 = function(file, url, public_url, bidMedia) {
     xhr.onload = function() {
       if (xhr.status === 200) {
         this_s3upload.onProgress(100, 'Upload completed.');
-        return this_s3upload.onFinishS3Put(bidMedia);
+        return this_s3upload.onFinishS3Put(jobSource);
       } else {
         return this_s3upload.onError('Upload error: ' + xhr.status);
       }
@@ -146,16 +136,25 @@ S3Upload.prototype.handleSignedUrl = function(file, err, result) {
     return this.onError(err.responseText);
   }
 
-  var mediaFile = result.media_spec_item.media_file_arr[0];
   console.log('myresult', result);
 
-  var signedURL = decodeURIComponent(mediaFile.url_to_upload);
-  var publicURL = mediaFile.url;
-  return this.uploadToS3(file, signedURL, publicURL, result); 
+  var signedURL = decodeURIComponent(result.url_to_upload);
+  var publicURL = result.url_to_read;
+  return this.uploadToS3(file, signedURL, publicURL, result);
 };
 
-S3Upload.prototype.uploadFile = function(file, bidMedia) {
-  return this.executeOnSignedUrl(file, bidMedia, this.handleSignedUrl.bind(this, file));
+S3Upload.prototype.uploadFile = function(file, jobSource) {
+  return this.executeOnSignedUrl(file, jobSource, this.handleSignedUrl.bind(this, file));
+};
+
+S3Upload.prototype.run = function(files, jobSource) {
+  this.onProgress(0, 'Upload started.');
+  var _results = [];
+
+  for (var _i = 0, _len = files.length; _i < _len; _i++) {
+    _results.push(this.uploadFile(files[_i], jobSource));
+  }
+  return _results;
 };
 
 exports.S3Upload = S3Upload;

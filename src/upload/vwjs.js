@@ -6,8 +6,8 @@ var config = require('../vmg-helpers/config');
 // helper to work with AWS S3
 var s3h = require('../vmg-helpers/s3h');
 
-var handleFinishUpload = function(uplVideoContent, uplPlayer, bidMedia) {
-  var publicUrl = bidMedia.media_spec_item.media_file_arr[0].url;
+var handleFinishUpload = function(uplVideoContent, uplPlayer, jobSource) {
+  var publicUrl = jobSource.url_to_read;
   console.log('Successfully uploaded to <a href="' + publicUrl + '">' + publicUrl + '</a>');
   var videoElem = dhr.getElem('.' + uplVideoContent);
   videoElem.src = publicUrl;
@@ -15,6 +15,11 @@ var handleFinishUpload = function(uplVideoContent, uplPlayer, bidMedia) {
 
   // add mp4 (standad) and webm (2) to media_file_arr and send back as PUT request
   // server send a job to ET to convert initial file
+  //
+  // store jobs in db?
+  // attach job to media_spec
+  //
+  // To create output files, we need generate ids for them - create empty media_files during bid_media creation
 };
 
 /**
@@ -28,7 +33,7 @@ var showFile = function(file, uplVideoContent, uplPlayer, uplSelector) {
   dhr.hideElems('.' + uplSelector);
 
   var s3upload = new s3h.S3Upload({
-    s3_sign_put_url: config.API_ENDPOINT + 'w2002?sid=' + demoSid,
+    s3_sign_put_url: config.API_ENDPOINT + 'w2003?sid=' + demoSid,
     onProgress: function(percent, message) {
       console.log('Upload progress: ' + percent + '% ' + message);
     },
@@ -38,34 +43,86 @@ var showFile = function(file, uplVideoContent, uplPlayer, uplSelector) {
     }
   });
 
-  var bidMedia = {
-    "id_of_episode_bid": 5555,
-    "id_of_media_spec": null,
-    "moder_rating": 0, // 0 - not checked yet
-    "media_spec_item": {
-      "id": null,
-      "name": null, // from episode name or empty
-      "created": null, //autogen
-      "preview_img_url": null, // later
-      "is_ready": false,
-      "media_file_arr": [{
-        "id": null,
-        "id_of_media_spec": null,
-        "id_of_container_format": file.type, // required
-        "url": null,
-        "url_to_upload": null,
-        "size": null,
-        "duration": null,
-        "progress_creation": null,
-        "progress_cutting": null,
-        "cutting_start": null,
-        "cutting_stop": null,
-        "is_original": true // required
-      }]
-    }
+  var jobSource = {
+    id_of_media_spec: 987668264,
+    id_of_container_format: file.type,
+    url_to_upload: null,
+    url_to_read: null
   };
 
-  s3upload.run([file], bidMedia);
+  s3upload.run([file], jobSource);
+
+  // Create a bid media, media_spec, media_owner
+  //  var bidMedia = {
+  //    "id_of_episode_bid": 5555,
+  //    "id_of_media_spec": null,
+  //    "moder_rating": 0, // 0 - not checked yet
+  //    "media_spec_item": {
+  //      "id": null,
+  //      "name": null, // from episode name or empty
+  //      "created": null, //autogen
+  //      "preview_img_url": null, // later
+  //      "is_ready": false
+  //        //      "job_source_item": { // as a second request - If some error - during upload - recreate only job_source_item
+  //        //        "id_of_container_format": file.type
+  //        //          // some null data
+  //        //      }
+  //    }
+  //  };
+
+  // POST job_source_item
+  // {
+  //  id_of_media_spec: 1234,
+  //  id_of_container_format: file.type
+  // }
+  //
+  // RETURN 
+  //   url_to_upload
+  //   status: 'Started'
+
+  // Client sends PUT : upl_to_upload
+  // RETURN: err or success
+  //
+  // GET: job_source?id=id
+  // Server checks a file in a cloud, get media info, add file_source and media_file (media_streams etc)
+  // Use job_id from ET as file name
+  // For output: job_id + preset_id
+  // If no: return status = false
+  // If true: return job_source + file_source + media_file
+
+  //  var bidMedia = {
+  //    "id_of_episode_bid": 5555,
+  //    "id_of_media_spec": null,
+  //    "moder_rating": 0, // 0 - not checked yet
+  //    "media_spec_item": {
+  //      "id": null,
+  //      "name": null, // from episode name or empty
+  //      "created": null, //autogen
+  //      "preview_img_url": null, // later
+  //      "is_ready": false,
+  //      "media_file_arr": [{
+  //        "id": null,
+  //        "id_of_media_spec": null,
+  //        "id_of_container_format": file.type, // required
+  //        "url": null,
+  //        "url_to_upload": null,
+  //        "size": null,
+  //        "duration": null,
+  //        "progress_creation": null,
+  //        "progress_cutting": null,
+  //        "cutting_start": null,
+  //        "cutting_stop": null,
+  //        "is_original": true // required
+  //      }, {
+  //        id_of_container_format: 'video/mp4',
+  //        is_original: false
+  //      }, {
+  //        id_of_container_format: 'video/webm',
+  //        is_original: false
+  //      }]
+  //    }
+  //  };
+
 
   //  var asdf = window.URL.createObjectURL(file);
   //
