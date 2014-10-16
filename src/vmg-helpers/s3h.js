@@ -4,13 +4,18 @@
  */
 
 var rqst = require('./rqst');
-
 var S3Upload = function(options) {
   options = options || {};
 
   for (var option in options) {
     this[option] = options[option];
   }
+
+  // Date, when created this object to retry during 1 min only
+  //  this.created = new Date();
+  var curDate = new Date().getTime(); // ms
+
+  this.retryEndTime = new Date(curDate + 20000); // add 20 sec
 };
 
 S3Upload.prototype.onProgress = function(percent, status) {
@@ -23,11 +28,13 @@ S3Upload.prototype.onError = function(status) {
 
 
 S3Upload.prototype.createCORSRequest = function(method, url) {
-  var xhr;
-  xhr = new XMLHttpRequest();
+  var xhr = new XMLHttpRequest();
+
   if (xhr.withCredentials != null) {
+    console.log('xml http request');
     xhr.open(method, url, true);
   } else if (typeof XDomainRequest !== "undefined") {
+    console.log('x domain request');
     xhr = new XDomainRequest();
     xhr.open(method, url);
   } else {
@@ -67,7 +74,42 @@ S3Upload.prototype.executeOnSignedUrl = function(file, jobSource, callback) {
   //  return xhr.send();
 };
 
-S3Upload.prototype.uploadToS3 = function(file, url, public_url, jobSource) {
+S3Upload.prototype.handleSuccessOfUploading = function(xhr, jobSource) {
+  if (xhr.status === 200) {
+    this.onProgress(100, 'Upload completed.');
+    return this.onFinishS3Put(jobSource);
+  } else {
+    return this.onError('Upload error: ' + xhr.status);
+  }
+};
+
+S3Upload.prototype.handleErrorOfUploading = function(file, url, publicUrl, jobSource, e) {
+  // second arg - undefined
+  //	e - XMLHttpRequestProgressEvent
+  //	e.currentTarget - XMLHttpRequest
+  //	e.target, e.srcElement
+  //	e.total = 0
+  //	e.totalSize = 0
+  //	e.type = 'error'
+  //	e.timeStamp = 1413413044900
+  //	e.position = 0
+  //	e.loaded = 0
+  //	xhr.readyState = 4
+  //
+  if (e.target.status === 0) { // not 403 or other
+    if (new Date() < this.retryEndTime) {
+      console.log('retry');
+      //    retry again
+      this.uploadToS3(file, url, publicUrl, jobSource);
+      return;
+    }
+  }
+
+  console.log('handleErrorOfUploading', e);
+  return this.onError('XHR error.');
+};
+
+S3Upload.prototype.uploadToS3 = function(file, url, publicUrl, jobSource) {
   //  var fd = new FormData();
   //  var ths = this;
   //  fd.append('body', file);
@@ -101,33 +143,29 @@ S3Upload.prototype.uploadToS3 = function(file, url, public_url, jobSource) {
   //    return ths.onFinishS3Put(public_url);
   //  });
 
-  var this_s3upload, xhr;
-  this_s3upload = this;
-  xhr = this.createCORSRequest('PUT', url);
+  var xhr = this.createCORSRequest('PUT', url);
+
   if (!xhr) {
-    this.onError('CORS not supported');
-  } else {
-    xhr.onload = function() {
-      if (xhr.status === 200) {
-        this_s3upload.onProgress(100, 'Upload completed.');
-        return this_s3upload.onFinishS3Put(jobSource);
-      } else {
-        return this_s3upload.onError('Upload error: ' + xhr.status);
-      }
-    };
-    xhr.onerror = function() {
-      return this_s3upload.onError('XHR error.');
-    };
-    //    xhr.upload.onprogress = function(e) {
-    //      var percentLoaded;
-    //      if (e.lengthComputable) {
-    //        percentLoaded = Math.round((e.loaded / e.total) * 100);
-    //        return this_s3upload.onProgress(percentLoaded, percentLoaded === 100 ? 'Finalizing.' : 'Uploading.');
-    //      }
-    //    };
+    return this.onError('CORS not supported');
   }
+
+  xhr.onload = this.handleSuccessOfUploading.bind(this, xhr, jobSource);
+
+  xhr.onerror = this.handleErrorOfUploading.bind(this, file, url, publicUrl, jobSource);
+  //    xhr.upload.onprogress = function(e) {
+  //      var percentLoaded;
+  //      if (e.lengthComputable) {
+  //        percentLoaded = Math.round((e.loaded / e.total) * 100);
+  //        return this_s3upload.onProgress(percentLoaded, percentLoaded === 100 ? 'Finalizing.' : 'Uploading.');
+  //      }
+  //    };
+
   xhr.setRequestHeader('Content-Type', file.type);
+  //  xhr.setRequestHeader('Content-Length', file.size); // unsafe header
   xhr.setRequestHeader('x-amz-acl', 'public-read');
+  // return xhr.sendAsBinary(file); - mozilla only
+  // var formData = new FormData();
+  // formData.append(file.name, file);
   return xhr.send(file);
 };
 

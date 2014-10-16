@@ -1,6 +1,8 @@
 /** @module */
 'use strict';
 var demoSid = 'qwer';
+var demoIdOfMediaSpec = parseInt(window.location.hash.substr(1));
+
 var dhr = require('../vmg-helpers/dom');
 var config = require('../vmg-helpers/config');
 var s3h = require('../vmg-helpers/s3h');
@@ -64,14 +66,16 @@ exports.run = function(file, uplVideoContent, uplPlayer, uplSelector) {
       console.log('Upload progress: ' + percent + '% ' + message);
     },
     onFinishS3Put: handleFinishUpload.bind(null, uplVideoContent, uplPlayer),
-    onError: function(stat, errObj) {
-      console.log(stat, errObj);
+    onError: function(stat) {
+
+      // second param - undefined
+      //      console.log(stat, errObj);
       alert('error: ' + stat);
     }
   });
 
   var jobSource = {
-    id_of_media_spec: 850182217,
+    id_of_media_spec: demoIdOfMediaSpec, // TODO: #43! change in production
     id_of_container_format: file.type,
     url_to_upload: null,
     url_to_read: null
