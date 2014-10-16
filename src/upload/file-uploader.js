@@ -1,22 +1,26 @@
 /** @module */
 'use strict';
 var demoSid = 'qwer';
-var demoIdOfMediaSpec = parseInt(window.location.hash.substr(1));
 
 var dhr = require('../vmg-helpers/dom');
 var config = require('../vmg-helpers/config');
 var s3h = require('../vmg-helpers/s3h');
 var jobSourceChecker = require('./job-source-checker');
 
-var handleFinishUpload = function(uplVideoContent, uplPlayer, jobSource) {
-  var publicUrl = jobSource.url_to_read;
-
-  jobSourceChecker.run(jobSource);
-
-  console.log('Successfully uploaded to <a href="' + publicUrl + '">' + publicUrl + '</a>');
+var handleJob = function(uplVideoContent, uplPlayer, err, mediaFile) {
+  if (err) {
+    console.log('error', err);
+    return alert(err.message);
+  }
   var videoElem = dhr.getElem('.' + uplVideoContent);
-  videoElem.src = publicUrl;
+  videoElem.src = mediaFile.url;
   dhr.showElems('.' + uplPlayer);
+};
+
+var handleFinishUpload = function(uplVideoContent, uplPlayer, jobSource) {
+  jobSourceChecker.run(jobSource, handleJob.bind(null, uplVideoContent, uplPlayer));
+  var publicUrl = jobSource.url_to_read;
+  console.log('Successfully uploaded to <a href="' + publicUrl + '">' + publicUrl + '</a>');
 
   // GET: job_source?id=id
   // Server checks a file in a cloud, get media info, add file_source and media_file (media_streams etc)
@@ -74,6 +78,7 @@ exports.run = function(file, uplVideoContent, uplPlayer, uplSelector) {
     }
   });
 
+  var demoIdOfMediaSpec = parseInt(window.location.hash.substr(1));
   var jobSource = {
     id_of_media_spec: demoIdOfMediaSpec, // TODO: #43! change in production
     id_of_container_format: file.type,

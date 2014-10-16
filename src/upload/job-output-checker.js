@@ -4,19 +4,31 @@ var demoSid = 'qwer';
 var rqst = require('../vmg-helpers/rqst');
 var config = require('../vmg-helpers/config');
 
-var handleJobOutput = function(err, jobOutput) {
+var handleJobOutput = function(next, err, jobOutput) {
   if (err) {
-    return alert(err.message);
+    return next(err);
   }
 
-  console.log('jobOutput', jobOutput);
+  if (jobOutput.id_of_job_status === 'Error') {
+    return next(new Error('a job to create ouput files is failed'));
+  }
+
+  if (jobOutput.id_of_job_status === 'Complete') {
+    console.log('jobOutputReady', jobOutput);
+    return next(null, jobOutput.file_output_arr[0].media_file_item);
+  }
+
+  // retry again
+  setTimeout(exports.run.bind(null, jobOutput, next), 1500);
 };
 
-exports.run = function(jobOutput) {
+exports.run = function(jobOutput, next) {
   // set interval later
   //
   var url = config.API_ENDPOINT + 'r1006?id_of_media_spec=' + jobOutput.id_of_media_spec + '&sid=' + demoSid;
-  rqst.send('GET', url, {}, handleJobOutput);
+  rqst.send('GET', url, {
+    cache: false
+  }, handleJobOutput.bind(null, next));
 };
 
 module.exports = exports;

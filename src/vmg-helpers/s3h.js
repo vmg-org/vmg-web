@@ -110,6 +110,7 @@ S3Upload.prototype.handleErrorOfUploading = function(file, url, publicUrl, jobSo
 };
 
 S3Upload.prototype.uploadToS3 = function(file, url, publicUrl, jobSource) {
+  console.log('uploadToS3', file);
   //  var fd = new FormData();
   //  var ths = this;
   //  fd.append('body', file);

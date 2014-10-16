@@ -2,6 +2,7 @@
 'use strict';
 var fileUploader = require('./file-uploader');
 var dhr = require('../vmg-helpers/dom');
+var demoBid = require('./demo-bid');
 
 // bem - second
 exports.run = function(app) {
@@ -48,6 +49,9 @@ exports.run = function(app) {
     e.preventDefault();
     //    console.log(elem, e);
   };
+
+  // add test episode-bid
+  demoBid.run();
 };
 
 module.exports = exports;
