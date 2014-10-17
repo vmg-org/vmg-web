@@ -7,18 +7,30 @@ var config = require('../vmg-helpers/config');
 var s3h = require('../vmg-helpers/s3h');
 var jobSourceChecker = require('./job-source-checker');
 
-var handleJob = function(uplVideoContent, uplPlayer, err, mediaFile) {
+var handleJob = function(uplPlayer, err, mediaFile) {
   if (err) {
     console.log('error', err);
     return alert(err.message);
   }
-  var videoElem = dhr.getElem('.' + uplVideoContent);
-  videoElem.src = mediaFile.url;
-  dhr.showElems('.' + uplPlayer);
+  var videoElem = document.createElement('video');
+  var videoSource = document.createElement('source');
+  videoSource.src = mediaFile.url;
+  videoSource.type = 'video/mp4';
+  $(videoElem).addClass('video-js vjs-default-skin');
+  videoElem.appendChild(videoSource);
+  $('.' + uplPlayer).html(videoElem).show();
+  // Player builds using videojs and inserted a link
+  window.videojs(videoElem, {
+    width: '100%',
+    height: '100%',
+    controls: true
+  }, function() {
+    console.log('player is loaded');
+  });
 };
 
-var handleFinishUpload = function(uplVideoContent, uplPlayer, jobSource) {
-  jobSourceChecker.run(jobSource, handleJob.bind(null, uplVideoContent, uplPlayer));
+var handleFinishUpload = function(uplPlayer, jobSource) {
+  jobSourceChecker.run(jobSource, handleJob.bind(null, uplPlayer));
   var publicUrl = jobSource.url_to_read;
   console.log('Successfully uploaded to <a href="' + publicUrl + '">' + publicUrl + '</a>');
 
@@ -61,7 +73,7 @@ var handleFinishUpload = function(uplVideoContent, uplPlayer, jobSource) {
 /**
  * Check limits and start upload
  */
-exports.run = function(file, uplVideoContent, uplPlayer, uplSelector) {
+exports.run = function(file, uplPlayer, uplSelector) {
   dhr.hideElems('.' + uplSelector);
 
   var s3upload = new s3h.S3Upload({
@@ -69,7 +81,7 @@ exports.run = function(file, uplVideoContent, uplPlayer, uplSelector) {
     onProgress: function(percent, message) {
       console.log('Upload progress: ' + percent + '% ' + message);
     },
-    onFinishS3Put: handleFinishUpload.bind(null, uplVideoContent, uplPlayer),
+    onFinishS3Put: handleFinishUpload.bind(null, uplPlayer),
     onError: function(stat) {
 
       // second param - undefined
