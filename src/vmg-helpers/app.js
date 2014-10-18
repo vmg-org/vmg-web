@@ -16,6 +16,10 @@ ahr.each = function(arr, cbk) {
   }
 };
 
+ahr.toInt = function(val) {
+  return parseInt(val);
+};
+
 ahr.map = function(arr, cbk) {
   return arr.map(cbk);
 };
@@ -85,8 +89,15 @@ ahr.extractJsonMatch = function(obj, reqName, reqValue) {
   }
 };
 
-ahr.getTimeStr = function(unixTimeStamp, timeFormat){
+ahr.getTimeStr = function(unixTimeStamp, timeFormat) {
   return moment.unix(unixTimeStamp).format(timeFormat);
+};
+
+ahr.getQueryParam = function(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+  return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 };
 
 module.exports = ahr;

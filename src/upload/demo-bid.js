@@ -8,6 +8,10 @@ var handlePost = function(err, episodeBid) {
   if (err) {
     return alert(err);
   }
+
+  // Show info about episode bid: name of movie, name of episode
+  // Upload all info as one request (cached)
+
   console.log('episodeBid', episodeBid);
   window.location.hash = episodeBid.media_spec_item.id;
 };

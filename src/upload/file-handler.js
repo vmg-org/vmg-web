@@ -7,7 +7,7 @@
  */
 'use strict';
 
-var credUpload = require('./cred-upload');
+var jobSourceService = require('../vmg-services/job-source');
 
 var handleProgress = function(evt) {
   var pr = parseInt((evt.loaded / evt.total) * 100);
@@ -59,10 +59,13 @@ exports.handleFileSelector = function(next, evt) {
   console.log(needFile);
   console.log('evt', evt);
   var demoIdOfMediaSpec = parseInt(window.location.hash.substr(1));
-  credUpload.run({
+
+  var jobSourceItem = {
     id_of_media_spec: demoIdOfMediaSpec, //from hash
     id_of_container_format: needFile.type
-  }, cbkCredUpload.bind(null, files, next));
+  };
+
+  jobSourceService.postItem(jobSourceItem, cbkCredUpload.bind(null, files, next));
 };
 
 module.exports = exports;

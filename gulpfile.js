@@ -2,6 +2,10 @@
  * Gulp tasks
  * @todo #42! add a most popular jquery dns link instead local (on production)
  * @todo #44! add tap for dragging files on mobile devices
+ * @todo: #33! Cutting may be used later, if user have a cut error
+ *        Besides cutting, may be addtnal filters: processing instead cutting or enhance (like in Yt)
+ *        After uploading: start an output job and redirect to Enhance page (while the job is in process - An user download a page)
+ *        If an error of cutting - re-create the job (or re-upload the file)
  */
 
 var gulp = require('gulp');
@@ -25,7 +29,7 @@ var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 
 // add new pages only here
-var pages = ['index', 'upload', 'watch', 'template', 'template-editor'];
+var pages = ['index', 'upload', 'watch', 'template', 'template-editor', 'enhance'];
 
 var jshintNotify = function(file) {
   if (file.jshint.success) {

@@ -1,4 +1,7 @@
-/** @module upload/vwjs */
+/**
+ * @module upload/vwjs
+ * @todo: #42! check accept-types in file-input, to check only video/*
+ */
 'use strict';
 
 var dhr = require('../vmg-helpers/dom');
@@ -6,35 +9,65 @@ var demoBid = require('./demo-bid');
 var fileHandler = require('./file-handler');
 var jobSourceChecker = require('./job-source-checker');
 
-var handleJob = function(uplPlayer, err, mediaFile) {
-  console.log('handleJob');
+// https://github.com/videojs/video.js/blob/stable/docs/guides/api.md
+//var handleVideoReady = function() {
+//  var myPlayer = this;
+//
+//  console.log(myPlayer);
+//  // myPlayer.currentTime(120);
+//  /// myPlayer.play();
+//
+//  //The video must have started loading before the duration can be known, and in the case of Flash, may not be known until the video starts playing.
+//  // seconds
+//  //
+//  // loadstart
+//  //
+//  myPlayer.onLoadStart(function() {
+//    console.log(myPlayer.duration());
+//  });
+//};
+
+/**
+ * Handle output job
+ * @param {Object} jobOutput - A job is created (for conversion a source file to outputs)
+ */
+var handleJob = function(uplPlayer, err, jobOutput) {
   if (err) {
     console.log('error', err);
     return alert(err.message);
   }
-  var videoElem = document.createElement('video');
-  var videoSource = document.createElement('source');
-  videoSource.src = mediaFile.url;
-  videoSource.type = 'video/mp4';
-  $(videoElem).addClass('video-js vjs-default-skin');
-  videoElem.appendChild(videoSource);
-  $('.' + uplPlayer).html(videoElem);
-  // Player builds using videojs and inserted a link
-  window.videojs(videoElem, {
-    width: '100%',
-    height: '100%',
-    controls: true
-  }, function() {
-    console.log('player is loaded');
-  });
+
+  console.log('handleJob', jobOutput);
+  window.location.replace('./enhance.html?v=' + jobOutput.id_of_media_spec);
+  // redirect to enhance
+
+  //  var videoElem = document.createElement('video');
+  //  var videoSource = document.createElement('source');
+  //  videoSource.src = mediaFile.url;
+  //  videoSource.type = 'video/mp4';
+  //  $(videoElem).addClass('video-js vjs-default-skin');
+  //  videoElem.appendChild(videoSource);
+  //  $('.' + uplPlayer).html(videoElem);
+  //  // Player builds using videojs and inserted a link
+  //  window.videojs(videoElem, {
+  //    width: '100%',
+  //    height: '100%',
+  //    controls: true,
+  //    preload: true
+  //  }, handleVideoReady);
 };
 
 var handleResultOfUpload = function(jobSource, err, xhr) {
   console.log('resultofupload', jobSource, err, xhr);
+  if (err) {
+    window.alert(err.message);
+    // TODO: #34! handle this error: update a page for user, try again with remove previous job_source
+    return;
+  }
 
   // TODO: #32! From markup
   var uplPlayer = 'upl-player';
-  $('.' + uplPlayer).html('Conversion started...');
+  $('.' + uplPlayer).html('Verification of an uploaded file...');
   jobSourceChecker.run(jobSource, handleJob.bind(null, uplPlayer));
 };
 
@@ -44,7 +77,11 @@ exports.run = function(app) {
     console.log('fire', fileSelectorName);
     // todo: #43! disable from double click
     var fileSelectorElem = dhr.getElem('.' + fileSelectorName);
-    window.FileAPI.event.on(fileSelectorElem, 'change', fileHandler.handleFileSelector.bind(null, handleResultOfUpload));
+
+    var handleOnChange = fileHandler.handleFileSelector.bind(null, handleResultOfUpload);
+    //    TODO: #31! change in production
+    //var handler
+    window.FileAPI.event.on(fileSelectorElem, 'change', handleOnChange);
     // attach event and fired
 
     dhr.trigger('.' + fileSelectorName, 'click');

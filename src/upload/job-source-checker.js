@@ -1,30 +1,28 @@
 /** @module */
 'use strict';
 
-var demoSid = 'qwer';
-var rqst = require('../vmg-helpers/rqst');
-var config = require('../vmg-helpers/config');
-var jobOutputChecker = require('./job-output-checker');
+var jobOutputService = require('../vmg-services/job-output');
+var jobSourceService = require('../vmg-services/job-source');
 
+// A job for conversion is created
 var handleJobOutput = function(next, err, jobOutput) {
   if (err) {
     return next(err);
   }
 
-  jobOutputChecker.run(jobOutput, next);
-
-  console.log('jobOutput', jobOutput);
+  // conversion started (it is about 10 second for 2MB
+  // go to /enhance page to show and enhance a converted video
+  //next(null, jobOutput);
+  // check in other page
+  next(null, jobOutput);
 };
 
 var createJobOutput = function(jobSource, next) {
   var jobOutput = {
     id_of_media_spec: jobSource.id_of_media_spec
   };
-  var opts = {
-    data: JSON.stringify(jobOutput)
-  };
-  rqst.send('POST', config.API_ENDPOINT + 'w2004?sid=' + demoSid, opts,
-    handleJobOutput.bind(null, next));
+
+  jobOutputService.postItem(jobOutput, handleJobOutput.bind(null, next));
 };
 
 var handleJobSource = function(next, err, jobSource) {
@@ -33,21 +31,19 @@ var handleJobSource = function(next, err, jobSource) {
   }
 
   console.log(jobSource);
-
+  // File_source created automatically if a file is uploaded successfuly
   if (!jobSource.file_source_item) {
     return next(new Error('source file is not uploaded yet'));
   }
 
-  // create a job_output
+  // create a job_output for conversion
   createJobOutput(jobSource, next);
 };
 
+// When the upload is done, client send a request to GET (update) a job_source
+//     whether the file uploaded successfuly
 exports.run = function(jobSource, next) {
-  var url = config.API_ENDPOINT + 'r1005?id_of_media_spec=' + jobSource.id_of_media_spec + '&sid=' + demoSid;
-  // TODO: #43! err from rqst - as Error instead res.err
-  rqst.send('GET', url, {
-    cache: false
-  }, handleJobSource.bind(null, next));
+  jobSourceService.getItem(jobSource.id_of_media_spec, handleJobSource.bind(null, next));
 };
 
 module.exports = exports;
