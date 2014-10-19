@@ -23,24 +23,25 @@ var handleJob = function(elemLoader, err, jobOutput) {
   window.location.replace('./enhance.html?v=' + jobOutput.id_of_media_spec);
 };
 
-var handleResultOfUpload = function(elemLoader, err, jobSource) {
+var handleResultOfUpload = function(elemLoader, elemNotif, err, jobSource) {
   if (err) {
-    window.alert(err.message);
-    // TODO: #34! handle this error: update a page for user, try again with remove previous job_source
+    dhr.html(elemNotif, err.message);
+    // TODO: #34! handle this error: update a page for user, try again with remove previous job_source in some cases?
     return;
   }
 
-  $(elemLoader).html('verification of an uploaded file...');
+  dhr.html(elemLoader, 'verification of an uploaded file...');
   jobSourceChecker.run(jobSource, handleJob.bind(null, elemLoader));
 };
 
 // bem - second
 exports.run = function(app) {
   // Event to select of dnd files
-  app.initUpload = function(elem, e, uplSelector, uplSelectorInput, uplLoader) {
+  app.initUpload = function(elem, e, uplSelector, uplSelectorInput, uplLoader, uplNotif) {
     var elemSelector = dhr.getElem('.' + uplSelector);
     var elemSelectorInput = dhr.getElem('.' + uplSelectorInput);
     var elemLoader = dhr.getElem('.' + uplLoader);
+    var elemNotif = dhr.getElem('.' + uplNotif);
 
     window.FileAPI.event.on(elemSelectorInput, 'change', function(evt) {
       var files = window.FileAPI.getFiles(evt); // Retrieve file list
@@ -54,7 +55,7 @@ exports.run = function(app) {
     }, function(files) {
       dhr.hideElems(elemSelector);
       dhr.showElems(elemLoader);
-      fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemLoader));
+      fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemLoader, elemNotif));
     });
   };
 

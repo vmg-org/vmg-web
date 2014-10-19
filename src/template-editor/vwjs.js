@@ -49,9 +49,6 @@ exports.run = function(app) {
     }
   };
 
-  app.hideElems = function(elem, e, targetName) {
-    dhr.hideElems('.' + targetName);
-  };
 
   app.onSelectGenre = function(elem, e, heroScopeName, animalScopeName) {
     if (elem.value === 'hero') {

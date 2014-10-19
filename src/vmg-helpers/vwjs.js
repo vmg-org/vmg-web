@@ -6,6 +6,10 @@ var shr = require('../vmg-helpers/shr');
 var config = require('../vmg-helpers/config');
 
 exports.run = function(app, bem) {
+  app.hideElems = function(elem, e, targetName) {
+    dhr.hideElems('.' + targetName);
+  };
+
   app.turnPopup = function(elem, e, popupName) {
     var targetElems = dhr.getElems('.' + popupName);
     if (dhr.isElems(targetElems, ':visible')) {
