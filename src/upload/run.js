@@ -1,5 +1,7 @@
 /**
  * Init
+ * @todo: #33! Add notification with upload limits: duration > 15, 30 second, < 1 min
+ * @todo: #43! Touch events for mobile devices for drag and drop feature
  */
 //var indexBem = require('../../bower_components/vmg-bem/bems/upload.bemjson');
 var bem = require('../../../vmg-bem/bems/upload.bemjson');
