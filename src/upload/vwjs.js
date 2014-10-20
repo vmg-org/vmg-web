@@ -23,9 +23,13 @@ var handleJob = function(elemLoader, err, jobOutput) {
   window.location.replace('./enhance.html?v=' + jobOutput.id_of_media_spec);
 };
 
-var handleResultOfUpload = function(elemLoader, elemNotif, err, jobSource) {
+var handleResultOfUpload = function(elemSelector, elemLoader, elemNotif, err, jobSource) {
   if (err) {
     dhr.html(elemNotif, err.message);
+    dhr.showElems(elemNotif);
+    // show again to choose another file
+    dhr.hideElems(elemLoader);
+    dhr.showElems(elemSelector);
     // TODO: #34! handle this error: update a page for user, try again with remove previous job_source in some cases?
     return;
   }
@@ -47,7 +51,7 @@ exports.run = function(app) {
       var files = window.FileAPI.getFiles(evt); // Retrieve file list
       dhr.hideElems(elemSelector);
       dhr.showElems(elemLoader);
-      fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemLoader));
+      fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
     });
 
     window.FileAPI.event.dnd(elemSelector, function(over) {
@@ -55,7 +59,7 @@ exports.run = function(app) {
     }, function(files) {
       dhr.hideElems(elemSelector);
       dhr.showElems(elemLoader);
-      fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemLoader, elemNotif));
+      fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
     });
   };
 

@@ -17,7 +17,9 @@ var handleGetJobOutput = function(next, err, jobOutput) {
 
   if (jobOutput.id_of_job_status === 'Error') {
     // TODO: #34! handle job output if error (re-create try)
-    return next(new Error('a job to create ouput files is failed'));
+    //    var statusDetail = jobOutput.status_detail;
+
+    return next(new Error('A conversion job is failed. Retry with other file.'));
   }
 
   if (jobOutput.id_of_job_status === 'Complete') {
