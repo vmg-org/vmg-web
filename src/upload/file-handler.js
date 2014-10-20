@@ -8,7 +8,7 @@
 'use strict';
 
 var jobSourceService = require('../vmg-services/job-source');
-var config = require('../vmg-helpers/config');
+var config = require('../config');
 
 var handleProgress = function(elemLoader, evt) {
   var pr = parseInt((evt.loaded / evt.total) * 100);

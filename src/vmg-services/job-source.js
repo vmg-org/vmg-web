@@ -3,7 +3,7 @@
 
 var demoSid = 'qwer'; // retrieve from cookie everytime
 var rqst = require('../vmg-helpers/rqst');
-var config = require('../vmg-helpers/config');
+var config = require('../config');
 var apiUrl = config.API_ENDPOINT;
 
 exports.getItem = function(id_of_media_spec, next) {

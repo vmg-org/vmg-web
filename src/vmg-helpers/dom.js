@@ -138,6 +138,10 @@ exports.html = function(elem, htmlStr) {
   $(elem).html(htmlStr);
 };
 
+exports.getVal = function(elem) {
+  return $(elem).val();
+};
+
 /**
  * Load Google lib for SignIn and other methods
  */

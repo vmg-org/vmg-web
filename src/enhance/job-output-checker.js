@@ -24,12 +24,11 @@ var handleGetJobOutput = function(next, err, jobOutput) {
 
   if (jobOutput.id_of_job_status === 'Complete') {
     console.log('jobOutputReady', jobOutput);
-    return next(null, jobOutput.media_spec_item.file_output_arr[0].media_file_item);
+    return next(null, jobOutput);
   }
 
   // retry again
   setTimeout(exports.run.bind(null, jobOutput.id_of_media_spec, next), 1500);
-  console.log('retry', jobOutput);
 };
 
 exports.run = function(idOfMediaSpec, next) {

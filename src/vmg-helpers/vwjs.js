@@ -3,7 +3,7 @@
 var dhr = require('../vmg-helpers/dom');
 var userSessionService = require('../vmg-services/user-session');
 var shr = require('../vmg-helpers/shr');
-var config = require('../vmg-helpers/config');
+var config = require('../config');
 
 exports.run = function(app, bem) {
   app.hideElems = function(elem, e, targetName) {

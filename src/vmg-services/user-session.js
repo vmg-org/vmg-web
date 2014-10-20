@@ -3,7 +3,7 @@
 
 var rqst = require('../vmg-helpers/rqst');
 
-var config = require('../vmg-helpers/config');
+var config = require('../config');
 
 var apiUrl = config.API_ENDPOINT;
 
