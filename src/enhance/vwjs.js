@@ -6,13 +6,29 @@
 var jobOutputChecker = require('./job-output-checker');
 var jobCutService = require('../vmg-services/job-cut');
 var dhr = require('../vmg-helpers/dom');
+var episodeBidService = require('../vmg-services/episode-bid');
 
-var handlePostJobCut = function(esc, err, jobCut) {
+var Wsp = function(esc, idOfMediaSpec) {
+  this.esc = esc;
+  this.idOfMediaSpec = idOfMediaSpec;
+  // set after CheckJobOutput
+  this.jobOutput = null;
+
+  // set after video elem initialization
+  this.vdo = null;
+
+  // handlePostJobCut
+  this.jobCut = null;
+};
+
+Wsp.prototype.handlePostJobCut = function(err, jobCut) {
   if (err) {
-    dhr.html(esc.notif, err.message);
-    dhr.showElems(esc.notif);
+    dhr.html(this.esc.notif, err.message);
+    dhr.showElems(this.esc.notif);
     return;
   }
+
+  this.jobCut = jobCut;
 
   // after posting - retry with progress bar
   console.log(err, jobCut);
@@ -21,9 +37,9 @@ var handlePostJobCut = function(esc, err, jobCut) {
 // allow this event only full video download
 // TODO: #43! Or append this event dinamically after vide downloading
 // TODO: #43! Add values for start and stop points dynamically
-var cutVideo = function(esc, jobOutput) {
-  var cuttingStart = dhr.getVal(esc.inpStart);
-  var cuttingStop = dhr.getVal(esc.inpStop);
+Wsp.prototype.cutVideo = function() {
+  var cuttingStart = dhr.getVal(this.esc.inpStart);
+  var cuttingStop = dhr.getVal(this.esc.inpStop);
 
   var errValid = [];
 
@@ -34,15 +50,23 @@ var cutVideo = function(esc, jobOutput) {
     errValid.push('Please input a time value (in milliseconds) for a stop point');
   }
 
+  // in ms
+  var vdoDuration = this.vdo.duration() * 1000;
+
+  if (cuttingStop > vdoDuration || cuttingStart > vdoDuration) {
+    errValid.push('Please input a correct value between 0 and ' + vdoDuration + ' (in milliseconds)');
+  }
+
+  // TODO: #33! Check duration from episode 
+
   if (errValid.length > 0) {
-    dhr.html(esc.notif, errValid.join('<br>'));
-    dhr.showElems(esc.notif);
+    dhr.html(this.esc.notif, errValid.join('<br>'));
+    dhr.showElems(this.esc.notif);
     return;
   }
 
-  // TODO: #33! Check duration limits
   var jobCut = {
-    id_of_media_spec: jobOutput.id_of_media_spec,
+    id_of_media_spec: this.jobOutput.id_of_media_spec,
     cutting_start: cuttingStart,
     cuttion_stop: cuttingStop
   };
@@ -50,33 +74,35 @@ var cutVideo = function(esc, jobOutput) {
   //    var elemCuttingStart = dhr.getElem('.' + clsNotif);
   //    var elemNotif = dhr.getElem('.' + clsNotif);
   // send it to the server
-  jobCutService.postItem(jobCut, handlePostJobCut.bind(null, esc));
+  jobCutService.postItem(jobCut, this.handlePostJobCut.bind(this));
 };
 
-var handleMetaReady = function(esc, jobOutput) {
-  dhr.on(esc.fncCut, 'click', cutVideo.bind(null, esc, jobOutput));
+Wsp.prototype.handleMetaReady = function() {
+  dhr.on(this.esc.fncCut, 'click', this.cutVideo.bind(this));
 
   // elemCutFnc onclick
-  dhr.showElems(esc.slider);
+  dhr.showElems(this.esc.slider);
 };
 
 // no arguments, only this
-var handleVideoReady = function(vdo, esc, jobOutput) {
-  console.log('video ready', vdo);
-  vdo.on('loadedmetadata', handleMetaReady.bind(null, esc, jobOutput));
+Wsp.prototype.handleVideoReady = function(vdo) {
+  this.vdo = vdo;
+  //  console.log('video ready', vdo);
+  this.vdo.on('loadedmetadata', this.handleMetaReady.bind(this));
 };
 
-var showPlayer = function(esc, jobOutput) {
-  var mediaFile = jobOutput.media_spec_item.file_output_arr[0].media_file_item;
-  dhr.showElems(esc.player);
+Wsp.prototype.showPlayer = function() {
+  var mediaFile = this.jobOutput.media_spec_item.file_output_arr[0].media_file_item;
+  dhr.showElems(this.esc.player);
   var videoElem = document.createElement('video');
   var videoSource = document.createElement('source');
   videoSource.src = mediaFile.url;
   videoSource.type = mediaFile.id_of_container_format;
   $(videoElem).addClass('video-js vjs-default-skin');
   videoElem.appendChild(videoSource);
-  dhr.html(esc.player, videoElem);
+  dhr.html(this.esc.player, videoElem);
   // Player builds using videojs and inserted a link
+  var ths = this;
   window.videojs(videoElem, {
     width: '100%',
     height: '100%',
@@ -84,7 +110,7 @@ var showPlayer = function(esc, jobOutput) {
     preload: true
   }, function() {
     // this = video elem created by video js
-    handleVideoReady(this, esc, jobOutput);
+    ths.handleVideoReady(this);
   });
 };
 
@@ -92,27 +118,41 @@ var showPlayer = function(esc, jobOutput) {
  * Handle converted media file
  *     from job_output
  */
-var handleJobOutput = function(esc, err, jobOutput) {
+Wsp.prototype.handleJobOutput = function(err, jobOutput) {
   if (err) {
     // TODO: #33! show notif about error - job recreate here??
-    dhr.html(esc.notif, err.message);
-    dhr.showElems(esc.notif);
-    dhr.hideElems(esc.loader);
-    dhr.hideElems(esc.player);
+    dhr.html(this.esc.notif, err.message);
+    dhr.showElems(this.esc.notif);
+    dhr.hideElems(this.esc.loader);
+    dhr.hideElems(this.esc.player);
     return;
   }
 
-  dhr.hideElems(esc.loader);
-  showPlayer(esc, jobOutput);
+  this.jobOutput = jobOutput;
+
+  dhr.hideElems(this.esc.loader);
+  this.showPlayer();
   //  console.log('mediaFile', mediaFile);
 };
 
+Wsp.prototype.handleBidInfo = function(err, episodeBid) {
+  if (err) {
+    dhr.html(this.esc.notif, err.message);
+    dhr.showElems(this.esc.notif);
+    return;
+  }
+  console.log('episode bid', episodeBid);
+
+  jobOutputChecker.run(this.idOfMediaSpec, this.handleJobOutput.bind(this));
+};
+
+Wsp.prototype.getBidInfo = function() {
+  episodeBidService.getItemWithEpisodeAndMovie(this.idOfMediaSpec, this.handleBidInfo.bind(this));
+};
 
 exports.run = function(app, bem, idOfMediaSpec) {
-  console.log('idOfMediaSpec', idOfMediaSpec);
-
-  app.checkConversion = function(elem, e, clsLoader, clsPlayer, clsSlider, clsFncCut, clsInpStart, clsInpStop, clsNotif) {
-    var elemScope = {
+  app.initData = function(elem, e, clsLoader, clsPlayer, clsSlider, clsFncCut, clsInpStart, clsInpStop, clsNotif) {
+    var esc = {
       notif: dhr.getElem('.' + clsNotif),
       loader: dhr.getElem('.' + clsLoader),
       player: dhr.getElem('.' + clsPlayer),
@@ -122,9 +162,9 @@ exports.run = function(app, bem, idOfMediaSpec) {
       inpStop: dhr.getElem('.' + clsInpStop)
     };
 
-    jobOutputChecker.run(idOfMediaSpec, handleJobOutput.bind(null, elemScope));
+    var wsp = new Wsp(esc, idOfMediaSpec);
+    wsp.getBidInfo();
   };
-
 };
 
 module.exports = exports;
