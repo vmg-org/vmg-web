@@ -8,6 +8,7 @@ var dhr = require('../vmg-helpers/dom');
 var demoBid = require('./demo-bid');
 var fileHandler = require('./file-handler');
 var jobSourceChecker = require('./job-source-checker');
+//var workspace = require('./workspace');
 
 /**
  * Handle output job
@@ -40,12 +41,16 @@ var handleResultOfUpload = function(elemSelector, elemLoader, elemNotif, err, jo
 
 // bem - second
 exports.run = function(app) {
+  // To show max duration - need to get BidInfo
+  // Limit by filesize: 15s - 50MB 30s- 100MB
   // Event to select of dnd files
   app.initUpload = function(elem, e, uplSelector, uplSelectorInput, uplLoader, uplNotif) {
     var elemSelector = dhr.getElem('.' + uplSelector);
     var elemSelectorInput = dhr.getElem('.' + uplSelectorInput);
     var elemLoader = dhr.getElem('.' + uplLoader);
     var elemNotif = dhr.getElem('.' + uplNotif);
+
+    // var wsp = workspace.init(esc, 
 
     window.FileAPI.event.on(elemSelectorInput, 'change', function(evt) {
       var files = window.FileAPI.getFiles(evt); // Retrieve file list
@@ -72,46 +77,3 @@ exports.run = function(app) {
 };
 
 module.exports = exports;
-
-// https://github.com/videojs/video.js/blob/stable/docs/guides/api.md
-//var handleVideoReady = function() {
-//  var myPlayer = this;
-//
-//  console.log(myPlayer);
-//  // myPlayer.currentTime(120);
-//  /// myPlayer.play();
-//
-//  //The video must have started loading before the duration can be known, and in the case of Flash, may not be known until the video starts playing.
-//  // seconds
-//  //
-//  // loadstart
-//  //
-//  myPlayer.onLoadStart(function() {
-//    console.log(myPlayer.duration());
-//  });
-//};
-// redirect to enhance
-
-//  var videoElem = document.createElement('video');
-//  var videoSource = document.createElement('source');
-//  videoSource.src = mediaFile.url;
-//  videoSource.type = 'video/mp4';
-//  $(videoElem).addClass('video-js vjs-default-skin');
-//  videoElem.appendChild(videoSource);
-//  $('.' + ).html(videoElem);
-//  // Player builds using videojs and inserted a link
-//  window.videojs(videoElem, {
-//    width: '100%',
-//    height: '100%',
-//    controls: true,
-//    preload: true
-//  }, handleVideoReady);
-// after selection of a file
-//  app.handleUpload = function(elem) {
-//    //    console.log('handle upload', elem.files);
-//    var uplSelector = elem.getAttribute('data-selector');
-//    dhr.hideElems('.' + uplSelector);
-//    //console.log(elem.files);
-//    var uplLoader = elem.getAttribute('data-upl-loader');
-//    dhr.showElems('.' + uplLoader);
-//  };

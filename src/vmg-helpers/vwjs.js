@@ -4,6 +4,7 @@ var dhr = require('../vmg-helpers/dom');
 var userSessionService = require('../vmg-services/user-session');
 var shr = require('../vmg-helpers/shr');
 var config = require('../config');
+var mdlAuthHelper = require('../common/auth');
 
 exports.run = function(app, bem) {
   app.hideElems = function(elem, e, targetName) {
@@ -71,6 +72,14 @@ exports.run = function(app, bem) {
     console.log('fb is loaded');
   };
 
+  //  var Wsp = function() {
+  //
+  //    this.isAuthByCookie = null;
+  //    this.isAuth = null;
+  //    this.sessionData = null;
+  //
+  //  };
+
   app.fireAuth = function() {
     var body = window.document.body;
 
@@ -78,16 +87,32 @@ exports.run = function(app, bem) {
     console.log('authNoBlockName', authNoBlockName);
     var authProfileBlockName = body.getAttribute('data-auth-profile');
 
-    var sid = shr.getItem(config.AUTH_STORAGE_KEY);
-    if (!sid) {
-      // load Goog lib
-      dhr.loadGoogLib('googAsyncInit');
-      dhr.loadFbLib(); // fbAsyncInit by default    
-      dhr.showElems('.' + authNoBlockName);
-    } else {
-      console.log('we have sid', sid);
-      userSessionService.getUserSession(sid, handleUserSession.bind(null, authNoBlockName, authProfileBlockName));
-    }
+    var mdlAuth = mdlAuthHelper.init();
+    console.log(mdlAuth);
+    mdlAuth.onSid = function() {
+      if (!this.sid) {
+        // load Goog lib
+        dhr.loadGoogLib('googAsyncInit');
+        dhr.loadFbLib(); // fbAsyncInit by default    
+        dhr.showElems('.' + authNoBlockName);
+      } else {
+        console.log('we have sid', this.sid);
+        userSessionService.getUserSession(this.sid, handleUserSession.bind(null, authNoBlockName, authProfileBlockName));
+      }
+    };
+
+    mdlAuth.loadSid();
+
+    //    var sid = shr.getItem(config.AUTH_STORAGE_KEY);
+    //    if (!sid) {
+    //      // load Goog lib
+    //      dhr.loadGoogLib('googAsyncInit');
+    //      dhr.loadFbLib(); // fbAsyncInit by default    
+    //      dhr.showElems('.' + authNoBlockName);
+    //    } else {
+    //      console.log('we have sid', sid);
+    //      userSessionService.getUserSession(sid, handleUserSession.bind(null, authNoBlockName, authProfileBlockName));
+    //    }
     // check isAuth in cookies? if no cookie - show buttons for auth if a cookie - send a request to check it and get name
     //  
     // get auth cookie (or from storage)
