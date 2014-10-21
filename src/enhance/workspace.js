@@ -35,12 +35,18 @@ Wsp.prototype.handleGetJobCut = function(err, jobCut) {
     this.showNotif(new Error('A job is failed: ' + jobCut.status_detail + '<br>Please contact with administration'));
     return;
   }
-
+  //https://github.com/videojs/video.js/blob/stable/docs/api/vjs.Player.md
   if (jobCut.id_of_job_status === 'Complete') {
+    var needMediaFileCut = jobCut.media_spec_item.file_cut_arr[0].media_file_item;
+    this.vdo.src(needMediaFileCut.url);
+
+    dhr.hideElems(this.esc.loader);
+    dhr.showElems(this.esc.player);
+    // TODO: #33! Show button to attach video to episode   
+    // And remove cutted version, to cut again from source (in future);
     // Get url,
     // Change video source url
     // Hide slider
-    alert('hoora');
     return;
   }
 
@@ -69,6 +75,8 @@ Wsp.prototype.handlePostJobCut = function(err, jobCut) {
 // TODO: #43! Or append this event dinamically after vide downloading
 // TODO: #43! Add values for start and stop points dynamically
 Wsp.prototype.cutVideo = function() {
+  // hide prev errors
+  dhr.hideElems(this.esc.notif);
   var cuttingStart = ahr.toInt(dhr.getVal(this.esc.inpStart));
   var cuttingStop = ahr.toInt(dhr.getVal(this.esc.inpStop));
   console.log('cutting', cuttingStart, cuttingStop);
@@ -105,6 +113,13 @@ Wsp.prototype.cutVideo = function() {
     return this.showNotif(new Error(errValid.join('<br>')));
   }
 
+
+  // hide player, show loader
+  dhr.hideElems(this.esc.player);
+  dhr.hideElems(this.esc.slider);
+  dhr.html(this.esc.loader, 'processing...');
+  dhr.showElems(this.esc.loader);
+
   var jobCut = {
     id_of_media_spec: this.jobOutput.id_of_media_spec,
     cutting_start: cuttingStart,
@@ -128,7 +143,9 @@ Wsp.prototype.handleMetaReady = function() {
 Wsp.prototype.handleVideoReady = function(vdo) {
   this.vdo = vdo;
   //  console.log('video ready', vdo);
-  this.vdo.on('loadedmetadata', this.handleMetaReady.bind(this));
+  // Show slider only once: when page is loaded
+  // Don't show after cutting  
+  this.vdo.one('loadedmetadata', this.handleMetaReady.bind(this));
 };
 
 Wsp.prototype.showPlayer = function() {
