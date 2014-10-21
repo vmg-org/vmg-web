@@ -3,6 +3,7 @@
 var jobOutputChecker = require('./job-output-checker');
 var jobCutService = require('../vmg-services/job-cut');
 var dhr = require('../vmg-helpers/dom');
+var ahr = require('../vmg-helpers/app');
 var episodeBidService = require('../vmg-services/episode-bid');
 
 var Wsp = function(esc, idOfMediaSpec) {
@@ -17,28 +18,60 @@ var Wsp = function(esc, idOfMediaSpec) {
 
   // handlePostJobCut
   this.jobCut = null;
+
+  // HandleBidInfo
+  this.episodeBid = null;
+};
+
+Wsp.prototype.handleGetJobCut = function(err, jobCut) {
+  if (err) {
+    return this.showNotif(err);
+  }
+
+  console.log(jobCut);
+
+  if (jobCut.id_of_job_status === 'Error') {
+    // TODO: #43! recreate the job
+    this.showNotif(new Error('A job is failed: ' + jobCut.status_detail + '<br>Please contact with administration'));
+    return;
+  }
+
+  if (jobCut.id_of_job_status === 'Complete') {
+    // Get url,
+    // Change video source url
+    // Hide slider
+    alert('hoora');
+    return;
+  }
+
+  // check one more
+  window.setTimeout(this.checkJobCut.bind(this), 1500);
+};
+
+Wsp.prototype.checkJobCut = function() {
+  jobCutService.getItem(this.idOfMediaSpec, this.handleGetJobCut.bind(this));
 };
 
 Wsp.prototype.handlePostJobCut = function(err, jobCut) {
   if (err) {
-    dhr.html(this.esc.notif, err.message);
-    dhr.showElems(this.esc.notif);
-    return;
+    return this.showNotif(err);
   }
 
   this.jobCut = jobCut;
 
   // after posting - retry with progress bar
-  console.log(err, jobCut);
+  console.log('jobCut', jobCut);
+  // TODO: #33! Change loader
+  window.setTimeout(this.checkJobCut.bind(this), 1500);
 };
 
 // allow this event only full video download
 // TODO: #43! Or append this event dinamically after vide downloading
 // TODO: #43! Add values for start and stop points dynamically
 Wsp.prototype.cutVideo = function() {
-  var cuttingStart = dhr.getVal(this.esc.inpStart);
-  var cuttingStop = dhr.getVal(this.esc.inpStop);
-
+  var cuttingStart = ahr.toInt(dhr.getVal(this.esc.inpStart));
+  var cuttingStop = ahr.toInt(dhr.getVal(this.esc.inpStop));
+  console.log('cutting', cuttingStart, cuttingStop);
   var errValid = [];
 
   if (typeof cuttingStart !== 'number') {
@@ -50,25 +83,33 @@ Wsp.prototype.cutVideo = function() {
 
   // in ms
   var vdoDuration = this.vdo.duration() * 1000;
+  if (cuttingStop < 0 || cuttingStart < 0) {
+    errValid.push('Please input a correct value between 0 and ' + vdoDuration + ' (in milliseconds)');
+  }
 
   if (cuttingStop > vdoDuration || cuttingStart > vdoDuration) {
     errValid.push('Please input a correct value between 0 and ' + vdoDuration + ' (in milliseconds)');
   }
 
-  // TODO: #33! Check duration from episode 
+  // convert seconds to ms
+  var episodeDuration = ahr.toInt(this.episodeBid.episode_template_item.movie_template_item.duration_of_episodes) * 1000;
+  var episodeVariation = 1000; // 1 second
+
+  var cuttingDiff = cuttingStop - cuttingStart;
+
+  if (cuttingDiff < (episodeDuration - episodeVariation) || cuttingDiff > (episodeDuration + episodeVariation)) {
+    errValid.push('Allowed duration (difference between values): from ' + (episodeDuration - episodeVariation) + ' to ' + (episodeDuration + episodeVariation));
+  }
 
   if (errValid.length > 0) {
-    dhr.html(this.esc.notif, errValid.join('<br>'));
-    dhr.showElems(this.esc.notif);
-    return;
+    return this.showNotif(new Error(errValid.join('<br>')));
   }
 
   var jobCut = {
     id_of_media_spec: this.jobOutput.id_of_media_spec,
     cutting_start: cuttingStart,
-    cuttion_stop: cuttingStop
+    cutting_stop: cuttingStop
   };
-
   //    var elemCuttingStart = dhr.getElem('.' + clsNotif);
   //    var elemNotif = dhr.getElem('.' + clsNotif);
   // send it to the server
@@ -76,6 +117,7 @@ Wsp.prototype.cutVideo = function() {
 };
 
 Wsp.prototype.handleMetaReady = function() {
+  console.log(this.vdo.duration());
   dhr.on(this.esc.fncCut, 'click', this.cutVideo.bind(this));
 
   // elemCutFnc onclick
@@ -119,11 +161,9 @@ Wsp.prototype.showPlayer = function() {
 Wsp.prototype.handleJobOutput = function(err, jobOutput) {
   if (err) {
     // TODO: #33! show notif about error - job recreate here??
-    dhr.html(this.esc.notif, err.message);
-    dhr.showElems(this.esc.notif);
     dhr.hideElems(this.esc.loader);
     dhr.hideElems(this.esc.player);
-    return;
+    return this.showNotif(err);
   }
 
   this.jobOutput = jobOutput;
@@ -135,19 +175,22 @@ Wsp.prototype.handleJobOutput = function(err, jobOutput) {
 
 Wsp.prototype.handleBidInfo = function(err, episodeBid) {
   if (err) {
-    console.log(err);
-    console.log('myesc', this.esc);
-    dhr.html(this.esc.notif, err.message);
-    dhr.showElems(this.esc.notif);
-    return;
+    return this.showNotif(err);
   }
-  console.log('episode bid', episodeBid);
+
+  this.episodeBid = episodeBid;
+  //console.log('episode bid', episodeBid);
 
   jobOutputChecker.run(this.idOfMediaSpec, this.handleJobOutput.bind(this));
 };
 
 Wsp.prototype.getBidInfo = function() {
   episodeBidService.getItemWithEpisodeAndMovie(this.idOfMediaSpec, this.handleBidInfo.bind(this));
+};
+
+Wsp.prototype.showNotif = function(err) {
+  dhr.html(this.esc.notif, err.message);
+  dhr.showElems(this.esc.notif);
 };
 
 exports.init = function() {

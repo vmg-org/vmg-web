@@ -2,6 +2,7 @@
 'use strict';
 
 var jobOutputService = require('../vmg-services/job-output');
+var ahr = require('../vmg-helpers/app');
 
 var handleGetJobOutput = function(next, err, jobOutput) {
   if (err) {
@@ -34,7 +35,7 @@ var handleGetJobOutput = function(next, err, jobOutput) {
 exports.run = function(idOfMediaSpec, next) {
   console.log('idOfMediaSpec from asdf', idOfMediaSpec);
 
-  idOfMediaSpec = parseInt(idOfMediaSpec);
+  idOfMediaSpec = ahr.toInt(idOfMediaSpec);
 
   if (!idOfMediaSpec) {
     return next(new Error('required: idOfMediaSpec as integer'));

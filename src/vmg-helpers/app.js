@@ -16,8 +16,32 @@ ahr.each = function(arr, cbk) {
   }
 };
 
+// convert only strings (or numbers)
 ahr.toInt = function(val) {
-  return parseInt(val);
+  if (val === 0) {
+    return 0;
+  }
+
+  // Skip NaN, undefined, empty strings
+  if (!val) {
+    return null;
+  }
+
+  if (typeof val === 'number') {
+    return parseInt(val, 10); // get off from decimal
+  }
+
+  // Convert only strings - only valid strings (exclude 3254las2323
+  if (typeof val === 'string') {
+    // skip invalid strings
+    var result = +val;
+    // 0 - checked before
+    if (result || result === 0) {
+      return parseInt(result, 10);
+    }
+  }
+  // May be some additional checking
+  return null;
 };
 
 ahr.map = function(arr, cbk) {
