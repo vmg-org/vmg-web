@@ -58,37 +58,37 @@ var runBwf = function(srcFile, bundleFile) {
     .on('error', notify.onError(cbkNotifyOnError));
 };
 
-var LR_PORT = 35729;
-var lr;
-
-function startLiveReload() {
-  lr = require('tiny-lr')();
-  lr.listen(LR_PORT);
-}
+//var LR_PORT = 35729;
+//var lr;
+//
+//function startLiveReload() {
+//  lr = require('tiny-lr')();
+//  lr.listen(LR_PORT);
+//}
 
 function startExpress() {
   var express = require('express');
   var app = express();
-  app.use(require('connect-livereload')({
-    port: LR_PORT
-      //	  ignore: ['js', 'svg']
-  }));
+  //  app.use(require('connect-livereload')({
+  //    port: LR_PORT
+  //      //	  ignore: ['js', 'svg']
+  //  }));
   app.use(express.static(pth.dst));
   app.listen(4000);
   console.log('http://localhost:4000');
 }
 
-function notifyLiveReload(e) {
-  // `gulp.watch()` events provide an absolute path
-  // so we need to make it relative to the server root
-  var fileName = require('path').relative(pth.dst, e.path);
-
-  lr.changed({
-    body: {
-      files: [fileName]
-    }
-  });
-}
+//function notifyLiveReload(e) {
+//  // `gulp.watch()` events provide an absolute path
+//  // so we need to make it relative to the server root
+//  var fileName = require('path').relative(pth.dst, e.path);
+//
+//  lr.changed({
+//    body: {
+//      files: [fileName]
+//    }
+//  });
+//}
 
 // =============== TASK DECLARATION ===============================
 // for dst - change 'bwf' to 'uglify' (it is included)
@@ -136,9 +136,9 @@ gulp.task('bwf', pages.map(function(pge) {
 }));
 
 gulp.task('connect', function() {
-  startLiveReload();
+  //  startLiveReload();
   startExpress();
-  gulp.watch(pth.dst + '**/*', notifyLiveReload);
+  //gulp.watch(pth.dst + '**/*', notifyLiveReload);
 });
 
 // Watch only scripts
