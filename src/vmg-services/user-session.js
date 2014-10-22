@@ -4,7 +4,6 @@
 var rqst = require('../vmg-helpers/rqst');
 
 var config = require('../config');
-
 var apiUrl = config.API_ENDPOINT;
 
 exports.postUserSession = function(id_of_auth_issuer, social_token, next) {

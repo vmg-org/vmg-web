@@ -23,6 +23,9 @@ exports.handleUserSession = function(err, userSession) {
     return;
   }
 
+  // TODO: #33! handle if userSession is null (expired);
+  this.userSession = userSession;
+
   console.log('mythis', this);
 
   shr.setItem(config.AUTH_STORAGE_KEY, userSession.id); // set again
