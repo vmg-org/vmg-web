@@ -47,7 +47,14 @@ var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
 };
 
 exports.impl = function(bem, elemName, mdlName, data, isEffect) {
-  var lists = $('.' + elemName); // may be few lists with movie-records in a page (retry logic)
+  var lists;
+  //  if (typeof elemName === 'string') {
+  lists = $('.' + elemName); // may be few lists with movie-records in a page (retry logic)
+  //  } else {
+  //    // Link to  Element - elemName
+  //    lists = $(elemName);
+  //    console.log('lists', lists);
+  //  }
 
   // get an object where block == key
   // get content of this object
@@ -99,6 +106,10 @@ exports.getElem = getElem;
 
 exports.on = function(elem, eventName, cbk) {
   $(elem).on(eventName, cbk);
+};
+
+exports.off = function(elem, eventName) {
+  $(elem).off(eventName);
 };
 
 exports.trigger = function(elems, eventName) {

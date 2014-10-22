@@ -15,13 +15,13 @@ exports.getMovieTemplateWithEpisodes = function(idOfMovieTemplate, next) {
     duration_of_episodes: 15, // or 30
     created: parseInt(new Date().getTime() / 1000),
     finished: parseInt(new Date().getTime() / 1000 + 3600),
-    genre_tag: {
+    genre_tag_item: {
       id: 'nature',
       name: 'Nature',
       color: 'green',
       color_scheme: 'Some colors for tag'
     },
-    episode_templates: [{
+    episode_template_arr: [{
       order_in_movie: 1,
       name: 'Drink a vodka',
       story: [
@@ -59,7 +59,7 @@ exports.getMovieTemplateWithEpisodes = function(idOfMovieTemplate, next) {
   data.duration_of_episodes_str = data.duration_of_episodes + ' seconds';
   data.created_str = ahr.getTimeStr(data.created, 'lll');
   data.finished_str = ahr.getTimeStr(data.finished, 'lll');
-  data.genre_tag.style = 'color: ' + data.genre_tag.color;
+  data.genre_tag_item.style = 'color: ' + data.genre_tag_item.color;
   //  ahr.each(data.episode_templates, function(item) {
   //    item.name_order = 'Episode ' + item.order_in_movie;
   //  });
