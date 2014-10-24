@@ -8,7 +8,11 @@ var handleGoogSignIn = function(next, authResult) {
   if (authResult['status']['signed_in']) {
     // http://stackoverflow.com/questions/23020733/google-login-hitting-twice
     if (authResult['status']['method'] === 'PROMPT') {
-      userSessionService.postUserSession('goog', authResult.access_token, next);
+
+      userSessionService.postUserSession({
+        id_of_auth_issuer: 'goog',
+        social_token: authResult.access_token
+      }, next);
       // send to our server authResult.access_token
       // 
       console.log('authResult', authResult);

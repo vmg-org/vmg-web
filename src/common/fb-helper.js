@@ -13,7 +13,10 @@ var handleFbLoginStatus = function(next, response) {
     // Logged into your app and Facebook.
     console.log(response.authResponse);
     var authResult = response.authResponse;
-    userSessionService.postUserSession('fb', authResult.accessToken, next);
+    userSessionService.postUserSession({
+      id_of_auth_issuer: 'fb',
+      social_token: authResult.accessToken
+    }, next);
   } else {
     next(new Error(response.status));
     console.log(response);

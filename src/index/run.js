@@ -1,28 +1,56 @@
-// todo #22! js docs
-// all API endpoints
-// definitions for all data schemes
-//var vmgSpec = require('vmg-spec');
-//var workspace = require('./workspace');
-// Build API from vmgSpec?
-//console.log(vmgSpec);
+// todo #33! js docs
 
-//var indexBem = require('../../bower_components/vmg-bem/bems/index.bemjson');
 var bem = require('../../../vmg-bem/bems/index.bemjson');
+var vwmHelper = require('./vwm');
+var authHelper = require('../common/auth-helper');
+var popupHelper = require('../common/popup-helper');
 
-var commonVwjs = require('../vmg-helpers/vwjs.js');
-var vwjs = require('./vwjs');
+var commonCls = require('../common/cls');
+var cls = require('./cls');
 
+$.extend(cls, commonCls);
 
-window.app = {};
+var ctx = {
+  doc: document,
+  cls: cls,
+  sid: null,
+  bem: bem,
+  movieRecords: null,
+  movieRecordsErr: null
+};
 
-commonVwjs.run(window.app, bem);
-vwjs.run(window.app, bem);
-// when project is already loaded
-// load a mainObj
-// exclude secured data
-// try without JQuery
-// need to define a path before page is loaded
-// if it's a protected page - redirect -> but its actually for static multipage sites
+var last = function() {
+  console.log('last func');
+};
 
-// load list of AuthIssuer
-//workspace.init();
+var afterAuthFlow =
+  authHelper.showAuth.bind(ctx, last);
+
+var authNoFlow =
+  authHelper.waitUserLogin.bind(ctx,
+    afterAuthFlow
+  );
+
+var authFlowSelector = function() {
+  if (this.userSession) {
+    afterAuthFlow();
+  } else {
+    // show message and apply events and login buttons with authFlow
+    authNoFlow();
+  }
+};
+
+var appFlow =
+  vwmHelper.loadMovieRecords.bind(ctx,
+    vwmHelper.loadMovieTemplates.bind(ctx,
+      vwmHelper.waitDocReady.bind(ctx,
+        popupHelper.addEvents.bind(ctx,
+          vwmHelper.fillMovieRecords.bind(ctx,
+            vwmHelper.fillMovieTemplates.bind(ctx,
+              authHelper.loadSid.bind(ctx,
+                // two flows - auth=yes and auth=no
+                authHelper.handleSid.bind(ctx,
+                  authFlowSelector.bind(ctx)
+                ))))))));
+
+appFlow();

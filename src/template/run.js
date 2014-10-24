@@ -40,16 +40,15 @@ var authFlowSelector = function() {
   }
 };
 
-var qwe = vwmHelper.loadIdOfMovieTemplate.bind(ctx,
+var appFlow = vwmHelper.loadIdOfMovieTemplate.bind(ctx,
   vwmHelper.loadMovieTemplate.bind(ctx,
-    vwmHelper.handleMovieTemplate.bind(ctx,
-      vwmHelper.waitDocReady.bind(ctx,
-        popupHelper.addEvents.bind(ctx,
-          vwmHelper.fillMovieTemplate.bind(ctx,
-            authHelper.loadSid.bind(ctx,
-              // two flows - auth=yes and auth=no
-              authHelper.handleSid.bind(ctx,
-                authFlowSelector.bind(ctx)
-              ))))))));
+    vwmHelper.waitDocReady.bind(ctx,
+      popupHelper.addEvents.bind(ctx,
+        vwmHelper.fillMovieTemplate.bind(ctx,
+          authHelper.loadSid.bind(ctx,
+            // two flows - auth=yes and auth=no
+            authHelper.handleSid.bind(ctx,
+              authFlowSelector.bind(ctx)
+            )))))));
 
-qwe();
+appFlow();

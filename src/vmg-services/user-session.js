@@ -3,11 +3,8 @@
 
 var apiRqst = require('../vmg-helpers/api-rqst');
 
-exports.postUserSession = function(id_of_auth_issuer, social_token, next) {
-  apiRqst.sendPostPublic('w2001', {}, {
-    id_of_auth_issuer: id_of_auth_issuer,
-    social_token: social_token
-  }, next);
+exports.postUserSession = function(dto, next) {
+  apiRqst.sendPostPublic('w2001', {}, dto, next);
 };
 
 exports.getUserSession = function(next) {

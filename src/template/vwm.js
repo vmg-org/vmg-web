@@ -1,8 +1,8 @@
 /** @module */
 
-var movieTemplateService = require('../vmg-services/movie-template');
 var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
+var srv = require('../vmg-services/srv');
 
 exports.loadUserRights = function(next) {
   // Whether the user is owner of movie?
@@ -32,7 +32,7 @@ exports.waitDocReady = function(next) {
   $(this.doc).ready(next);
 };
 
-exports.handleMovieTemplate = function(next, err, movieTemplate) {
+var handleMovieTemplate = function(next, err, data) {
   if (err) {
     //	  locHelper.moveToError(this.doc, msg);
     this.doc.location.href = 'error.html';
@@ -40,12 +40,24 @@ exports.handleMovieTemplate = function(next, err, movieTemplate) {
     return;
   }
 
-  this.movieTemplate = movieTemplate;
+
+  // different pages might require diff computed values, but usuall only one flow
+  // add computed values
+  data.duration_of_episodes_str = data.duration_of_episodes + ' seconds';
+  data.created_str = ahr.getTimeStr(data.created, 'lll');
+  data.finished_str = ahr.getTimeStr(data.finished, 'lll');
+  data.movie_genre_item.genre_tag_item.style = 'color: ' + data.movie_genre_item.genre_tag_item.color;
+  //  ahr.each(data.episode_templates, function(item) {
+  //    item.name_order = 'Episode ' + item.order_in_movie;
+  //  });
+
+  this.movieTemplate = data;
   next();
 };
 
 exports.loadMovieTemplate = function(next) {
-  movieTemplateService.getMovieTemplateWithEpisodes(this.idOfMovieTemplate, next);
+  srv.r1002(this.idOfMovieTemplate,
+    handleMovieTemplate.bind(this, next));
 };
 
 exports.loadIdOfMovieTemplate = function(next) {
