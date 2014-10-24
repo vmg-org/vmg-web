@@ -26,8 +26,9 @@ var handleMovieTemplateWithEpisodes = function(next, err, data) {
   next(null, data);
 };
 
+// public method
 exports.getMovieTemplateWithEpisodes = function(id, next) {
-  apiRqst.sendGet('r1002', {
+  apiRqst.sendGetPublic('r1002', {
     id: id
   }, handleMovieTemplateWithEpisodes.bind(null, next));
 };

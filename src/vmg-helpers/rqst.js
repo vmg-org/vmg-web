@@ -13,6 +13,11 @@ var handleFail = function(next, e) {
     return;
   }
 
+  if (e.status === 401) {
+    next(new Error('unauthorized'));
+    return;
+  }
+
   next(err);
   lgr.error(err);
 };

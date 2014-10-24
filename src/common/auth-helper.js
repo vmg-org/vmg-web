@@ -6,19 +6,30 @@ var dhr = require('../vmg-helpers/dom');
 var googHelper = require('./goog-helper');
 var fbHelper = require('./fb-helper');
 var userSessionService = require('../vmg-services/user-session');
+var lgr = require('../vmg-helpers/lgr');
 
 var handleLogout = function() {
   // from cookie or context
-  var sid = shr.getItem(config.AUTH_STORAGE_KEY);
-  shr.removeItem(config.AUTH_STORAGE_KEY);
-  userSessionService.deleteUserSession(sid, function() {
+  userSessionService.deleteUserSession(function(errDel) {
+    // if sid is wrong - skip this error
+    lgr.error(errDel);
     // no callbask: if err - expired sessions will be removed automatically from db
+    shr.removeItem(config.AUTH_STORAGE_KEY);
+    window.location.reload();
   });
-  window.location.reload();
 };
 
 var handleUserSession = function(next, err, userSession) {
   if (err) {
+    // if sid is wrong or outdated - receive an error: 401
+    // remove sid - show auth buttons
+    if (err.message === 'unauthorized') {
+      // update a page
+      alert('Your session is outdated: a page will be reloaded. Please login again');
+      handleLogout();
+      return;
+    }
+    
     alert(err.message);
     return;
   }
@@ -63,9 +74,9 @@ exports.handleSid = function(next) {
   } else {
     console.log('we have sid', this.sid);
     // next flow - now
-    // if sid is wrong or outdated - send a error? or null?
+    // if sid is wrong or outdated - receive an error: 401
     // remove sid - show auth buttons
-    userSessionService.getUserSession(this.sid, cbk);
+    userSessionService.getUserSession(cbk);
   }
 };
 
