@@ -7,8 +7,8 @@ var popupHelper = require('../common/popup-helper');
 var bem = require('../../../vmg-bem/bems/template.bemjson');
 
 var ctx = {
-  idOfMovieTemplate: null,
   doc: document,
+  idOfMovieTemplate: null,
   movieTemplate: null,
   cls: {
     movieTemplateScope: 'shw-movie-templates',
@@ -19,6 +19,10 @@ var ctx = {
   bem: bem
 };
 
+var last = function() {
+  console.log('last func');
+};
+
 var qwe = vwmHelper.loadIdOfMovieTemplate.bind(ctx,
   vwmHelper.loadMovieTemplate.bind(ctx,
     vwmHelper.handleMovieTemplate.bind(ctx,
@@ -27,9 +31,9 @@ var qwe = vwmHelper.loadIdOfMovieTemplate.bind(ctx,
           vwmHelper.fillMovieTemplate.bind(ctx,
             authHelper.loadSid.bind(ctx,
               authHelper.buildCls.bind(ctx,
+                // two flows - auth=yes and auth=no
                 authHelper.handleSid.bind(ctx,
-                  // two flows - auth=yes and auth=no
-                  authHelper.handleUserSession.bind(ctx)
+                  last
                 )))))))));
 
 qwe();

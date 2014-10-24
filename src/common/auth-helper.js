@@ -17,7 +17,7 @@ var handleLogout = function() {
   window.location.reload();
 };
 
-exports.handleUserSession = function(err, userSession) {
+var handleUserSession = function(next, err, userSession) {
   if (err) {
     alert(err.message);
     return;
@@ -43,15 +43,19 @@ exports.handleUserSession = function(err, userSession) {
   dhr.on(btnLogout, 'click', handleLogout);
 
   dhr.showElems('.' + this.authCls.authProfile);
+  next();
 };
 
 exports.handleSid = function(next) {
+  // this = ctx
+  var cbk = handleUserSession.bind(this, next);
+
   if (!this.sid) {
     // next flow - only after user action (auth)
-    window.googAsyncInit = googHelper.init.bind(this, next);
+    window.googAsyncInit = googHelper.init.bind(this, cbk);
     dhr.loadGoogLib('googAsyncInit');
 
-    window.fbAsyncInit = fbHelper.init.bind(this, next);
+    window.fbAsyncInit = fbHelper.init.bind(this, cbk);
     dhr.loadFbLib(); // fbAsyncInit by default    
     // we can't send next functions to this handlers, that show buttons now
 
@@ -59,7 +63,9 @@ exports.handleSid = function(next) {
   } else {
     console.log('we have sid', this.sid);
     // next flow - now
-    userSessionService.getUserSession(this.sid, next);
+    // if sid is wrong or outdated - send a error? or null?
+    // remove sid - show auth buttons
+    userSessionService.getUserSession(this.sid, cbk);
   }
 };
 

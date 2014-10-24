@@ -1,9 +1,7 @@
 'use strict';
 
 var ahr = require('../vmg-helpers/app');
-var rqst = require('../vmg-helpers/rqst');
-var config = require('../config');
-var apiUrl = config.API_ENDPOINT;
+var apiRqst = require('../vmg-helpers/api-rqst');
 
 exports.getListOfMovieTemplate = function(next) {
   next(null, ['asdfasd']);
@@ -29,7 +27,9 @@ var handleMovieTemplateWithEpisodes = function(next, err, data) {
 };
 
 exports.getMovieTemplateWithEpisodes = function(id, next) {
-  rqst.send('GET', apiUrl + 'r1002?id=' + id, {}, handleMovieTemplateWithEpisodes.bind(null, next));
+  apiRqst.sendGet('r1002', {
+    id: id
+  }, handleMovieTemplateWithEpisodes.bind(null, next));
 };
 
 module.exports = exports;
