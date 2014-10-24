@@ -8,8 +8,10 @@ var demoBid = require('./demo-bid');
 var vwm = require('./vwm');
 var authHelper = require('../common/auth-helper');
 var popupHelper = require('../common/popup-helper');
-//var commonVwjs = require('../vmg-helpers/vwjs.js');
-//var vwjs = require('./vwjs');
+var commonCls = require('../common/cls');
+var cls = require('./cls');
+
+$.extend(cls, commonCls);
 
 // https://github.com/mailru/FileAPI
 window.FileAPI = {
@@ -19,13 +21,7 @@ window.FileAPI = {
 
 var ctx = {
   doc: document,
-  cls: {
-    selector: 'upl-selector',
-    selectorInput: 'upl-selector__file-input',
-    loader: 'upl-loader',
-    notif: 'notif-wrap__notif',
-    opener: 'upl-selector__file-opener'
-  },
+  cls: cls,
   sid: null,
   bem: bem
 };
@@ -34,17 +30,35 @@ var last = function() {
   console.log('last func');
 };
 
-// load a movie details
-var qwe = demoBid.run.bind(ctx,
-  vwm.waitDocReady.bind(ctx,
-    popupHelper.addEvents.bind(ctx,
-      authHelper.loadSid.bind(ctx,
-        authHelper.buildCls.bind(ctx,
-          // two flows - auth=yes and auth=no
-          authHelper.handleSid.bind(ctx,
-            vwm.attachUploadEvents.bind(ctx,
-              vwm.attachSelectorEvents.bind(ctx,
-                last
-              ))))))));
+var afterAuthFlow =
+  authHelper.showAuth.bind(ctx,
+    demoBid.run.bind(ctx,
+      vwm.attachUploadEvents.bind(ctx,
+        vwm.attachSelectorEvents.bind(ctx, last))));
 
-qwe();
+var authNoFlow =
+  authHelper.showNoAuthWarning.bind(ctx,
+    authHelper.waitUserLogin.bind(ctx,
+      afterAuthFlow
+    ));
+
+var authFlowSelector = function() {
+  if (this.userSession) {
+    afterAuthFlow();
+  } else {
+    // show message and apply events and login buttons with authFlow
+    authNoFlow();
+  }
+};
+
+// load a movie details
+var appFlow =
+  authHelper.loadSid.bind(ctx,
+    authHelper.handleSid.bind(ctx,
+      vwm.waitDocReady.bind(ctx,
+        popupHelper.addEvents.bind(ctx,
+          // two flows - auth=yes and auth=no
+          authFlowSelector.bind(ctx)
+        ))));
+
+appFlow();

@@ -47,7 +47,7 @@ exports.init = function(next) {
 
   this.libFb = window.FB;
 
-  var btn = dhr.getElem('.' + this.authCls.fncFb);
+  var btn = dhr.getElem('.' + this.cls.fncFb);
   dhr.off(btn, 'click');
   dhr.on(btn, 'click', fbSignIn.bind(this, next));
   dhr.showElems(btn);

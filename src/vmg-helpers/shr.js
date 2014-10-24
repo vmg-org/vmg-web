@@ -10,7 +10,7 @@
  * @param {String} name - Name of an item
  */
 exports.getItem = function(name) {
-  return window.sessionStorage.getItem(name);
+  return window.localStorage.getItem(name);
 };
 
 /**
@@ -19,7 +19,7 @@ exports.getItem = function(name) {
  * @param {String} value - Value of an item, only string
  */
 exports.setItem = function(name, value) {
-  window.sessionStorage.setItem(name, value);
+  window.localStorage.setItem(name, value);
 };
 
 /**
@@ -27,7 +27,7 @@ exports.setItem = function(name, value) {
  * @param {String} name - Name
  */
 exports.removeItem = function(name) {
-  window.sessionStorage.removeItem(name);
+  window.localStorage.removeItem(name);
 };
 
 module.exports = exports;

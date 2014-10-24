@@ -52,7 +52,7 @@ exports.init = function(next) {
     return;
   }
   this.libGoog = window.gapi;
-  var btn = dhr.getElem('.' + this.authCls.fncGoog);
+  var btn = dhr.getElem('.' + this.cls.fncGoog);
   dhr.off(btn, 'click');
   dhr.on(btn, 'click', googSignIn.bind(this, next));
   dhr.showElems(btn);

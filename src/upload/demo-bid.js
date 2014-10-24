@@ -1,8 +1,6 @@
 /** @module */
 'use strict';
-var demoSid = 'qwer';
-var rqst = require('../vmg-helpers/rqst');
-var config = require('../config');
+var episodeBidService = require('../vmg-services/episode-bid');
 
 var handlePost = function(next, err, episodeBid) {
   if (err) {
@@ -25,12 +23,7 @@ exports.run = function(next) {
     }
   };
 
-  var opts = {
-    data: JSON.stringify(dto)
-  };
-
-  var url = config.API_ENDPOINT + 'w2002?sid=' + demoSid;
-  rqst.send('POST', url, opts, handlePost.bind(null, next));
+  episodeBidService.postItem(dto, handlePost.bind(null, next));
 };
 
 module.exports = exports;
