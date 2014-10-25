@@ -1,3 +1,4 @@
 module.exports = {
-  movieRecords: 'movie-records'
+  movieRecords: 'movie-records',
+  movieTemplates: 'best-templates'
 };

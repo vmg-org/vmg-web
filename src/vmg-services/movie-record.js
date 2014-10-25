@@ -6,17 +6,17 @@ exports.getWelcomeList = function(next) {
     name: 'requiem about dream',
     upper_name: 'REQUIEM FOR A DREAM',
     img_preview_url: './css/img/movie-black.png',
-    url: './watch.html?v=requiem'
+    url_to_watch: './watch.html?v=requiem'
   }, {
     name: 'hard die',
     upper_name: 'DIE HARD',
     img_preview_url: './css/img/movie-black.png',
-    url: './watch.html?v=die-hard'
+    url_to_watch: './watch.html?v=die-hard'
   }, {
     name: 'Hatiko',
     upper_name: 'HATIKO',
     img_preview_url: './css/img/movie-black.png',
-    url: './watch.html?v=hatiko'
+    url_to_watch: './watch.html?v=hatiko'
   }];
 
   next(null, data);
