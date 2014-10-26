@@ -16,6 +16,10 @@ ahr.each = function(arr, cbk) {
   }
 };
 
+ahr.filter = function(arr, cbk) {
+  return arr.filter(cbk);
+};
+
 // convert only strings (or numbers)
 ahr.toInt = function(val) {
   if (val === 0) {

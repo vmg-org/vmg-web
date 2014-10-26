@@ -25,3 +25,10 @@ exports.r1009 = function(idOfMovieTemplate, next) {
     id_of_movie_template: idOfMovieTemplate
   }, next);
 };
+
+// GET /r1010 Get episode_bid_arr, filtered by array of id_of_episode_template; which created by current user_profile
+exports.r1010 = function(id_of_episode_template_arr, next) {
+  apiRqst.sendGet('r1010', {
+    id_of_episode_template_arr: id_of_episode_template_arr	 
+  }, next);
+};

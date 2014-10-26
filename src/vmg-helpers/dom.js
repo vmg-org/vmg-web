@@ -192,4 +192,8 @@ exports.setError = function(elem) {
   exports.html(elem, '<span style="color:orangered">error retrieving information</span>');
 };
 
+exports.disable = function(elems) {
+  $(elems).prop("disabled", true);
+};
+
 module.exports = exports;

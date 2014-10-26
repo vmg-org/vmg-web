@@ -18,7 +18,8 @@ var ctx = {
   sid: null,
   bem: bem,
   userSession: null, // is authenticated
-  isUserOwner: null // autenticated and owner of movie template
+  isUserOwner: null, // autenticated and owner of movie template
+  isUserAlreadyInBids: null
 };
 
 var last = function() {
