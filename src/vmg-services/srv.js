@@ -18,3 +18,10 @@ exports.r1002 = function(id, next) {
     id: id
   }, next);
 };
+
+// public - GET episode_templates wit episode_bid counts
+exports.r1009 = function(idOfMovieTemplate, next) {
+  apiRqst.sendGetPublic('r1009', {
+    id_of_movie_template: idOfMovieTemplate
+  }, next);
+};

@@ -3,6 +3,7 @@
 var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
 var srv = require('../vmg-services/srv');
+var lgr = require('../vmg-helpers/lgr');
 
 exports.loadUserRights = function(next) {
   // Whether the user is owner of movie?
@@ -18,6 +19,42 @@ exports.loadUserRights = function(next) {
   // show active buttons
 
   next();
+};
+
+var handleEpisodeTemplates = function(next, err, arrEtm) {
+  if (err) {
+    this.episodeTemplatesErr = err;
+    next();
+    lgr.error(err, {
+      fnc: 'handleEpisodeTemplates'
+    });
+    return;
+  }
+
+  // addt fields for Template view
+  ahr.each(arrEtm, function(item) {
+    item.episode_bid_count_non_ready = ahr.toInt(item.episode_bid_count) - ahr.toInt(item.episode_bid_count_ready);
+  });
+
+  this.episodeTemplates = arrEtm;
+  next();
+  return;
+};
+
+exports.loadEpisodeTemplates = function(next) {
+  srv.r1009(this.idOfMovieTemplate, handleEpisodeTemplates.bind(this, next));
+};
+
+exports.fillEpisodeTemplates = function(next) {
+  if (this.episodeTemplatesErr) {
+    dhr.setError('.' + this.cls.episodeTemplateScope);
+    next();
+    return;
+  }
+
+  dhr.impl(this.bem, this.cls.episodeTemplateScope, 'episode_template', this.episodeTemplates);
+  next();
+  return;
 };
 
 exports.fillMovieTemplate = function(next) {

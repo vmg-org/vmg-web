@@ -50,7 +50,7 @@ exports.loadMovieRecords = function(next) {
 
 exports.fillMovieTemplates = function(next) {
   if (this.movieTemplatesErr) {
-    dhr.html('.' + this.cls.movieTemplates, '<span style="color:orangered">error retrieving information</span>');
+    dhr.setError('.' + this.cls.movieTemplates);
     next();
     return;
   }

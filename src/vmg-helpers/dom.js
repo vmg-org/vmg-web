@@ -188,4 +188,8 @@ exports.loadFbLib = function() {
   }(document, 'script', 'facebook-jssdk'));
 };
 
+exports.setError = function(elem) {
+  exports.html(elem, '<span style="color:orangered">error retrieving information</span>');
+};
+
 module.exports = exports;
