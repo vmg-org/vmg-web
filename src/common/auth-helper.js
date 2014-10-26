@@ -48,6 +48,7 @@ exports.showAuth = function(next) {
   // if r with error (sid not found) set visible block
   // apply display_name to the block
   //  console.log('asdfads', authNoBlockName, authProfileBlockName, err, r);
+  console.log('userSession: ', this.userSession);
   dhr.impl(this.bem, this.cls.authProfile, 'social_profile', [{
     display_name: this.userSession.social_profile_item.display_name
   }]);

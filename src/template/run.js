@@ -16,7 +16,9 @@ var ctx = {
   movieTemplate: null,
   cls: cls,
   sid: null,
-  bem: bem
+  bem: bem,
+  userSession: null, // is authenticated
+  isUserOwner: null // autenticated and owner of movie template
 };
 
 var last = function() {
@@ -24,7 +26,11 @@ var last = function() {
 };
 
 var afterAuthFlow =
-  authHelper.showAuth.bind(ctx, last);
+  authHelper.showAuth.bind(ctx,
+    vwmHelper.handleUserRights.bind(ctx,
+      vwmHelper.handlePlayer.bind(ctx, // show buttons for usual user
+        vwmHelper.handleOwner.bind(ctx, // show button for owner of a movie
+          last))));
 
 var authNoFlow =
   authHelper.waitUserLogin.bind(ctx,

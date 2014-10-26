@@ -5,18 +5,83 @@ var ahr = require('../vmg-helpers/app');
 var srv = require('../vmg-services/srv');
 var lgr = require('../vmg-helpers/lgr');
 
-exports.loadUserRights = function(next) {
-  // Whether the user is owner of movie?
-  // --> id_of_movie_template
-  // <-- true | false
-  // if true
-  // show and add events to admin buttons
-  // if false
+exports.handlePlayer = function(next) {
+  if (this.isUserOwner !== false) {
+    next();
+    return;
+  }
+
   // check: Whether the user plays in episodes already
   // If false
   // show gray buttons
   // else
   // show active buttons
+  // player fncs
+  //    fncUploadLater: 'shw-episode__fnc-upload-later',
+  //    fncUploadNow: 'shw-episode__fnc-upload-now'
+
+  next();
+};
+
+var handleFncProlongTemplate = function() {
+  alert('under construction');
+};
+
+var handleFncEditTemplate = function() {
+  alert('under construction');
+};
+
+var handleFncShowAttachments = function() {
+  alert('under construction');
+};
+
+exports.handleOwner = function(next) {
+  if (this.isUserOwner !== true) {
+    next();
+    return;
+  }
+
+  // show and add events to admin buttons
+  console.log('user is owner of movie template');
+
+  //    fncProlongTemplate: 'shw-movie-template__prolong-fnc',
+  //    fncEditTemplate: 'shw-movie-template__edit-fnc',
+  //    fncRemoveTemplate: 'shw-movie-template__remove-fnc',
+  //    fncTweetStory: 'shw-episode__fnc-tweet-story',
+  //    fncShowAttachments: 'shw-episode__fnc-show-attachments',
+  var elemProlongTemplate = dhr.getElems('.' + this.cls.fncProlongTemplate);
+  var elemEditTemplate = dhr.getElems('.' + this.cls.fncEditTemplate);
+  //    var elemRemoveTemplate = dhr.getElem('.' + this.cls.fncRemoveTemplate);
+  //    var elemTweetStory = dhr.getElem('.' + this.cls.fncTweetStory);
+  var elemShowAttachments = dhr.getElems('.' + this.cls.fncShowAttachments);
+
+  dhr.on(elemProlongTemplate, 'click', handleFncProlongTemplate.bind(this));
+  dhr.showElems(elemProlongTemplate);
+
+  dhr.on(elemEditTemplate, 'click', handleFncEditTemplate.bind(this));
+  dhr.showElems(elemEditTemplate);
+
+  dhr.on(elemShowAttachments, 'click', handleFncShowAttachments.bind(this));
+  dhr.showElems(elemShowAttachments);
+
+  next();
+};
+
+// Whether the user is owner of movie?
+exports.handleUserRights = function(next) {
+  if (this.userSession) {
+    console.log('authenticated');
+    if (this.movieTemplate.movie_creator_item) {
+      console.log('movie has owner');
+      if (this.userSession.social_profile_item.id_of_user_profile === this.movieTemplate.movie_creator_item.id_of_user_profile) {
+        this.isUserOwner = true;
+      } else {
+        this.isUserOwner = false;
+      }
+    } else {
+      this.isUserOwner = false;
+    }
+  }
 
   next();
 };
