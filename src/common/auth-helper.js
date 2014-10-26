@@ -5,6 +5,7 @@ var config = require('../config');
 var dhr = require('../vmg-helpers/dom');
 var googHelper = require('./goog-helper');
 var fbHelper = require('./fb-helper');
+var devHelper = require('./dev-helper');
 var userSessionService = require('../vmg-services/user-session');
 var lgr = require('../vmg-helpers/lgr');
 
@@ -74,6 +75,9 @@ exports.waitUserLogin = function(nextFlow) {
   window.fbAsyncInit = fbHelper.init.bind(this, cbk);
   dhr.loadFbLib(); // fbAsyncInit by default    
   // we can't send next functions to this handlers, that show buttons now
+
+  // apply context
+  devHelper.init.apply(this, [cbk]);
 
   dhr.showElems('.' + this.cls.authNo);
 };
