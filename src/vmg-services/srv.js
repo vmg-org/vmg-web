@@ -19,6 +19,12 @@ exports.r1002 = function(id, next) {
   }, next);
 };
 
+exports.r1008 = function(id_of_media_spec, next) {
+  apiRqst.sendGetPublic('r1008', {
+    id_of_media_spec: id_of_media_spec
+  }, next);
+};
+
 // public - GET episode_templates wit episode_bid counts
 exports.r1009 = function(idOfMovieTemplate, next) {
   apiRqst.sendGetPublic('r1009', {

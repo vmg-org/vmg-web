@@ -4,6 +4,7 @@ var bem = require('../../../vmg-bem/bems/cabinet.bemjson');
 var vwmHelper = require('./vwm');
 var authHelper = require('../common/auth-helper');
 var popupHelper = require('../common/popup-helper');
+var fllHelper = require('./fll');
 
 var commonCls = require('../common/cls');
 var cls = require('./cls');
@@ -14,7 +15,8 @@ var ctx = {
   doc: document,
   cls: cls,
   sid: null,
-  bem: bem
+  bem: bem,
+  nonReadyEpisodeBid: null // A bid of current user with is_ready = false (usually - one or none)
 };
 
 var last = function() {
@@ -22,7 +24,13 @@ var last = function() {
 };
 
 var afterAuthFlow =
-  authHelper.showAuth.bind(ctx, last);
+  authHelper.showAuth.bind(ctx,
+    vwmHelper.loadNonReadyEpisodeBids.bind(ctx,
+      vwmHelper.loadBidInfo.bind(ctx,
+        fllHelper.fillBidInfo.bind(ctx, last)
+      )
+    )
+  );
 
 var authNoFlow =
   authHelper.waitUserLogin.bind(ctx,
