@@ -18,7 +18,12 @@ var handleBidInfo = function(next, err, bidInfo) {
   }
 
   this.bidInfo = bidInfo;
-  console.log('bidinfo', bidInfo);
+
+  // addt fields
+  this.bidInfo.episode_template_item.movie_template_item.url_to_view = './template.html?t=' +
+    this.bidInfo.episode_template_item.movie_template_item.id;
+
+  console.log('bidInfo', bidInfo);
   next();
 };
 

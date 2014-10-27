@@ -43,3 +43,10 @@ exports.r1010 = function(id_of_episode_template_arr, next) {
 exports.r1011 = function(next) {
   apiRqst.sendGet('r1011', {}, next);
 };
+
+// DELETE methods =======
+exports.d4001 = function(id_of_media_spec, next) {
+  apiRqst.sendDelete('d4001', {
+    id_of_media_spec: id_of_media_spec
+  }, next);
+};

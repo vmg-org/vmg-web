@@ -68,7 +68,7 @@ var eachElemUploadNow = function(elm) {
 
 var fillUserBids = function(next) {
   if (this.nonReadyEpisodeBids.length > 0) {
-    dhr.html('.' + this.cls.notif, 'You have a non-uploaded episode already. Please upload a video or cancel it (in your cabinet)');
+    dhr.html('.' + this.cls.notif, 'You have a non-uploaded episode already. Please upload a video or cancel it. <a href="./cabinet.html">Go to my cabinet</a>');
     dhr.showElems('.' + this.cls.notif);
     next();
     return;
