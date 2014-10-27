@@ -7,9 +7,18 @@ var srv = require('../vmg-services/srv');
 var handleCancelBid = function(err) {
   if (err) {
     // TODO: #43! show w/o alert
-    alert(err.message);
+    alert(err.message || '%=serverError=%');
     return;
   }
+
+  window.location.reload();
+  // if true
+  // hide all blocks
+  //  dhr.hideElems('.' + this.cls.actMovieScope);
+  //  dhr.hideElems('.' + this.cls.actEpisodeScope);
+  // dhr.hideElems('.' + this.cls.actBidScope);
+  // clean bidInfo too
+  // clean episodeInfo
 };
 
 var handleFncActBidCancel = function() {
@@ -17,7 +26,7 @@ var handleFncActBidCancel = function() {
 };
 
 var handleFncActBidUpload = function() {
-  alert('uploaded');
+  window.location.href = './upload.html?m=' + this.bidInfo.id_of_media_spec;
 };
 
 

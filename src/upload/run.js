@@ -4,7 +4,6 @@
  * @todo: #43! Touch events for mobile devices for drag and drop feature
  */
 var bem = require('../../../vmg-bem/bems/upload.bemjson');
-var demoBid = require('./demo-bid');
 var vwm = require('./vwm');
 var authHelper = require('../common/auth-helper');
 var popupHelper = require('../common/popup-helper');
@@ -23,7 +22,8 @@ var ctx = {
   doc: document,
   cls: cls,
   sid: null,
-  bem: bem
+  bem: bem,
+  idOfMediaSpec: null
 };
 
 var last = function() {
@@ -32,9 +32,8 @@ var last = function() {
 
 var afterAuthFlow =
   authHelper.showAuth.bind(ctx,
-    demoBid.run.bind(ctx,
-      vwm.attachUploadEvents.bind(ctx,
-        vwm.attachSelectorEvents.bind(ctx, last))));
+    vwm.attachUploadEvents.bind(ctx,
+      vwm.attachSelectorEvents.bind(ctx, last)));
 
 var authNoFlow =
   authHelper.showNoAuthWarning.bind(ctx,
@@ -53,12 +52,13 @@ var authFlowSelector = function() {
 
 // load a movie details
 var appFlow =
-  authHelper.loadSid.bind(ctx,
-    authHelper.handleSid.bind(ctx,
-      vwm.waitDocReady.bind(ctx,
-        popupHelper.addEvents.bind(ctx,
-          // two flows - auth=yes and auth=no
-          authFlowSelector.bind(ctx)
-        ))));
+  vwm.loadIdOfMediaSpec.bind(ctx,
+    authHelper.loadSid.bind(ctx,
+      authHelper.handleSid.bind(ctx,
+        vwm.waitDocReady.bind(ctx,
+          popupHelper.addEvents.bind(ctx,
+            // two flows - auth=yes and auth=no
+            authFlowSelector.bind(ctx)
+          )))));
 
 appFlow();

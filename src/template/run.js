@@ -21,7 +21,8 @@ var ctx = {
   userSession: null, // is authenticated
   isUserOwner: null, // autenticated and owner of movie template
   isUserAlreadyInBids: null,
-  nonReadyEpisodeBids: null // All bids of current user with is_ready = false (usually - one or none)
+  nonReadyEpisodeBids: null, // All bids of current user with is_ready = false (usually - one or none)
+  episodeBid: null // created episode bid (to redirect to upload)
 };
 
 var last = function() {

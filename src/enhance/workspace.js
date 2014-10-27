@@ -1,10 +1,9 @@
 /** @module */
 
 var jobOutputChecker = require('./job-output-checker');
-var jobCutService = require('../vmg-services/job-cut');
 var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
-var episodeBidService = require('../vmg-services/episode-bid');
+var srv = require('../vmg-services/srv');
 
 var Wsp = function(esc, idOfMediaSpec) {
   console.log('wsp', arguments);
@@ -55,7 +54,7 @@ Wsp.prototype.handleGetJobCut = function(err, jobCut) {
 };
 
 Wsp.prototype.checkJobCut = function() {
-  jobCutService.getItem(this.idOfMediaSpec, this.handleGetJobCut.bind(this));
+  srv.r1007(this.idOfMediaSpec, this.handleGetJobCut.bind(this));
 };
 
 Wsp.prototype.handlePostJobCut = function(err, jobCut) {
@@ -128,7 +127,7 @@ Wsp.prototype.cutVideo = function() {
   //    var elemCuttingStart = dhr.getElem('.' + clsNotif);
   //    var elemNotif = dhr.getElem('.' + clsNotif);
   // send it to the server
-  jobCutService.postItem(jobCut, this.handlePostJobCut.bind(this));
+  srv.w2005(jobCut, this.handlePostJobCut.bind(this));
 };
 
 Wsp.prototype.handleMetaReady = function() {
@@ -202,7 +201,7 @@ Wsp.prototype.handleBidInfo = function(err, episodeBid) {
 };
 
 Wsp.prototype.getBidInfo = function() {
-  episodeBidService.getItemWithEpisodeAndMovie(this.idOfMediaSpec, this.handleBidInfo.bind(this));
+  srv.r1008(this.idOfMediaSpec, this.handleBidInfo.bind(this));
 };
 
 Wsp.prototype.showNotif = function(err) {

@@ -1,8 +1,7 @@
 /** @module */
 'use strict';
 
-var jobOutputService = require('../vmg-services/job-output');
-var jobSourceService = require('../vmg-services/job-source');
+var srv = require('../vmg-services/srv');
 
 // A job for conversion is created
 var handleJobOutput = function(next, err, jobOutput) {
@@ -22,7 +21,7 @@ var createJobOutput = function(jobSource, next) {
     id_of_media_spec: jobSource.id_of_media_spec
   };
 
-  jobOutputService.postItem(jobOutput, handleJobOutput.bind(null, next));
+  srv.w2004(jobOutput, handleJobOutput.bind(null, next));
 };
 
 var handleJobSource = function(next, err, jobSource) {
@@ -43,7 +42,7 @@ var handleJobSource = function(next, err, jobSource) {
 // When the upload is done, client send a request to GET (update) a job_source
 //     whether the file uploaded successfuly
 exports.run = function(jobSource, next) {
-  jobSourceService.getItem(jobSource.id_of_media_spec, handleJobSource.bind(null, next));
+  srv.r1005(jobSource.id_of_media_spec, handleJobSource.bind(null, next));
 };
 
 module.exports = exports;

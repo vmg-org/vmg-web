@@ -7,7 +7,7 @@
  */
 'use strict';
 
-var jobSourceService = require('../vmg-services/job-source');
+var srv = require('../vmg-services/srv');
 var config = require('../config');
 
 var handleProgress = function(elemLoader, evt) {
@@ -64,7 +64,7 @@ var cbkCredUpload = function(files, elemLoader, next, err, jobSource) {
  * Handle
  * @param {Object} evt - event from input selector or drag and drop
  */
-exports.run = function(files, elemLoader, next) {
+exports.run = function(files, elemLoader, idOfMediaSpec, next) {
   //  var files = window.FileAPI.getFiles(evt); // Retrieve file list
   var needFile = files[0];
   if (!needFile) {
@@ -88,14 +88,14 @@ exports.run = function(files, elemLoader, next) {
   }
 
   console.log(needFile);
-  var demoIdOfMediaSpec = parseInt(window.location.hash.substr(1));
+//  var demoIdOfMediaSpec = parseInt(window.location.hash.substr(1));
 
   var jobSourceItem = {
-    id_of_media_spec: demoIdOfMediaSpec, //from hash
+    id_of_media_spec: idOfMediaSpec, //from hash
     id_of_container_format: needFile.type
   };
 
-  jobSourceService.postItem(jobSourceItem, cbkCredUpload.bind(null, files, elemLoader, next));
+  srv.w2003(jobSourceItem, cbkCredUpload.bind(null, files, elemLoader, next));
 };
 
 module.exports = exports;

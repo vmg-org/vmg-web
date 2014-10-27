@@ -7,68 +7,61 @@
 var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
 var srv = require('../vmg-services/srv');
-var episodeBidService = require('../vmg-services/episode-bid');
 
 var handlePostBid = function(next, err, episodeBid) {
   if (err) {
-    alert(err.message);
+    alert(err.message || '%=serverError=%');
     return;
   }
 
-  next(null, episodeBid);
+  this.episodeBid = episodeBid;
+
+  next();
 };
 
 var postBid = function(idOfEpisodeTemplate, next) {
   var dto = {
     id_of_episode_template: idOfEpisodeTemplate,
-    media_spec_item: {
-
-    }
+    media_spec_item: {}
   };
 
-  episodeBidService.postItem(dto, handlePostBid.bind(this, next));
+  srv.w2002(dto, handlePostBid.bind(this, next));
 };
 
 var afterUploadLater = function() {
-  alert('uploaded later');
+  window.location.reload();
 };
 
 var handleUploadLater = function(idOfEpisodeTemplate) {
-  //  alert('later ' + orderInMovie + ' ' + idOfEpisodeTemplate);
-
-  postBid.apply(this, [idOfEpisodeTemplate, afterUploadLater]);
-  // generate an empty bid -> 
-  //   - reload a page
-  //   - redirect to cabinet
+  dhr.disable('.' + this.cls.fncUploadLater); // to double-click prevent
+  dhr.disable('.' + this.cls.fncUploadNow); // to double-click prevent
+  postBid.apply(this, [idOfEpisodeTemplate, afterUploadLater.bind(this)]);
 };
 
 var afterUploadNow = function() {
-  alert('uploaded now');
+  window.location.href = './upload.html?m=' + this.episodeBid.id_of_media_spec;
 };
 
 var handleUploadNow = function(idOfEpisodeTemplate) {
-  //alert('now ' + orderInMovie + ' ' + idOfEpisodeTemplate);
-  // generate an empty bid -> 
-  //   - redirect to upload.html?media_spec=123
+  dhr.disable('.' + this.cls.fncUploadNow);
+  dhr.disable('.' + this.cls.fncUploadLater); // to double-click prevent
 
-  postBid.apply(this, [idOfEpisodeTemplate, afterUploadNow]);
+  postBid.apply(this, [idOfEpisodeTemplate, afterUploadNow.bind(this)]);
 };
 
 var eachElemUploadLater = function(elm) {
-  var orderInMovie = ahr.toInt(elm.getAttribute('data-order'));
   var idOfEpisodeTemplate = ahr.toInt(elm.getAttribute('data-id'));
-  dhr.on(elm, 'click', handleUploadLater.bind(this, idOfEpisodeTemplate, orderInMovie));
+  dhr.on(elm, 'click', handleUploadLater.bind(this, idOfEpisodeTemplate));
 };
 
 var eachElemUploadNow = function(elm) {
-  var orderInMovie = ahr.toInt(elm.getAttribute('data-order'));
   var idOfEpisodeTemplate = ahr.toInt(elm.getAttribute('data-id'));
-  dhr.on(elm, 'click', handleUploadNow.bind(this, idOfEpisodeTemplate, orderInMovie));
+  dhr.on(elm, 'click', handleUploadNow.bind(this, idOfEpisodeTemplate));
 };
 
 var fillUserBids = function(next) {
   if (this.nonReadyEpisodeBids.length > 0) {
-    dhr.html('.' + this.cls.notif, 'You have a non-uploaded episode already. Please upload a video or cancel it. <a href="./cabinet.html">Go to my cabinet</a>');
+    dhr.html('.' + this.cls.notif, 'You have a later-uploaded episode. Please upload a video or cancel it. <a href="./cabinet.html">Go to my cabinet</a>');
     dhr.showElems('.' + this.cls.notif);
     next();
     return;

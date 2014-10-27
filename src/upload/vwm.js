@@ -6,6 +6,7 @@
 var dhr = require('../vmg-helpers/dom');
 var fileHandler = require('./file-handler');
 var jobSourceChecker = require('./job-source-checker');
+var ahr = require('../vmg-helpers/app');
 
 /**
  * Handle output job
@@ -18,7 +19,7 @@ var handleJob = function(elemLoader, err, jobOutput) {
   }
 
   console.log('handleJob', jobOutput);
-  window.location.replace('./enhance.html?v=' + jobOutput.id_of_media_spec);
+  window.location.replace('./enhance.html?m=' + jobOutput.id_of_media_spec);
 };
 
 var handleResultOfUpload = function(elemSelector, elemLoader, elemNotif, err, jobSource) {
@@ -36,20 +37,40 @@ var handleResultOfUpload = function(elemSelector, elemLoader, elemNotif, err, jo
   jobSourceChecker.run(jobSource, handleJob.bind(null, elemLoader));
 };
 
+exports.loadIdOfMediaSpec = function(next) {
+  var mParam = ahr.getQueryParam('m');
+  mParam = ahr.toInt(mParam);
+
+  if (!mParam) {
+    alert('No param in url: ?m=123 as integer');
+    return;
+  }
+
+  this.idOfMediaSpec = mParam;
+  next();
+};
+
 // To show max duration - need to get BidInfo
 // Limit by filesize: 15s - 50MB 30s- 100MB
 // Event to select of dnd files
 exports.attachUploadEvents = function(next) {
+  var idOfMediaSpec = this.idOfMediaSpec;
+
+  if (!idOfMediaSpec) {
+    throw new Error('no idOfMediaSpec');
+  }
+
   var elemSelector = dhr.getElem('.' + this.cls.selector);
   var elemSelectorInput = dhr.getElem('.' + this.cls.selectorInput);
   var elemLoader = dhr.getElem('.' + this.cls.loader);
   var elemNotif = dhr.getElem('.' + this.cls.notif);
 
+
   window.FileAPI.event.on(elemSelectorInput, 'change', function(evt) {
     var files = window.FileAPI.getFiles(evt); // Retrieve file list
     dhr.hideElems(elemSelector);
     dhr.showElems(elemLoader);
-    fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
+    fileHandler.run(files, elemLoader, idOfMediaSpec, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
   });
 
   window.FileAPI.event.dnd(elemSelector, function(over) {
@@ -57,7 +78,7 @@ exports.attachUploadEvents = function(next) {
   }, function(files) {
     dhr.hideElems(elemSelector);
     dhr.showElems(elemLoader);
-    fileHandler.run(files, elemLoader, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
+    fileHandler.run(files, elemLoader, idOfMediaSpec, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
   });
 
   next();

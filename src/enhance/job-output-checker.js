@@ -1,7 +1,7 @@
 /** @module */
 'use strict';
 
-var jobOutputService = require('../vmg-services/job-output');
+var srv = require('../vmg-services/srv');
 var ahr = require('../vmg-helpers/app');
 
 var handleGetJobOutput = function(next, err, jobOutput) {
@@ -41,7 +41,7 @@ exports.run = function(idOfMediaSpec, next) {
     return next(new Error('required: idOfMediaSpec as integer'));
   }
 
-  jobOutputService.getItem(idOfMediaSpec, handleGetJobOutput.bind(null, next));
+  srv.r1006(idOfMediaSpec, handleGetJobOutput.bind(null, next));
 };
 
 module.exports = exports;

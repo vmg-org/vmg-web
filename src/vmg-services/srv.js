@@ -19,6 +19,22 @@ exports.r1002 = function(id, next) {
   }, next);
 };
 
+exports.r1005 = function(id_of_media_spec, next) {
+  apiRqst.sendGet('r1005', {
+    id_of_media_spec: id_of_media_spec
+  }, next);
+};
+exports.r1006 = function(id_of_media_spec, next) {
+  apiRqst.sendGet('r1006', {
+    id_of_media_spec: id_of_media_spec
+  }, next);
+};
+exports.r1007 = function(id_of_media_spec, next) {
+  apiRqst.sendGet('r1007', {
+    id_of_media_spec: id_of_media_spec
+  }, next);
+};
+
 exports.r1008 = function(id_of_media_spec, next) {
   apiRqst.sendGetPublic('r1008', {
     id_of_media_spec: id_of_media_spec
@@ -49,4 +65,20 @@ exports.d4001 = function(id_of_media_spec, next) {
   apiRqst.sendDelete('d4001', {
     id_of_media_spec: id_of_media_spec
   }, next);
+};
+
+exports.w2002 = function(dto, next) {
+  apiRqst.sendPost('w2002', {}, dto, next);
+};
+
+exports.w2003 = function(jobSource, next) {
+  apiRqst.sendPost('w2003', {}, jobSource, next);
+};
+
+exports.w2004 = function(dto, next) {
+  apiRqst.sendPost('w2004', {}, dto, next);
+};
+
+exports.w2005 = function(dto, next) {
+  apiRqst.sendPost('w2005', {}, dto, next);
 };
