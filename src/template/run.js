@@ -6,6 +6,7 @@ var authHelper = require('../common/auth-helper');
 var popupHelper = require('../common/popup-helper');
 var bem = require('../../../vmg-bem/bems/template.bemjson');
 var commonCls = require('../common/cls');
+var playerHandler = require('./player-handler');
 var cls = require('./cls');
 
 $.extend(cls, commonCls);
@@ -19,7 +20,8 @@ var ctx = {
   bem: bem,
   userSession: null, // is authenticated
   isUserOwner: null, // autenticated and owner of movie template
-  isUserAlreadyInBids: null
+  isUserAlreadyInBids: null,
+  nonReadyEpisodeBids: null // All bids of current user with is_ready = false (usually - one or none)
 };
 
 var last = function() {
@@ -29,7 +31,7 @@ var last = function() {
 var afterAuthFlow =
   authHelper.showAuth.bind(ctx,
     vwmHelper.handleUserRights.bind(ctx,
-      vwmHelper.handlePlayer.bind(ctx, // show buttons for usual user
+      playerHandler.run.bind(ctx, // show buttons for usual user
         vwmHelper.handleOwner.bind(ctx, // show button for owner of a movie
           last))));
 

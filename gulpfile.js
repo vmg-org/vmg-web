@@ -29,7 +29,7 @@ var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 
 // add new pages only here
-var pages = ['index', 'upload', 'watch', 'template', 'template-editor', 'enhance'];
+var pages = ['index', 'upload', 'watch', 'template', 'template-editor', 'enhance', 'cabinet'];
 
 var jshintNotify = function(file) {
   if (file.jshint.success) {
