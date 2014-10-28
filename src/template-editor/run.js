@@ -1,17 +1,101 @@
-/** @module */
-'use strict';
+// todo #33! js docs
+//* @todo #44! If a user wants to change order of episodes
 
-var commonVwjs = require('../vmg-helpers/vwjs');
-var vwjs = require('./vwjs');
+var bem = require('../../../vmg-bem/bems/template-editor.bemjson');
+var vwmHelper = require('./vwm');
+var authHelper = require('../common/auth-helper');
+var popupHelper = require('../common/popup-helper');
+var fllHelper = require('./fll');
 
-window.app = {};
+var commonCls = require('../common/cls');
+var cls = require('./cls');
 
-// fill window.app with global methods for all pages
-commonVwjs.run(window.app);
+$.extend(cls, commonCls);
 
-// fill with page-specific events
-vwjs.run(window.app);
+var ctx = {
+  doc: document,
+  cls: cls,
+  sid: null,
+  bem: bem,
+  genreTags: null,
+  crtScope: {
+    name_of_movie: '',
+    genre_of_movie: '',
+    episodes: [{
+      name: '',
+      story: '',
+      conds: ''
+    }, {
+      name: '',
+      story: '',
+      conds: ''
+    }, {
+      name: '',
+      story: '',
+      conds: ''
+    }]
+  },
+  inpLimit: {
+    name_of_movie: {
+      max_length: 50,
+      min_length: 3,
+      required: true
+    },
+    name_of_episode: {
+      max_length: 100,
+      min_length: 5,
+      required: true
+    },
+    story_of_episode: {
+      max_length: 400,
+      min_length: 100,
+      required: true
+    },
+    conds_of_episode: {
+      max_length: 100
+    }
+  }
+};
 
+window.app = ctx;
+
+var last = function() {
+  console.log('last func');
+};
+
+var afterAuthFlow =
+  authHelper.showAuth.bind(ctx,
+    vwmHelper.loadGenreTags.bind(ctx,
+      fllHelper.fillGenreTags.bind(ctx,
+        fllHelper.fillEpisodes.bind(ctx,
+          last
+        ))));
+
+var authNoFlow =
+  authHelper.showNoAuthWarning.bind(ctx,
+    authHelper.waitUserLogin.bind(ctx,
+      afterAuthFlow
+    ));
+
+var authFlowSelector = function() {
+  if (this.userSession) {
+    afterAuthFlow();
+  } else {
+    // show message and apply events and login buttons with authFlow
+    authNoFlow();
+  }
+};
+
+var appFlow =
+  vwmHelper.waitDocReady.bind(ctx,
+    popupHelper.addEvents.bind(ctx,
+      authHelper.loadSid.bind(ctx,
+        // two flows - auth=yes and auth=no
+        authHelper.handleSid.bind(ctx,
+          authFlowSelector.bind(ctx)
+        ))));
+
+appFlow();
 //  var demoTemplate = {
 //    name: 'Russian life',
 //    guide_photo_url: './img.png',
