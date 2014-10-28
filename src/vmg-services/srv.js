@@ -18,6 +18,10 @@ exports.r1002 = function(id, next) {
     id: id
   }, next);
 };
+exports.r1003 = function(next) {
+  // secured method - do not send this method withoud SID in localStorage
+  apiRqst.sendGet('r1003', {}, next);
+};
 
 exports.r1005 = function(id_of_media_spec, next) {
   apiRqst.sendGet('r1005', {
@@ -67,6 +71,14 @@ exports.d4001 = function(id_of_media_spec, next) {
   }, next);
 };
 
+exports.w2000 = function(dto, next) {
+  apiRqst.sendPost('w2000', {}, dto, next);
+};
+
+exports.w2001 = function(dto, next) {
+  apiRqst.sendPostPublic('w2001', {}, dto, next);
+};
+
 exports.w2002 = function(dto, next) {
   apiRqst.sendPost('w2002', {}, dto, next);
 };
@@ -81,4 +93,8 @@ exports.w2004 = function(dto, next) {
 
 exports.w2005 = function(dto, next) {
   apiRqst.sendPost('w2005', {}, dto, next);
+};
+
+exports.d4000 = function(next) {
+  apiRqst.sendDelete('d4000', {}, next);
 };

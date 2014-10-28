@@ -1,11 +1,10 @@
 /** @module */
 'use strict';
-var userSessionService = require('../vmg-services/user-session');
-
+var srv = require('../vmg-services/srv');
 var dhr = require('../vmg-helpers/dom');
 
 var devSignIn = function(next) {
-  userSessionService.postUserSession({
+  srv.w2001({
     id_of_auth_issuer: 'dev',
     social_token: 'dev_token'
   }, next);

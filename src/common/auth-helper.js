@@ -6,12 +6,12 @@ var dhr = require('../vmg-helpers/dom');
 var googHelper = require('./goog-helper');
 var fbHelper = require('./fb-helper');
 var devHelper = require('./dev-helper');
-var userSessionService = require('../vmg-services/user-session');
+var srv = require('../vmg-services/srv');
 var lgr = require('../vmg-helpers/lgr');
 
 var handleLogout = function() {
   // from cookie or context
-  userSessionService.deleteUserSession(function(errDel) {
+  srv.d4000(function(errDel) {
     // if sid is wrong - skip this error
     lgr.error(errDel);
     // no callbask: if err - expired sessions will be removed automatically from db
@@ -93,7 +93,7 @@ exports.handleSid = function(next) {
     // next flow - now
     // if sid is wrong or outdated - receive an error: 401
     // remove sid - show auth buttons
-    userSessionService.getUserSession(cbk);
+    srv.r1003(cbk);
   }
 };
 

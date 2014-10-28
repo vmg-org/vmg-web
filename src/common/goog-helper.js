@@ -1,15 +1,15 @@
 /** @module */
 
 var dhr = require('../vmg-helpers/dom');
-var userSessionService = require('../vmg-services/user-session');
 var config = require('../config');
+var srv = require('../vmg-services/srv');
 
 var handleGoogSignIn = function(next, authResult) {
   if (authResult['status']['signed_in']) {
     // http://stackoverflow.com/questions/23020733/google-login-hitting-twice
     if (authResult['status']['method'] === 'PROMPT') {
 
-      userSessionService.postUserSession({
+      srv.w2001({
         id_of_auth_issuer: 'goog',
         social_token: authResult.access_token
       }, next);

@@ -1,7 +1,7 @@
 /** @module */
 
 var dhr = require('../vmg-helpers/dom');
-var userSessionService = require('../vmg-services/user-session');
+var srv = require('../vmg-services/srv');
 var config = require('../config');
 
 var handleFbLoginStatus = function(next, response) {
@@ -13,7 +13,7 @@ var handleFbLoginStatus = function(next, response) {
     // Logged into your app and Facebook.
     console.log(response.authResponse);
     var authResult = response.authResponse;
-    userSessionService.postUserSession({
+    srv.w2001({
       id_of_auth_issuer: 'fb',
       social_token: authResult.accessToken
     }, next);
