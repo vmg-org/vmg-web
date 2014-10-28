@@ -1,6 +1,5 @@
 /** @module */
 
-var movieRecordService = require('../vmg-services/movie-record');
 var dhr = require('../vmg-helpers/dom');
 var lgr = require('../vmg-helpers/lgr');
 var srv = require('../vmg-services/srv');
@@ -45,7 +44,7 @@ var cbkWelcomeRecordList = function(next, err, data) {
 };
 
 exports.loadMovieRecords = function(next) {
-  movieRecordService.getWelcomeList(cbkWelcomeRecordList.bind(this, next));
+  srv.getMovieRecordsTop(cbkWelcomeRecordList.bind(this, next));
 };
 
 exports.fillMovieTemplates = function(next) {

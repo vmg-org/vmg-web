@@ -1,8 +1,7 @@
 /** @module */
 
-var genreTagService = require('../vmg-services/genre-tag');
 //var lgr = require('../vmg-helpers/lgr');
-//var srv = require('../vmg-services/srv');
+var srv = require('../vmg-services/srv');
 //var ahr = require('../vmg-helpers/app');
 
 exports.waitDocReady = function(next) {
@@ -21,7 +20,7 @@ var handleGenreTags = function(next, err, genreTags) {
 };
 
 exports.loadGenreTags = function(next) {
-  genreTagService.run(handleGenreTags.bind(this, next));
+  srv.getGenreTags(handleGenreTags.bind(this, next));
 };
 
 module.exports = exports;
