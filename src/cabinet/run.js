@@ -16,7 +16,9 @@ var ctx = {
   cls: cls,
   sid: null,
   bem: bem,
-  nonReadyEpisodeBid: null // A bid of current user with is_ready = false (usually - one or none)
+  nonReadyEpisodeBid: null, // A bid of current user with is_ready = false (usually - one or none)
+  openedMovieTemplates: null,
+  openedMovieTemplatesErr: null
 };
 
 var last = function() {
@@ -27,10 +29,11 @@ var afterAuthFlow =
   authHelper.showAuth.bind(ctx,
     vwmHelper.loadNonReadyEpisodeBids.bind(ctx,
       vwmHelper.loadBidInfo.bind(ctx,
-        fllHelper.fillBidInfo.bind(ctx, last)
-      )
-    )
-  );
+        fllHelper.fillBidInfo.bind(ctx,
+          vwmHelper.loadOpenedMovieTemplates.bind(ctx,
+            fllHelper.fillOpenedMovieTemplates.bind(ctx,
+              last)
+          )))));
 
 var authNoFlow =
   authHelper.waitUserLogin.bind(ctx,

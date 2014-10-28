@@ -5,8 +5,10 @@
 'use strict';
 var dhr = require('../vmg-helpers/dom');
 var hpr = require('./hpr');
+var ahr = require('../vmg-helpers/app');
+var srv = require('../vmg-services/srv');
 
-exports.createTemplate = function(elem, e, notifName) {
+var checkBeforeCreate = function() {
   var scope = this.crtScope;
   var lim = this.inpLimit;
   var arrErr = [];
@@ -22,6 +24,22 @@ exports.createTemplate = function(elem, e, notifName) {
     arrErr = arrErr.concat(hpr.propErr(lim.conds_of_episode, eps.conds, 'Episode ' + (ind + 1) + ' conditions'));
   });
 
+  return arrErr;
+};
+
+var handlePostMovietemplate = function(err, movieTemplate) {
+  if (err) {
+    dhr.html('.' + this.cls.notif, err.message || '%=serverError=%');
+    dhr.showElems('.' + this.cls.notif);
+    return;
+  }
+
+  // redirect to watch a template
+  window.location.href = './template.html?t=' + movieTemplate.id;
+};
+
+exports.createTemplate = function(elem, e, notifName) {
+  var arrErr = checkBeforeCreate.apply(this);
 
   if (arrErr.length > 0) {
     dhr.html('.' + notifName, arrErr.join('<br>'));
@@ -30,13 +48,28 @@ exports.createTemplate = function(elem, e, notifName) {
     return false;
   }
 
+  var scp = this.crtScope;
+
+  var movieTemplate = {
+    name: scp.name_of_movie,
+    duration_of_episodes: scp.duration_of_episodes,
+    preview_img_url: '',
+    movie_genre_item: {
+      id_of_genre_tag: scp.genre_of_movie,
+      color_schema: 'no schema'
+    },
+    episode_template_arr: scp.episodes
+  };
+
+  srv.w2000(movieTemplate, handlePostMovietemplate.bind(this));
+
   // It might be few buttons with this function
   // Store all fields in every button - extra
   //
   // Every input control - saves his value to some specific place in global namespace. crtTemplate
   // this button just check this place!!!!!!!
   //    console.log('template is published', elem);
-  alert('Created! (demo)');
+  //  alert('Created! (demo)');
 };
 
 exports.onSelectGenre = function(elem, e, heroScopeName, animalScopeName) {
@@ -121,6 +154,10 @@ exports.checkInputCondsOfEpisode = function(elem, e, helpElemName) {
   }
 
   this.crtScope.episodes[orderNumber - 1].conds = elem.value;
+};
+
+exports.onChangeDurationOfEpisodes = function(elem) {
+  this.crtScope.duration_of_episodes = ahr.toInt(elem.options[elem.selectedIndex].value);
 };
 
 module.exports = exports;

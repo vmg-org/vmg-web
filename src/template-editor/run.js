@@ -20,19 +20,26 @@ var ctx = {
   genreTags: null,
   crtScope: {
     name_of_movie: '',
+    duration_of_episodes: 15, // by default
     genre_of_movie: '',
     episodes: [{
       name: '',
       story: '',
-      conds: ''
+      conds: '',
+      order_in_movie: 1,
+      guide_photo_url: ''
     }, {
       name: '',
       story: '',
-      conds: ''
+      conds: '',
+      order_in_movie: 2,
+      guide_photo_url: ''
     }, {
       name: '',
       story: '',
-      conds: ''
+      conds: '',
+      order_in_movie: 3,
+      guide_photo_url: ''
     }]
   },
   inpLimit: {

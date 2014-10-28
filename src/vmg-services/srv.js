@@ -64,6 +64,11 @@ exports.r1011 = function(next) {
   apiRqst.sendGet('r1011', {}, next);
 };
 
+// Get user's movie templates (Active)
+exports.r1012 = function(next) {
+  apiRqst.sendGet('r1012', {}, next);
+};
+
 // DELETE methods =======
 exports.d4001 = function(id_of_media_spec, next) {
   apiRqst.sendDelete('d4001', {

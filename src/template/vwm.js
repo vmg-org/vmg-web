@@ -10,6 +10,21 @@ var handleFncProlongTemplate = function() {
 };
 
 var handleFncEditTemplate = function() {
+  // show notif - you cannot change if there are bids
+  //
+  var isBidsExist = false;
+
+  // addt fields for Template view
+  ahr.each(this.episodeTemplates, function(item) {
+    if (ahr.toInt(item.episode_bid_count) > 0) {
+      isBidsExist = true;
+    }
+  });
+
+  if (isBidsExist === true) {
+    alert('There are bids in the template already. An edit function is not allowed');
+    return;
+  }
   alert('under construction');
 };
 

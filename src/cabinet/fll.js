@@ -53,4 +53,17 @@ exports.fillBidInfo = function(next) {
   console.log('filled');
 };
 
+exports.fillOpenedMovieTemplates = function(next) {
+  if (this.openedMovieTemplatesErr) {
+    dhr.html('.' + this.cls.openedTemplateScope, 'Error to retrieving information');
+    dhr.showElems('.' + this.cls.openedTemplateScope);
+    next();
+    return;
+  }
+
+  dhr.impl(this.bem, this.cls.openedTemplateScope, 'movie_template', this.openedMovieTemplates);
+  console.log('filled opened');
+  next();
+};
+
 module.exports = exports;

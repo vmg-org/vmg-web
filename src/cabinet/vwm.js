@@ -3,7 +3,7 @@
 var dhr = require('../vmg-helpers/dom');
 var lgr = require('../vmg-helpers/lgr');
 var srv = require('../vmg-services/srv');
-//var ahr = require('../vmg-helpers/app');
+var ahr = require('../vmg-helpers/app');
 
 var handleError = function(clsNotif, err) {
   dhr.html('.' + clsNotif, err.message || '%=serverError=%');
@@ -59,6 +59,29 @@ exports.loadNonReadyEpisodeBids = function(next) {
 
 exports.waitDocReady = function(next) {
   $(this.doc).ready(next);
+};
+
+var handleOpenedMovieTemplates = function(next, err, arr) {
+  if (err) {
+    this.openedMovieTemplatesErr = err;
+    next();
+    return;
+  }
+
+  //addt fields
+  ahr.each(arr, function(item) {
+    item.finished_str = 'till ' + ahr.getTimeStr(item.finished, 'DD-MMM');
+    item.link_to_watch = './template.html?t=' + item.id;
+  });
+
+  this.openedMovieTemplates = arr;
+  console.log('opened', arr);
+  next();
+};
+
+exports.loadOpenedMovieTemplates = function(next) {
+  // non-active (old) templates
+  srv.r1012(handleOpenedMovieTemplates.bind(this, next));
 };
 
 module.exports = exports;
