@@ -4,5 +4,6 @@ module.exports = {
   animalScope: 'animal-scope',
   heroScope: 'hero-scope',
   savingScope: 'crt-template-saving',
-  movieGenres: 'movie-genres'
+  movieGenres: 'movie-genres',
+  movieGenresChecker: 'movie-genres__checker'
 };

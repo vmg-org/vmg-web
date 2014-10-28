@@ -24,8 +24,9 @@ var handleFncEditTemplate = function() {
   if (isBidsExist === true) {
     alert('There are bids in the template already. An edit function is not allowed');
     return;
+  } else {
+    window.location.href = './template-editor.html?t=' + this.movieTemplate.id;
   }
-  alert('under construction');
 };
 
 var handleFncShowAttachments = function() {

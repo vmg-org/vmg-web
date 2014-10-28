@@ -18,6 +18,8 @@ var ctx = {
   sid: null,
   bem: bem,
   genreTags: null,
+  prevMovieTemplate: null,
+  prevMovieTemplateErr: null,
   crtScope: {
     name_of_movie: '',
     duration_of_episodes: 15, // by default
@@ -73,10 +75,13 @@ var last = function() {
 var afterAuthFlow =
   authHelper.showAuth.bind(ctx,
     vwmHelper.loadGenreTags.bind(ctx,
-      fllHelper.fillGenreTags.bind(ctx,
-        fllHelper.fillEpisodes.bind(ctx,
-          last
-        ))));
+      vwmHelper.loadTemplateIfEdit.bind(ctx,
+        fllHelper.fillPrevMovieTemplate.bind(ctx,
+          fllHelper.fillGenreTags.bind(ctx,
+            fllHelper.fillEpisodes.bind(ctx,
+              fllHelper.showCrtBlocks.bind(ctx,
+                last
+              )))))));
 
 var authNoFlow =
   authHelper.showNoAuthWarning.bind(ctx,
