@@ -13,15 +13,22 @@ var bh = new(bhLib.BH); // jshint ignore:line
 var ahr = require('../vmg-helpers/app');
 
 function replacer(dataItem, match, p1) {
-    // with $1 object doesnt works
-    // todo @31! or throw an error
-    return '"' + (dataItem[p1] || ('@@' + p1)) + '"';
+  if (dataItem[p1] === null) {
+    console.log('replacer: null: ', p1, dataItem[p1]);
   }
-  /*
-   * Map it
-   * @param {Object} sampleSchema - { block: 'asdf', content: []}
-   * @param {Object} dataItem - {name: 'asdfasdfa' }
-   */
+  if (typeof dataItem[p1] === 'undefined') {
+    console.log('replacer: undefined: ', p1, dataItem[p1]);
+  }
+  // with $1 object doesnt works
+  // todo @31! or throw an error
+  return '"' + (dataItem[p1] || '') + '"';
+}
+
+/*
+ * Map it
+ * @param {Object} sampleSchema - { block: 'asdf', content: []}
+ * @param {Object} dataItem - {name: 'asdfasdfa' }
+ */
 var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
 
   // find in schema - object where mdl = mdlName

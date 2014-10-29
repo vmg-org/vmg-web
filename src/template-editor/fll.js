@@ -67,7 +67,8 @@ exports.fillEpisodes = function(next) {
     ph_conds: 'Episode conditions',
     tooltip_name: hpr.constructTip('name_of_episode', this.inpLimit),
     tooltip_story: hpr.constructTip('story_of_episode', this.inpLimit),
-    tooltip_conds: hpr.constructTip('conds_of_episode', this.inpLimit)
+    tooltip_conds: hpr.constructTip('conds_of_episode', this.inpLimit),
+    story: 'default story'
   }, {
     order: '2',
     name_order: 'Second episode',
