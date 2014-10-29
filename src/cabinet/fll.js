@@ -66,4 +66,21 @@ exports.fillOpenedMovieTemplates = function(next) {
   next();
 };
 
+exports.fillReadyEpisodeBids = function(nxt) {
+  if (this.readyEpisodeBidsErr) {
+    dhr.html('.' + this.cls.readyBidScope, 'error retrieving info');
+    nxt();
+    return;
+  }
+
+  if (this.readyEpisodeBids.length === 0) {
+    dhr.html('.' + this.cls.readyBidScope, 'No uploaded videos');
+    nxt();
+    return;
+  }
+
+  dhr.impl(this.bem, this.cls.readyBidScope, 'episode_bid', this.readyEpisodeBids);
+  nxt();
+};
+
 module.exports = exports;

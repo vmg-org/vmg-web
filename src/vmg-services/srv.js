@@ -69,6 +69,11 @@ exports.r1012 = function(next) {
   apiRqst.sendGet('r1012', {}, next);
 };
 
+// Get user's ready bids, with movie info
+exports.r1014 = function(next) {
+  apiRqst.sendGet('r1014', {}, next);
+};
+
 // DELETE methods =======
 exports.d4001 = function(id_of_media_spec, next) {
   apiRqst.sendDelete('d4001', {

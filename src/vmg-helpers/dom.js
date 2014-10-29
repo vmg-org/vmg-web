@@ -13,8 +13,18 @@ var bh = new(bhLib.BH); // jshint ignore:line
 var ahr = require('../vmg-helpers/app');
 
 function replacer(dataItem, match, p1) {
+  var arrDot = p1.split('__'); // "ab.cd" 
+  var val = dataItem[arrDot[0]];
+
+  for (var ind = 1; ind < arrDot.length; ind += 1) {
+    // only for JSON objects
+    val = val[arrDot[ind]];
+  }
+
   // TODO: #41! dev checking: remove on production
-  var val = dataItem[p1];
+  //  var val = dataItem[p1];
+
+
   if (val === null) {
     val = '';
     console.log('replacer: null: ', p1, val);
@@ -23,6 +33,10 @@ function replacer(dataItem, match, p1) {
     val = '';
     console.log('replacer: undefined: ', p1, val);
   }
+
+  //  if (ahr.isJson(val)){
+  //var arrDot = 
+  //  }
   // with $1 object doesnt works
   // todo #31! or throw an error
   return '"' + val + '"';
@@ -34,7 +48,6 @@ function replacer(dataItem, match, p1) {
  * @param {Object} dataItem - {name: 'asdfasdfa' }
  */
 var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
-
   // find in schema - object where mdl = mdlName
   // var mdlObj = ahr.findJsonMatch(sampleSchema, 'mdl', mdlName);
 
@@ -51,9 +64,9 @@ var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
   //  var allMatches = strSchema.match(/"@@\w+"/g);
   //  console.log(allMatches);
   //var matches = strSchema.match(/@@(\w+/g);
+  //  if (ahr.isJson(dataItem)) {
 
   var genSchema = strSchema.replace(/"@@(\w+)"/g, replacer.bind(null, dataItem));
-
   return ahr.parseJson(genSchema);
 };
 

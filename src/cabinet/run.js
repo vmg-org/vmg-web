@@ -16,6 +16,7 @@ var ctx = {
   cls: cls,
   sid: null,
   bem: bem,
+  readyEpisodeBids: null, // Uploaded bids, with media_spec_item, episode_template_item, movie_template_item
   nonReadyEpisodeBid: null, // A bid of current user with is_ready = false (usually - one or none)
   openedMovieTemplates: null,
   openedMovieTemplatesErr: null
@@ -30,10 +31,12 @@ var afterAuthFlow =
     vwmHelper.loadNonReadyEpisodeBids.bind(ctx,
       vwmHelper.loadBidInfo.bind(ctx,
         fllHelper.fillBidInfo.bind(ctx,
-          vwmHelper.loadOpenedMovieTemplates.bind(ctx,
-            fllHelper.fillOpenedMovieTemplates.bind(ctx,
-              last)
-          )))));
+          vwmHelper.loadReadyEpisodeBids.bind(ctx,
+            fllHelper.fillReadyEpisodeBids.bind(ctx,
+              vwmHelper.loadOpenedMovieTemplates.bind(ctx,
+                fllHelper.fillOpenedMovieTemplates.bind(ctx,
+                  last)
+              )))))));
 
 var authNoFlow =
   authHelper.waitUserLogin.bind(ctx,

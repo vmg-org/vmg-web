@@ -84,4 +84,23 @@ exports.loadOpenedMovieTemplates = function(next) {
   srv.r1012(handleOpenedMovieTemplates.bind(this, next));
 };
 
+var handleReadyEpisodeBids = function(nxt, err, arrEbd) {
+  if (err) {
+    this.readyEpisodeBidsErr = err;
+    nxt();
+    lgr.error(err);
+    return;
+  }
+
+  this.readyEpisodeBids = arrEbd;
+  nxt();
+  lgr.info({
+    arrEbd: arrEbd
+  });
+};
+
+exports.loadReadyEpisodeBids = function(nxt) {
+  srv.r1014(handleReadyEpisodeBids.bind(this, nxt));
+};
+
 module.exports = exports;
