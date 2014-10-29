@@ -92,6 +92,11 @@ var handleReadyEpisodeBids = function(nxt, err, arrEbd) {
     return;
   }
 
+  ahr.each(arrEbd, function(item) {
+    item.created_str = ahr.getTimeStr(item.created, 'DD-MMM');
+    item.link_to_template = './template.html?t=' + item.episode_template_item.movie_template_item.id;
+  });
+
   this.readyEpisodeBids = arrEbd;
   nxt();
   lgr.info({
