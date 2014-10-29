@@ -6,6 +6,7 @@ var vwmHelper = require('./vwm');
 var authHelper = require('../common/auth-helper');
 var popupHelper = require('../common/popup-helper');
 var fllHelper = require('./fll');
+var ehr = require('./ehr');
 
 var commonCls = require('../common/cls');
 var cls = require('./cls');
@@ -67,6 +68,7 @@ var ctx = {
 };
 
 window.app = ctx;
+$.extend(window.app, ehr);
 
 var last = function() {
   console.log('last func');

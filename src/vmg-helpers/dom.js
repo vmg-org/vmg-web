@@ -164,6 +164,10 @@ exports.getVal = function(elem) {
   return $(elem).val();
 };
 
+exports.setVal = function(elem, val) {
+  $(elem).val(val);
+};
+
 /**
  * Load Google lib for SignIn and other methods
  */

@@ -3,7 +3,6 @@
 
 var dhr = require('../vmg-helpers/dom');
 var hpr = require('./hpr');
-var ehr = require('./ehr');
 var ahr = require('../vmg-helpers/app');
 
 /**
@@ -19,6 +18,7 @@ exports.showCrtBlocks = function(next) {
   // show or hide exclamation sign (after checking limits);
   $('input:text').trigger('keyup');
   $('textarea').trigger('keyup');
+  $('select').trigger('change');
 
   next();
 };
@@ -47,6 +47,7 @@ exports.fillPrevMovieTemplate = function(nxt) {
   nxt();
 };
 
+// Fill genre tags and other movie info, like movie name and duration, and photo
 exports.fillGenreTags = function(next) {
   dhr.impl(this.bem, this.cls.movieGenres, 'genre_tag', this.genreTags);
 
@@ -54,8 +55,12 @@ exports.fillGenreTags = function(next) {
     if (this.prevMovieTemplate.movie_genre_item) {
       var gid = this.prevMovieTemplate.movie_genre_item.id_of_genre_tag;
       console.log('gid', gid);
-      $('.' + this.cls.movieGenresChecker + ':input[value="' + gid + '"]').prop('checked', true);
+      $('.' + this.cls.movieGenresChecker + ':input[value="' + gid + '"]').trigger('click');
+      //.prop('checked', true);
     }
+
+    dhr.setVal('.' + this.cls.inpMovieName, this.prevMovieTemplate.name);
+    dhr.setVal('.' + this.cls.inpDuration, ahr.toInt(this.prevMovieTemplate.duration_of_episodes));
   }
 
   next();
@@ -98,13 +103,14 @@ exports.fillEpisodes = function(next) {
     // TODO: #33! Sort episodes
     ahr.each(this.prevMovieTemplate.episode_template_arr, function(prevEpisode, ind) {
       data[ind].story = prevEpisode.story || '';
+      data[ind].name = prevEpisode.name || '';
+      data[ind].conds = prevEpisode.conds || '';
     });
   }
 
   var mdlName = 'crt_episode';
   dhr.impl(this.bem, targetName, mdlName, data);
 
-  $.extend(window.app, ehr);
 
   next();
 };

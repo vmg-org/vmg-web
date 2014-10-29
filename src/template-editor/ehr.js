@@ -34,8 +34,8 @@ var handlePostMovietemplate = function(err, movieTemplate) {
     return;
   }
 
-  // redirect to watch a template
-  window.location.href = './template.html?t=' + movieTemplate.id;
+  // TODO: #33! redirect to watch a template
+  //  window.location.href = './template.html?t=' + movieTemplate.id;
 };
 
 exports.createTemplate = function(elem, e, notifName) {
@@ -60,6 +60,15 @@ exports.createTemplate = function(elem, e, notifName) {
     },
     episode_template_arr: scp.episodes
   };
+
+  var prevMovieTemplate = this.prevMovieTemplate;
+  if (prevMovieTemplate) {
+    // Edit
+    movieTemplate.id = prevMovieTemplate.id;
+    ahr.each(movieTemplate.episode_template_arr, function(etm, ind) {
+      etm.id = prevMovieTemplate.episode_template_arr[ind].id;
+    });
+  }
 
   srv.w2000(movieTemplate, handlePostMovietemplate.bind(this));
 
