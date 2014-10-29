@@ -12,7 +12,7 @@ var ahr = {};
 ahr.each = function(arr, cbk) {
   for (var i = 0, lim = arr.length; i < lim; i += 1) {
     // can be passed index and full arr as required (as 2-nd and 3-rd element) like in forEach
-    cbk(arr[i]);
+    cbk(arr[i], i);
   }
 };
 

@@ -46,4 +46,26 @@ exports.loadTemplateIfEdit = function(nxt) {
   srv.r1002(tParam, handleLoadTemplate.bind(this, nxt));
 };
 
+var handleLoadEpisodesIfEdit = function(nxt, err, arrEtm) {
+  if (err) {
+    alert('%=serverError=%');
+    return;
+  }
+
+  // if there bids already - you cannot change 
+  //var isBidExists = false;
+
+  this.prevMovieTemplate.episode_template_arr = arrEtm;
+  nxt();
+};
+
+exports.loadEpisodesIfEdit = function(nxt) {
+  if (!this.prevMovieTemplate) {
+    nxt();
+    return;
+  }
+
+  srv.r1009(this.prevMovieTemplate.id, handleLoadEpisodesIfEdit.bind(this, nxt));
+};
+
 module.exports = exports;

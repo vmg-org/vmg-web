@@ -76,12 +76,14 @@ var afterAuthFlow =
   authHelper.showAuth.bind(ctx,
     vwmHelper.loadGenreTags.bind(ctx,
       vwmHelper.loadTemplateIfEdit.bind(ctx,
-        fllHelper.fillPrevMovieTemplate.bind(ctx,
-          fllHelper.fillGenreTags.bind(ctx,
-            fllHelper.fillEpisodes.bind(ctx,
-              fllHelper.showCrtBlocks.bind(ctx,
-                last
-              )))))));
+        vwmHelper.loadEpisodesIfEdit.bind(ctx,
+          fllHelper.checkBidsExistence.bind(ctx,
+            fllHelper.fillPrevMovieTemplate.bind(ctx,
+              fllHelper.fillGenreTags.bind(ctx,
+                fllHelper.fillEpisodes.bind(ctx,
+                  fllHelper.showCrtBlocks.bind(ctx,
+                    last
+                  )))))))));
 
 var authNoFlow =
   authHelper.showNoAuthWarning.bind(ctx,

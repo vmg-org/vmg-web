@@ -13,15 +13,19 @@ var bh = new(bhLib.BH); // jshint ignore:line
 var ahr = require('../vmg-helpers/app');
 
 function replacer(dataItem, match, p1) {
-  if (dataItem[p1] === null) {
-    console.log('replacer: null: ', p1, dataItem[p1]);
+  // TODO: #41! dev checking: remove on production
+  var val = dataItem[p1];
+  if (val === null) {
+    val = '';
+    console.log('replacer: null: ', p1, val);
   }
-  if (typeof dataItem[p1] === 'undefined') {
-    console.log('replacer: undefined: ', p1, dataItem[p1]);
+  if (typeof val === 'undefined') {
+    val = '';
+    console.log('replacer: undefined: ', p1, val);
   }
   // with $1 object doesnt works
-  // todo @31! or throw an error
-  return '"' + (dataItem[p1] || '') + '"';
+  // todo #31! or throw an error
+  return '"' + val + '"';
 }
 
 /*

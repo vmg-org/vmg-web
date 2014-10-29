@@ -4,6 +4,7 @@
 var dhr = require('../vmg-helpers/dom');
 var hpr = require('./hpr');
 var ehr = require('./ehr');
+var ahr = require('../vmg-helpers/app');
 
 /**
  * Show blocks for creating
@@ -14,6 +15,10 @@ exports.showCrtBlocks = function(next) {
   dhr.showElems('.' + this.cls.movieScope);
   dhr.showElems('.' + this.cls.episodeScope);
   dhr.showElems('.' + this.cls.savingScope);
+
+  // show or hide exclamation sign (after checking limits);
+  $('input:text').trigger('keyup');
+  $('textarea').trigger('keyup');
 
   next();
 };
@@ -67,8 +72,7 @@ exports.fillEpisodes = function(next) {
     ph_conds: 'Episode conditions',
     tooltip_name: hpr.constructTip('name_of_episode', this.inpLimit),
     tooltip_story: hpr.constructTip('story_of_episode', this.inpLimit),
-    tooltip_conds: hpr.constructTip('conds_of_episode', this.inpLimit),
-    story: 'default story'
+    tooltip_conds: hpr.constructTip('conds_of_episode', this.inpLimit)
   }, {
     order: '2',
     name_order: 'Second episode',
@@ -89,12 +93,40 @@ exports.fillEpisodes = function(next) {
     tooltip_conds: hpr.constructTip('conds_of_episode', this.inpLimit)
   }];
 
+  // add default data if edit
+  if (this.prevMovieTemplate) {
+    // TODO: #33! Sort episodes
+    ahr.each(this.prevMovieTemplate.episode_template_arr, function(prevEpisode, ind) {
+      data[ind].story = prevEpisode.story || '';
+    });
+  }
+
   var mdlName = 'crt_episode';
   dhr.impl(this.bem, targetName, mdlName, data);
 
   $.extend(window.app, ehr);
 
   next();
+};
+
+exports.checkBidsExistence = function(nxt) {
+  if (!this.prevMovieTemplate) {
+    nxt();
+    return;
+  }
+
+  var isExists = (this.prevMovieTemplate.episode_template_arr.filter(function(item) {
+    return item.episode_bid_count > 0;
+  })).length > 0;
+
+  if (isExists) {
+    dhr.html('.' + this.cls.notif, 'There are bids in the template already. An edit feature is not allowed');
+    dhr.showElems('.' + this.cls.notif);
+    return;
+    // NO nxt()
+  }
+
+  nxt();
 };
 
 module.exports = exports;
