@@ -59,7 +59,7 @@ var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
 
   // change every key in dataItem
 
-  //  ahr.each(Object.keys(dataItem), implementEachData
+  //  ahr.each(Object.keys(dataItem), ementEachData
   //  console.log(strSchema);
   //  var allMatches = strSchema.match(/"@@\w+"/g);
   //  console.log(allMatches);
@@ -70,16 +70,7 @@ var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
   return ahr.parseJson(genSchema);
 };
 
-exports.impl = function(bem, elemName, mdlName, data, isEffect) {
-  var lists;
-  //  if (typeof elemName === 'string') {
-  lists = $('.' + elemName); // may be few lists with movie-records in a page (retry logic)
-  //  } else {
-  //    // Link to  Element - elemName
-  //    lists = $(elemName);
-  //    console.log('lists', lists);
-  //  }
-
+exports.hfb = function(bem, elemName, mdlName, data) {
   // get an object where block == key
   // get content of this object
   // get first item of array (of content)
@@ -92,17 +83,27 @@ exports.impl = function(bem, elemName, mdlName, data, isEffect) {
 
   var sampleSchema = result.content[0];
 
+  // insert data to schema (only one level)
   var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema, mdlName));
-
-  //  console.log('fullArr', fullArr[0].content[0]);
 
   result.content = fullArr;
   var readyHtml = bh.apply(result);
+  return readyHtml;
+};
 
+exports.impl = function(bem, elemName, mdlName, data, isEffect) {
+  var readyHtml = exports.hfb(bem, elemName, mdlName, data);
   // bh can't generate html without a parent block
   //   without parent block - their elements with wrong names
   //   but we need only elements markup
   var jqrNewElems = $(readyHtml).children();
+  var lists = $('.' + elemName); // may be few lists with movie-records in a page (retry logic)
+  //  } else {
+  //    // Link to  Element - elemName
+  //    lists = $(elemName);
+  //    console.log('lists', lists);
+  //  }
+
   if (isEffect) {
     jqrNewElems.hide();
   }

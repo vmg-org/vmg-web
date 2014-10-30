@@ -36,11 +36,13 @@ Wsp.prototype.handleGetJobCut = function(err, jobCut) {
   }
   //https://github.com/videojs/video.js/blob/stable/docs/api/vjs.Player.md
   if (jobCut.id_of_job_status === 'Complete') {
-    var needMediaFileCut = jobCut.media_spec_item.file_cut_arr[0].media_file_item;
-    this.vdo.src(needMediaFileCut.url);
+    window.location.href = './cabinet.html';
 
-    dhr.hideElems(this.esc.loader);
-    dhr.showElems(this.esc.player);
+    //    var needMediaFileCut = jobCut.media_spec_item.file_cut_arr[0].media_file_item;
+    //    this.vdo.src(needMediaFileCut.url);
+    //
+    //    dhr.hideElems(this.esc.loader);
+    //    dhr.showElems(this.esc.player);
     // TODO: #33! Show button to attach video to episode   
     // And remove cutted version, to cut again from source (in future);
     // Get url,

@@ -1,5 +1,7 @@
 /** 
  * Gulp tasks
+ * @todo #23! Create a separate page for ready bids: canceled, approved etc
+ *            With a movie player to watch my episodes
  * @todo #42! add a most popular jquery dns link instead local (on production)
  * @todo #44! add tap for dragging files on mobile devices
  * @todo: #33! Cutting may be used later, if user have a cut error

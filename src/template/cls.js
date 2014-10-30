@@ -10,5 +10,9 @@ module.exports = {
   fncShowAttachments: 'shw-episode__fnc-show-attachments',
   // player fncs
   fncUploadLater: 'shw-episode__fnc-upload-later',
-  fncUploadNow: 'shw-episode__fnc-upload-now'
+  fncUploadNow: 'shw-episode__fnc-upload-now',
+  attContainer: 'shw-episode__attachments',
+  attRow: 'att-row',
+  attInfoScope: 'att-info-scope',
+  attContentScope: 'att-content-scope'
 };

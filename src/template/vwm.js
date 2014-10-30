@@ -4,6 +4,7 @@ var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
 var srv = require('../vmg-services/srv');
 var lgr = require('../vmg-helpers/lgr');
+var att = require('./att');
 
 var handleFncProlongTemplate = function() {
   alert('under construction');
@@ -29,8 +30,34 @@ var handleFncEditTemplate = function() {
   }
 };
 
-var handleFncShowAttachments = function() {
-  alert('under construction');
+var handleFncShowAttachments = function(e) {
+
+  var idOfEpisodeTemplate = e.target.getAttribute('data-id');
+  var jqrContainer = $('.' + this.cls.attContainer + '[data-id="' + idOfEpisodeTemplate + '"]');
+
+  if (dhr.isElems(jqrContainer, ':visible')) {
+    jqrContainer.hide('slow');
+  } else {
+    jqrContainer.show('slow');
+    var attRow = dhr.getElems('.' + this.cls.attRow);
+    att.run.apply(this, [idOfEpisodeTemplate, jqrContainer, attRow]);
+  }
+
+  //  console.log(idOfEpisodeTemplate);
+
+  //  $('.' + this.cls.attContainer
+  // number or id of episode
+
+  // att.run.apply(this);
+  // show or hide this one
+  //alert('under construction');
+  // show a block with loaders
+  // load bids, if no bids - show notif
+  // load file_cut for id_of_media_spec - show a video
+  // when loaded
+  //      plusButton - PUT episode-bid moder_rating - plus
+  //      bestButton - PUT epis moder_rating - best
+  // for template author - button: join best videos: send 3 ids of bids
 };
 
 exports.handleOwner = function(next) {
@@ -51,7 +78,7 @@ exports.handleOwner = function(next) {
   var elemEditTemplate = dhr.getElems('.' + this.cls.fncEditTemplate);
   //    var elemRemoveTemplate = dhr.getElem('.' + this.cls.fncRemoveTemplate);
   //    var elemTweetStory = dhr.getElem('.' + this.cls.fncTweetStory);
-  var elemShowAttachments = dhr.getElems('.' + this.cls.fncShowAttachments);
+  var elemsShowAttachments = dhr.getElems('.' + this.cls.fncShowAttachments);
 
   dhr.on(elemProlongTemplate, 'click', handleFncProlongTemplate.bind(this));
   dhr.showElems(elemProlongTemplate);
@@ -59,8 +86,8 @@ exports.handleOwner = function(next) {
   dhr.on(elemEditTemplate, 'click', handleFncEditTemplate.bind(this));
   dhr.showElems(elemEditTemplate);
 
-  dhr.on(elemShowAttachments, 'click', handleFncShowAttachments.bind(this));
-  dhr.showElems(elemShowAttachments);
+  dhr.on(elemsShowAttachments, 'click', handleFncShowAttachments.bind(this));
+  dhr.showElems(elemsShowAttachments);
 
   next();
 };

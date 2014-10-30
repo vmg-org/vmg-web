@@ -27,7 +27,7 @@ var checkBeforeCreate = function() {
   return arrErr;
 };
 
-var handlePostMovietemplate = function(err, movieTemplate) {
+var handlePostMovietemplate = function(movieTemplate, err, createdMovieTemplate) {
   if (err) {
     dhr.html('.' + this.cls.notif, err.message || '%=serverError=%');
     dhr.showElems('.' + this.cls.notif);
@@ -35,7 +35,7 @@ var handlePostMovietemplate = function(err, movieTemplate) {
   }
 
   // TODO: #33! redirect to watch a template
-  //  window.location.href = './template.html?t=' + movieTemplate.id;
+  window.location.href = './template.html?t=' + (createdMovieTemplate ? createdMovieTemplate.id : movieTemplate.id);
 };
 
 exports.createTemplate = function(elem, e, notifName) {
@@ -70,7 +70,7 @@ exports.createTemplate = function(elem, e, notifName) {
     });
   }
 
-  srv.w2000(movieTemplate, handlePostMovietemplate.bind(this));
+  srv.w2000(movieTemplate, handlePostMovietemplate.bind(this, movieTemplate));
 
   // It might be few buttons with this function
   // Store all fields in every button - extra

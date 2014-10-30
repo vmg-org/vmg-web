@@ -74,6 +74,12 @@ exports.r1014 = function(next) {
   apiRqst.sendGet('r1014', {}, next);
 };
 
+exports.r1015 = function(id_of_episode_template, next) {
+  apiRqst.sendGetPublic('r1015', {
+    id_of_episode_template: id_of_episode_template
+  }, next);
+};
+
 // DELETE methods =======
 exports.d4001 = function(id_of_media_spec, next) {
   apiRqst.sendDelete('d4001', {

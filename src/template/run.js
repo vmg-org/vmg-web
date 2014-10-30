@@ -25,6 +25,8 @@ var ctx = {
   episodeBid: null // created episode bid (to redirect to upload)
 };
 
+window.app = ctx;
+
 var last = function() {
   console.log('last func');
 };
