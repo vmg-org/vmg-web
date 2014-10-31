@@ -14,7 +14,7 @@ $.extend(cls, commonCls);
 var ctx = {
   doc: document,
   idOfMovieTemplate: null,
-  movieTemplate: null,
+  movieTemplate: null, // contains episodeTemplates
   cls: cls,
   sid: null,
   bem: bem,
@@ -57,12 +57,10 @@ var appFlow = vwmHelper.loadIdOfMovieTemplate.bind(ctx,
     vwmHelper.waitDocReady.bind(ctx,
       popupHelper.addEvents.bind(ctx,
         vwmHelper.fillMovieTemplate.bind(ctx,
-          vwmHelper.loadEpisodeTemplates.bind(ctx,
-            vwmHelper.fillEpisodeTemplates.bind(ctx,
-              authHelper.loadSid.bind(ctx,
-                // two flows - auth=yes and auth=no
-                authHelper.handleSid.bind(ctx,
-                  authFlowSelector.bind(ctx)
-                )))))))));
+          authHelper.loadSid.bind(ctx,
+            // two flows - auth=yes and auth=no
+            authHelper.handleSid.bind(ctx,
+              authFlowSelector.bind(ctx)
+            )))))));
 
 appFlow();

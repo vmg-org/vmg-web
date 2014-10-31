@@ -22,6 +22,11 @@ exports.r1003 = function(next) {
   // secured method - do not send this method withoud SID in localStorage
   apiRqst.sendGet('r1003', {}, next);
 };
+exports.r1004 = function(id_of_media_spec, next) {
+  apiRqst.sendGetPublic('r1004', {
+    id_of_media_spec: id_of_media_spec
+  }, next);
+};
 
 exports.r1005 = function(id_of_media_spec, next) {
   apiRqst.sendGet('r1005', {

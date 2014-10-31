@@ -3,6 +3,7 @@
 
 var dhr = require('../vmg-helpers/dom');
 var srv = require('../vmg-services/srv');
+var mdlBid = require('./episode-bid');
 
 var fillBids = function(idOfEpisodeTemplate) {
   var readyHtml = dhr.hfb(this.bem, this.cls.attInfoScope, 'episode_bid', this.tmpBids);
@@ -11,16 +12,21 @@ var fillBids = function(idOfEpisodeTemplate) {
   jqrInfoScope.html($(readyHtml).children());
 };
 
-var mapBid = function(item) {
-  item.moder_rating_str = 'super rating';
-  return item;
+
+var mapBid = function(item, ind) {
+  return mdlBid.init(item, ind);
 };
 
 var handleLoadBids = function(next, err, data) {
+  if (err) {
+    alert(err.message || '%=serverError=%');
+    return;
+  }
   console.log('load bids', err, data);
   // next - fill bids
-  this.tmpBids = data.map(mapBid);
 
+  this.tmpBids = data.map(mapBid);
+  //  window.app.playBid = playBid;
   next();
 };
 

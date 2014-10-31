@@ -3,8 +3,9 @@
 var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
 var srv = require('../vmg-services/srv');
-var lgr = require('../vmg-helpers/lgr');
+//var lgr = require('../vmg-helpers/lgr');
 var att = require('./att');
+var mdlMovieTemplate = require('./movie-template');
 
 var handleFncProlongTemplate = function() {
   alert('under construction');
@@ -31,7 +32,6 @@ var handleFncEditTemplate = function() {
 };
 
 var handleFncShowAttachments = function(e) {
-
   var idOfEpisodeTemplate = e.target.getAttribute('data-id');
   var jqrContainer = $('.' + this.cls.attContainer + '[data-id="' + idOfEpisodeTemplate + '"]');
 
@@ -111,41 +111,8 @@ exports.handleUserRights = function(next) {
   next();
 };
 
-var handleEpisodeTemplates = function(next, err, arrEtm) {
-  if (err) {
-    this.episodeTemplatesErr = err;
-    next();
-    lgr.error(err, {
-      fnc: 'handleEpisodeTemplates'
-    });
-    return;
-  }
 
-  // addt fields for Template view
-  ahr.each(arrEtm, function(item) {
-    item.episode_bid_count_non_ready = ahr.toInt(item.episode_bid_count) - ahr.toInt(item.episode_bid_count_ready);
-  });
 
-  this.episodeTemplates = arrEtm;
-  next();
-  return;
-};
-
-exports.loadEpisodeTemplates = function(next) {
-  srv.r1009(this.idOfMovieTemplate, handleEpisodeTemplates.bind(this, next));
-};
-
-exports.fillEpisodeTemplates = function(next) {
-  if (this.episodeTemplatesErr) {
-    dhr.setError('.' + this.cls.episodeTemplateScope);
-    next();
-    return;
-  }
-
-  dhr.impl(this.bem, this.cls.episodeTemplateScope, 'episode_template', this.episodeTemplates);
-  next();
-  return;
-};
 
 exports.fillMovieTemplate = function(next) {
   dhr.impl(this.bem, this.cls.movieTemplateScope, 'movie_template', [this.movieTemplate]);
@@ -155,9 +122,13 @@ exports.fillMovieTemplate = function(next) {
     dhr.impl(this.bem, this.cls.genreTagScope, 'genre_tag', [this.movieTemplate.movie_genre_item.genre_tag_item]);
     dhr.showElems('.' + this.cls.genreTagScope);
   }
+
+
+  var flow = this.movieTemplate.loadEpisodeTemplates.bind(this.movieTemplate,
+    this.movieTemplate.fillEpisodeTemplates.bind(this.movieTemplate, next));
   // TODO: #33! episodes - later in next request
   //  dhr.impl(this.bem, this.cls.episodeTemplateScope, 'episode_template', this.movieTemplate.episode_template_arr);
-  next();
+  flow();
 };
 
 exports.waitDocReady = function(next) {
@@ -178,22 +149,8 @@ var handleMovieTemplate = function(next, err, data) {
     return;
   }
 
-  // different pages might require diff computed values, but usuall only one flow
-  // add computed values
-  data.duration_of_episodes_str = data.duration_of_episodes + ' seconds';
-  data.created_str = ahr.getTimeStr(data.created, 'lll');
-  data.finished_str = ahr.getTimeStr(data.finished, 'lll');
-  // as solution: no genre in a movie. But in most cases - it is exists
-  if (data.movie_genre_item) {
-    if (data.movie_genre_item.genre_tag_item) {
-      data.movie_genre_item.genre_tag_item.style = 'color: ' + data.movie_genre_item.genre_tag_item.color;
-    }
-  }
-  //  ahr.each(data.episode_templates, function(item) {
-  //    item.name_order = 'Episode ' + item.order_in_movie;
-  //  });
 
-  this.movieTemplate = data;
+  this.movieTemplate = mdlMovieTemplate.init(data, this);
   next();
 };
 
