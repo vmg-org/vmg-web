@@ -47,7 +47,7 @@ function replacer(dataItem, match, p1) {
  * @param {Object} sampleSchema - { block: 'asdf', content: []}
  * @param {Object} dataItem - {name: 'asdfasdfa' }
  */
-var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
+var mapSampleItem = function(sampleSchema, dataItem) {
   // find in schema - object where mdl = mdlName
   // var mdlObj = ahr.findJsonMatch(sampleSchema, 'mdl', mdlName);
 
@@ -70,6 +70,19 @@ var mapSampleItem = function(sampleSchema, mdlName, dataItem) {
   return ahr.parseJson(genSchema);
 };
 
+exports.getBlockSchema = function(bem, elemName) {
+  // block with retry and demo keys
+  return ahr.extractJsonMatch(bem, 'block', elemName);
+  // first inner schema
+};
+
+// Fill schema and html it
+exports.htmlBemBlock = function(blockSchema, dataItem) {
+  var filledSchema = mapSampleItem(blockSchema, dataItem);
+  return bh.apply(filledSchema);
+  //  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema));
+};
+
 exports.hfb = function(bem, elemName, mdlName, data) {
   // get an object where block == key
   // get content of this object
@@ -79,12 +92,12 @@ exports.hfb = function(bem, elemName, mdlName, data) {
   // add it to the our elem
   // 
   // get object instead link
-  var result = ahr.extractJsonMatch(bem, 'block', elemName);
+  var result = exports.getBlockSchema(bem, elemName);
 
   var sampleSchema = result.content[0];
 
   // insert data to schema (only one level)
-  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema, mdlName));
+  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema));
 
   result.content = fullArr;
   var readyHtml = bh.apply(result);

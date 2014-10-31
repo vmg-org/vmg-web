@@ -7,15 +7,12 @@ var lgr = require('../vmg-helpers/lgr');
 var mdlEpisodeTemplate = require('./episode-template');
 var dhr = require('../vmg-helpers/dom');
 
-var mapEpisodeTemplate = function(etm) {
-  return mdlEpisodeTemplate.init(etm);
-};
 var mapKeys = function(data, prop) {
   this[prop] = data[prop];
 };
 
-var Mdl = function(data, prnt) {
-  this.prnt = prnt;
+var Mdl = function(data, root) {
+  this.root = root;
   Object.keys(data).forEach(mapKeys.bind(this, data));
   // different pages might require diff computed values, but usuall only one flow
   // add computed values
@@ -28,10 +25,16 @@ var Mdl = function(data, prnt) {
       this.movie_genre_item.genre_tag_item.style = 'color: ' + this.movie_genre_item.genre_tag_item.color;
     }
   }
+
+  this.fnc_move_to_edit = 'app.movieTemplate.moveToEdit()';
+  this.fnc_prolong = 'app.movieTemplate.prolong()';
   //  ahr.each(data.episode_templates, function(item) {
   //    item.name_order = 'Episode ' + item.order_in_movie;
   //  });
+};
 
+Mdl.prototype.mapEpisodeTemplate = function(etm, ind) {
+  return mdlEpisodeTemplate.init(etm, this, ind);
 };
 
 Mdl.prototype.handleEpisodeTemplates = function(next, err, arrEtm) {
@@ -49,7 +52,7 @@ Mdl.prototype.handleEpisodeTemplates = function(next, err, arrEtm) {
   //    item.episode_bid_count_non_ready = ahr.toInt(item.episode_bid_count) - ahr.toInt(item.episode_bid_count_ready);
   //  });
 
-  this.episodeTemplates = arrEtm.map(mapEpisodeTemplate); // arrEtm;
+  this.episodeTemplates = arrEtm.map(this.mapEpisodeTemplate.bind(this)); // arrEtm;
   next();
 };
 
@@ -86,12 +89,12 @@ var buildEtmPlayer = function(etm) {
 
 Mdl.prototype.fillEpisodeTemplates = function(next) {
   if (this.episodeTemplatesErr) {
-    dhr.setError('.' + this.prnt.cls.episodeTemplateScope);
+    dhr.setError('.' + this.root.cls.episodeTemplateScope);
     next();
     return;
   }
 
-  dhr.impl(this.prnt.bem, this.prnt.cls.episodeTemplateScope, 'episode_template', this.episodeTemplates);
+  dhr.impl(this.root.bem, this.root.cls.episodeTemplateScope, 'episode_template', this.episodeTemplates);
 
   this.episodeTemplates.forEach(buildEtmPlayer);
 
@@ -100,8 +103,48 @@ Mdl.prototype.fillEpisodeTemplates = function(next) {
   return;
 };
 
-exports.init = function(data, prnt) {
-  return new Mdl(data, prnt);
+Mdl.prototype.fillMovieTemplate = function(next) {
+  dhr.impl(this.root.bem, this.root.cls.movieTemplateScope, 'movie_template', [this]);
+
+  // if genre exists - show this block
+  if (this.movie_genre_item) {
+    dhr.impl(this.root.bem, this.root.cls.genreTagScope, 'genre_tag', [this.movie_genre_item.genre_tag_item]);
+    dhr.showElems('.' + this.root.cls.genreTagScope);
+  }
+
+  var flow = this.loadEpisodeTemplates.bind(this,
+    this.fillEpisodeTemplates.bind(this, next));
+  // TODO: #33! episodes - later in next request
+  //  dhr.impl(this.bem, this.cls.episodeTemplateScope, 'episode_template', this.movieTemplate.episode_template_arr);
+  flow();
+};
+
+Mdl.prototype.moveToEdit = function() {
+  // show notif - you cannot change if there are bids
+  //
+  var isBidsExist = false;
+
+  // addt fields for Template view
+  ahr.each(this.episodeTemplates, function(item) {
+    if (ahr.toInt(item.episode_bid_count) > 0) {
+      isBidsExist = true;
+    }
+  });
+
+  if (isBidsExist === true) {
+    alert('There are bids in the template already. An edit function is not allowed');
+    return;
+  } else {
+    window.location.href = './template-editor.html?t=' + this.id;
+  }
+};
+
+Mdl.prototype.prolong = function() {
+  alert('under construction');
+};
+
+exports.init = function(data, root) {
+  return new Mdl(data, root);
 };
 
 module.exports = exports;

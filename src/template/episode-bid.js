@@ -1,8 +1,11 @@
 /** @module */
 
 var srv = require('../vmg-services/srv');
+var dhr = require('../vmg-helpers/dom');
 
-var Mdl = function(data, ind, prnt) {
+
+var Mdl = function(data, episodeTemplate, ind) {
+  this.episodeTemplate = episodeTemplate;
   // todo
   this.prntPlayer = null;
   this.id_of_media_spec = data.id_of_media_spec;
@@ -14,6 +17,14 @@ var Mdl = function(data, ind, prnt) {
   this.fileCutArr = null;
 
   this.fnc_play = 'app.tmpBids[' + ind + '].playVideo(this)';
+
+  this.blockId = 'att-info';
+  this.bem = this.episodeTemplate.movieTemplate.root.bem;
+  this.blockSchema = dhr.getBlockSchema(this.bem, this.blockId);
+};
+
+Mdl.prototype.buildHtml = function() {
+  return dhr.htmlBemBlock(this.blockSchema, this);
 };
 
 Mdl.prototype.handleLoadFileCut = function(cbkFlow, err, fileCutArr) {
@@ -57,8 +68,8 @@ Mdl.prototype.playVideo = function(elem) {
   flow();
 };
 
-exports.init = function(data, ind) {
-  return new Mdl(data, ind);
+exports.init = function(data, episodeTemplate, ind) {
+  return new Mdl(data, episodeTemplate, ind);
 };
 
 module.exports = exports;
