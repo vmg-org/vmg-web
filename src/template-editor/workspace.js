@@ -94,7 +94,7 @@ Mdl.prototype.authFlowSelector = function() {
 
 Mdl.prototype.startFlow = function() {
   var appFlow =
-    vwmHelper.waitDocReady.bind(this,
+    this.waitDocReady.bind(this,
       this.addEvents.bind(this,
         this.loadSid.bind(this,
           // two flows - auth=yes and auth=no

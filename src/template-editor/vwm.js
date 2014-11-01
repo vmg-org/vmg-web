@@ -4,10 +4,6 @@
 var srv = require('../vmg-services/srv');
 var ahr = require('../vmg-helpers/app');
 
-exports.waitDocReady = function(next) {
-  $(this.doc).ready(next);
-};
-
 var handleGenreTags = function(next, err, genreTags) {
   if (err) {
     alert(err.message || '%=serverError=%');

@@ -28,6 +28,10 @@ Mdl.prototype.loadSid = function(next) {
   next();
 };
 
+Mdl.prototype.waitDocReady = function(next) {
+  $(this.doc).ready(next);
+};
+
 Mdl.prototype.handleUserSession = function(next, err, userSession) {
   if (err) {
     // if sid is wrong or outdated - receive an error: 401

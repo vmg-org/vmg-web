@@ -74,9 +74,6 @@ Mdl.prototype.loadMovieTemplate = function(next) {
 };
 
 
-Mdl.prototype.waitDocReady = function(next) {
-  $(this.doc).ready(next);
-};
 
 Mdl.prototype.fillUserBids = function(next) {
   if (this.nonReadyEpisodeBids.length > 0) {
