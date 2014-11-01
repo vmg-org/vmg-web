@@ -98,8 +98,4 @@ exports.attachSelectorEvents = function(next) {
   next();
 };
 
-exports.waitDocReady = function(next) {
-  $(this.doc).ready(next);
-};
-
 module.exports = exports;

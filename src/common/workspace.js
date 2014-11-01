@@ -113,4 +113,8 @@ Mdl.prototype.last = function() {
   console.log('last func');
 };
 
+Mdl.prototype.reloadPage = function() {
+  this.doc.location.reload();
+};
+
 module.exports = Mdl;

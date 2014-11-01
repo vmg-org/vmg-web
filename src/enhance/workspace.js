@@ -1,14 +1,43 @@
-/** @module */
+/** 
+ * @todo: #24! Get duration of video to cut; start and stop; with or without loading full video
+ * @todo: #34! Load episode info
+ *             movie_template.name, .duration_of_episodes,
+ *             episode_template.name, story, conds, order_in_movie
+ *             media_spec
+ *             job_output.id_of_job_status, status_detail
+ *             file_output_arr
+ *             media_file.url, .size, .duration
+ * @todo: #33! Show media url (when a job is ready);
+ * @todo: #33! Show cutline with start, stop points
+ *             After submit, send a request with start, stop points to crete job_cut
+ *             Check this job every N seconds, while status = 'Complete' (set media_spec.is_ready = true)
+ *             Re-load the video (with this url): cutted video already
+ * @module
+ */
 
 var jobOutputChecker = require('./job-output-checker');
 var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
 var srv = require('../vmg-services/srv');
+var pblWorkspace = require('../common/workspace');
+var cls = require('./cls');
+var bem = require('../../../vmg-bem/bems/enhance.bemjson');
 
-var Wsp = function(esc, idOfMediaSpec) {
+var Mdl = function(zpath) {
   console.log('wsp', arguments);
-  this.esc = esc;
-  this.idOfMediaSpec = idOfMediaSpec;
+  pblWorkspace.apply(this, [cls]);
+  this.zpath = zpath;
+  this.esc = {
+    notif: dhr.getElem('.' + this.cls.notif),
+    loader: dhr.getElem('.' + this.cls.loader),
+    player: dhr.getElem('.' + this.cls.player),
+    slider: dhr.getElem('.' + this.cls.slider),
+    fncCut: dhr.getElem('.' + this.cls.fncCut),
+    inpStart: dhr.getElem('.' + this.cls.inpStart),
+    inpStop: dhr.getElem('.' + this.cls.inpStop)
+  };
+  this.bem = bem;
+  this.idOfMediaSpec = null;
   // set after CheckJobOutput
   this.jobOutput = null;
 
@@ -22,7 +51,9 @@ var Wsp = function(esc, idOfMediaSpec) {
   this.episodeBid = null;
 };
 
-Wsp.prototype.handleGetJobCut = function(err, jobCut) {
+ahr.inherits(Mdl, pblWorkspace);
+
+Mdl.prototype.handleGetJobCut = function(err, jobCut) {
   if (err) {
     return this.showNotif(err);
   }
@@ -55,11 +86,11 @@ Wsp.prototype.handleGetJobCut = function(err, jobCut) {
   window.setTimeout(this.checkJobCut.bind(this), 1500);
 };
 
-Wsp.prototype.checkJobCut = function() {
+Mdl.prototype.checkJobCut = function() {
   srv.r1007(this.idOfMediaSpec, this.handleGetJobCut.bind(this));
 };
 
-Wsp.prototype.handlePostJobCut = function(err, jobCut) {
+Mdl.prototype.handlePostJobCut = function(err, jobCut) {
   if (err) {
     return this.showNotif(err);
   }
@@ -75,7 +106,7 @@ Wsp.prototype.handlePostJobCut = function(err, jobCut) {
 // allow this event only full video download
 // TODO: #43! Or append this event dinamically after vide downloading
 // TODO: #43! Add values for start and stop points dynamically
-Wsp.prototype.cutVideo = function() {
+Mdl.prototype.cutVideo = function() {
   // hide prev errors
   dhr.hideElems(this.esc.notif);
   var cuttingStart = ahr.toInt(dhr.getVal(this.esc.inpStart));
@@ -132,7 +163,7 @@ Wsp.prototype.cutVideo = function() {
   srv.w2005(jobCut, this.handlePostJobCut.bind(this));
 };
 
-Wsp.prototype.handleMetaReady = function() {
+Mdl.prototype.handleMetaReady = function() {
   console.log(this.vdo.duration());
   dhr.on(this.esc.fncCut, 'click', this.cutVideo.bind(this));
 
@@ -141,7 +172,7 @@ Wsp.prototype.handleMetaReady = function() {
 };
 
 // no arguments, only this
-Wsp.prototype.handleVideoReady = function(vdo) {
+Mdl.prototype.handleVideoReady = function(vdo) {
   this.vdo = vdo;
   //  console.log('video ready', vdo);
   // Show slider only once: when page is loaded
@@ -149,7 +180,7 @@ Wsp.prototype.handleVideoReady = function(vdo) {
   this.vdo.one('loadedmetadata', this.handleMetaReady.bind(this));
 };
 
-Wsp.prototype.showPlayer = function() {
+Mdl.prototype.showPlayer = function() {
   var mediaFile = this.jobOutput.media_spec_item.file_output_arr[0].media_file_item;
   dhr.showElems(this.esc.player);
   var videoElem = document.createElement('video');
@@ -176,7 +207,7 @@ Wsp.prototype.showPlayer = function() {
  * Handle converted media file
  *     from job_output
  */
-Wsp.prototype.handleJobOutput = function(err, jobOutput) {
+Mdl.prototype.handleJobOutput = function(err, jobOutput) {
   if (err) {
     // TODO: #33! show notif about error - job recreate here??
     dhr.hideElems(this.esc.loader);
@@ -191,7 +222,7 @@ Wsp.prototype.handleJobOutput = function(err, jobOutput) {
   //  console.log('mediaFile', mediaFile);
 };
 
-Wsp.prototype.handleBidInfo = function(err, episodeBid) {
+Mdl.prototype.handleBidInfo = function(err, episodeBid) {
   if (err) {
     return this.showNotif(err);
   }
@@ -202,23 +233,64 @@ Wsp.prototype.handleBidInfo = function(err, episodeBid) {
   jobOutputChecker.run(this.idOfMediaSpec, this.handleJobOutput.bind(this));
 };
 
-Wsp.prototype.getBidInfo = function() {
+Mdl.prototype.getBidInfo = function() {
   srv.r1008(this.idOfMediaSpec, this.handleBidInfo.bind(this));
 };
 
-Wsp.prototype.showNotif = function(err) {
+Mdl.prototype.showNotif = function(err) {
   dhr.html(this.esc.notif, err.message);
   dhr.showElems(this.esc.notif);
 };
 
+Mdl.prototype.loadIdOfMediaSpec = function(next) {
+  var mParam = ahr.getQueryParam('m');
+  mParam = ahr.toInt(mParam);
+
+  if (!mParam) {
+    alert('No param in url: ?m=123 as integer');
+    return;
+  }
+
+  this.idOfMediaSpec = mParam;
+  next();
+};
+
+Mdl.prototype.authFlowSelector = function() {
+  if (this.userSession) {
+    this.userSession.showAuth(this.last);
+    this.getBidInfo();
+  } else {
+    var authNoFlow =
+      this.waitUserLogin.bind(this,
+        this.reloadPage.bind(this)
+      );
+    // show message and apply events and login buttons with authFlow
+    authNoFlow();
+  }
+};
+
+Mdl.prototype.startFlow = function() {
+  var appFlow =
+    this.loadIdOfMediaSpec.bind(this,
+      this.waitDocReady.bind(this,
+        this.addEvents.bind(this,
+          this.loadSid.bind(this,
+            // two flows - auth=yes and auth=no
+            this.handleSid.bind(this,
+              this.authFlowSelector.bind(this)
+            )))));
+
+  appFlow();
+};
+
 exports.init = function() {
   // add methods
-  var obj = Object.create(Wsp.prototype);
+  var obj = Object.create(Mdl.prototype);
   // add props
-  Wsp.apply(obj, arguments);
+  Mdl.apply(obj, arguments);
   // return created object
   return obj;
-  //  return new Wsp.bind(this, arguments);
+  //  return new Mdl.bind(this, arguments);
 };
 
 module.exports = exports;
