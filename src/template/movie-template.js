@@ -28,6 +28,8 @@ var Mdl = function(data, root) {
     }
   }
 
+  this.isUserOwner = null; // true or false only for auth users
+
   this.fnc_move_to_edit = this.zpath + '.moveToEdit()';
   this.fnc_prolong = this.zpath + '.prolong()';
   //  ahr.each(data.episode_templates, function(item) {
@@ -151,6 +153,82 @@ Mdl.prototype.checkLocalEpisodeBids = function(next) {
   });
 
   srv.r1010(idOfEpisodeTemplateArr.join(','), this.handleUserEpisodeBids.bind(this, next));
+};
+
+// Whether the user is owner of movie?
+Mdl.prototype.handleUserRights = function(next) {
+  if (this.root.userSession) {
+    console.log('authenticated');
+    if (this.movie_creator_item) {
+      console.log('movie has owner');
+      if (this.root.userSession.social_profile_item.id_of_user_profile === this.movie_creator_item.id_of_user_profile) {
+        this.isUserOwner = true;
+      } else {
+        this.isUserOwner = false;
+      }
+    } else {
+      this.isUserOwner = false;
+    }
+  }
+
+  next();
+};
+
+Mdl.prototype.handleOwner = function(next) {
+  if (this.isUserOwner !== true) {
+    next();
+    return;
+  }
+
+  // show and add events to admin buttons
+  console.log('user is owner of movie template');
+
+  var elemProlongTemplate = dhr.getElems('.' + this.root.cls.fncProlongTemplate);
+  var elemEditTemplate = dhr.getElems('.' + this.root.cls.fncEditTemplate);
+  //    var elemRemoveTemplate = dhr.getElem('.' + this.cls.fncRemoveTemplate);
+  //    var elemTweetStory = dhr.getElem('.' + this.cls.fncTweetStory);
+  var elemsShowAttachments = dhr.getElems('.' + this.root.cls.fncShowAttachments);
+
+  //  dhr.on(elemProlongTemplate, 'click', handleFncProlongTemplate.bind(this));
+  dhr.showElems(elemProlongTemplate);
+
+  //  dhr.on(elemEditTemplate, 'click', handleFncEditTemplate.bind(this)); // write when impl
+  dhr.showElems(elemEditTemplate);
+
+  //dhr.on(elemsShowAttachments, 'click', handleFncShowAttachments.bind(this));
+  dhr.showElems(elemsShowAttachments);
+
+  next();
+};
+
+Mdl.prototype.handlePlayer = function(next) {
+  if (this.isUserOwner !== false) {
+    next();
+    return;
+  }
+
+  var playerFlow = this.checkLocalEpisodeBids.bind(this,
+    this.root.checkNonReadyEpisodeBids.bind(this.root,
+      this.root.fillUserBids.bind(this.root, next)));
+
+  playerFlow();
+
+  // check: Whether the user plays in episodes already
+  // --> id_of_movie_template
+  // SELECT * FROM
+  // If false
+  // show gray buttons
+  // else
+  // show active buttons
+  // player fncs
+};
+
+Mdl.prototype.startFlow = function(next) {
+  var flow = this.handleUserRights.bind(this,
+    this.handlePlayer.bind(this, // show buttons for usual user
+      this.handleOwner.bind(this, // show button for owner of a movie
+        next)));
+  flow();
 };
 
 exports.init = function(data, root) {

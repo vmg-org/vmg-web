@@ -12,30 +12,25 @@
 var ahr = require('../vmg-helpers/app');
 var dhr = require('../vmg-helpers/dom');
 var cls = require('./cls');
-var commonCls = require('../common/cls');
 var bem = require('../../../vmg-bem/bems/template.bemjson');
 var srv = require('../vmg-services/srv');
-//var lgr = require('../vmg-helpers/lgr');
-var authHelper = require('../common/auth-helper');
-var popupHelper = require('../common/popup-helper');
 var mdlMovieTemplate = require('./movie-template');
+var pblWorkspace = require('../common/workspace');
 
-$.extend(cls, commonCls);
+//$.extend(cls, commonCls);
 
-var Mdl = function(doc, zpath) {
+var Mdl = function(zpath) {
+  pblWorkspace.apply(this, [cls]);
   this.zpath = zpath;
-  this.doc = doc;
   this.idOfMovieTemplate = null;
   this.movieTemplate = null; // contains episodeTemplates
-  this.cls = cls;
-  this.sid = null;
   this.bem = bem;
-  this.userSession = null; // is authenticated
-  this.isUserOwner = null; // autenticated and owner of movie template
   this.isUserAlreadyInBids = null;
   this.nonReadyEpisodeBids = null; // All bids of current user with is_ready = false (usually - one or none)
   //  this.episodeBid = null; // created episode bid (to redirect to upload)
 };
+
+ahr.inherits(Mdl, pblWorkspace);
 
 Mdl.prototype.loadIdOfMovieTemplate = function(next) {
   var paramT = ahr.getQueryParam('t');
@@ -78,70 +73,10 @@ Mdl.prototype.loadMovieTemplate = function(next) {
     this.handleMovieTemplate.bind(this, next));
 };
 
-Mdl.prototype.handleOwner = function(next) {
-  if (this.isUserOwner !== true) {
-    next();
-    return;
-  }
-
-  // show and add events to admin buttons
-  console.log('user is owner of movie template');
-
-  //    fncProlongTemplate: 'shw-movie-template__prolong-fnc',
-  //    fncEditTemplate: 'shw-movie-template__edit-fnc',
-  //    fncRemoveTemplate: 'shw-movie-template__remove-fnc',
-  //    fncTweetStory: 'shw-episode__fnc-tweet-story',
-  //    fncShowAttachments: 'shw-episode__fnc-show-attachments',
-  var elemProlongTemplate = dhr.getElems('.' + this.cls.fncProlongTemplate);
-  var elemEditTemplate = dhr.getElems('.' + this.cls.fncEditTemplate);
-  //    var elemRemoveTemplate = dhr.getElem('.' + this.cls.fncRemoveTemplate);
-  //    var elemTweetStory = dhr.getElem('.' + this.cls.fncTweetStory);
-  var elemsShowAttachments = dhr.getElems('.' + this.cls.fncShowAttachments);
-
-  //  dhr.on(elemProlongTemplate, 'click', handleFncProlongTemplate.bind(this));
-  dhr.showElems(elemProlongTemplate);
-
-  //  dhr.on(elemEditTemplate, 'click', handleFncEditTemplate.bind(this)); // write when impl
-  dhr.showElems(elemEditTemplate);
-
-  //dhr.on(elemsShowAttachments, 'click', handleFncShowAttachments.bind(this));
-  dhr.showElems(elemsShowAttachments);
-
-  next();
-};
-
-// Whether the user is owner of movie?
-Mdl.prototype.handleUserRights = function(next) {
-  if (this.userSession) {
-    console.log('authenticated');
-    if (this.movieTemplate.movie_creator_item) {
-      console.log('movie has owner');
-      if (this.userSession.social_profile_item.id_of_user_profile === this.movieTemplate.movie_creator_item.id_of_user_profile) {
-        this.isUserOwner = true;
-      } else {
-        this.isUserOwner = false;
-      }
-    } else {
-      this.isUserOwner = false;
-    }
-  }
-
-  next();
-};
 
 Mdl.prototype.waitDocReady = function(next) {
   $(this.doc).ready(next);
 };
-
-//var eachElemUploadLater = function(elm) {
-//  var idOfEpisodeTemplate = ahr.toInt(elm.getAttribute('data-id'));
-//  dhr.on(elm, 'click', handleUploadLater.bind(this, idOfEpisodeTemplate));
-//};
-//
-//var eachElemUploadNow = function(elm) {
-//  var idOfEpisodeTemplate = ahr.toInt(elm.getAttribute('data-id'));
-//  dhr.on(elm, 'click', handleUploadNow.bind(this, idOfEpisodeTemplate));
-//};
 
 Mdl.prototype.fillUserBids = function(next) {
   if (this.nonReadyEpisodeBids.length > 0) {
@@ -159,11 +94,6 @@ Mdl.prototype.fillUserBids = function(next) {
 
   var elemsUploadLater = dhr.getElems('.' + this.cls.fncUploadLater); // 'shw-episode__fnc-upload-later',
   var elemsUploadNow = dhr.getElems('.' + this.cls.fncUploadNow); //    fncUploadNow: 'shw-episode__fnc-upload-now'
-
-  // ahr.each(elemsUploadLater, eachElemUploadLater.bind(this));
-  // ahr.each(elemsUploadNow, eachElemUploadNow.bind(this));
-
-
   //  if (this.isUserAlreadyInBids === true) {
   //    dhr.disable(elemUploadLater);
   //    dhr.disable(elemUploadNow);
@@ -187,67 +117,40 @@ var handleNonReadyEpisodeBids = function(next, err, episodeBidArr) {
   next();
 };
 
+// One per user
 Mdl.prototype.checkNonReadyEpisodeBids = function(next) {
   srv.r1011(handleNonReadyEpisodeBids.bind(this, next));
 };
 
-Mdl.prototype.handlePlayer = function(next) {
-  if (this.isUserOwner !== false) {
-    next();
-    return;
+Mdl.prototype.last = function() {
+  console.log('last func');
+};
+
+Mdl.prototype.authFlowSelector = function() {
+  // when movie template is loaded
+
+  if (this.userSession) {
+    this.userSession.showAuth(this.last);
+    this.movieTemplate.startFlow(this.last);
+  } else {
+    // show message and apply events and login buttons with authFlow
+    this.waitUserLogin(function() {
+      window.location.reload();
+    });
   }
-
-  var playerFlow = this.movieTemplate.checkLocalEpisodeBids.bind(this.movieTemplate,
-    this.checkNonReadyEpisodeBids.bind(this,
-      this.fillUserBids.bind(this, next)));
-
-  playerFlow();
-
-  // check: Whether the user plays in episodes already
-  // --> id_of_movie_template
-  // SELECT * FROM
-  // If false
-  // show gray buttons
-  // else
-  // show active buttons
-  // player fncs
 };
 
 Mdl.prototype.start = function() {
-  var last = function() {
-    console.log('last func');
-  };
-
-  var afterAuthFlow =
-    authHelper.showAuth.bind(this,
-      this.handleUserRights.bind(this,
-        this.handlePlayer.bind(this, // show buttons for usual user
-          this.handleOwner.bind(this, // show button for owner of a movie
-            last))));
-
-  var authNoFlow =
-    authHelper.waitUserLogin.bind(this,
-      afterAuthFlow
-    );
-
-  var authFlowSelector = function() {
-    if (this.userSession) {
-      afterAuthFlow();
-    } else {
-      // show message and apply events and login buttons with authFlow
-      authNoFlow();
-    }
-  };
-
-  var appFlow = this.loadIdOfMovieTemplate.bind(this,
-    this.waitDocReady.bind(this,
-      popupHelper.addEvents.bind(this,
-        this.loadMovieTemplate.bind(this,
-          authHelper.loadSid.bind(this,
-            // two flows - auth=yes and auth=no
-            authHelper.handleSid.bind(this,
-              authFlowSelector.bind(this)
-            ))))));
+  var appFlow =
+    this.loadIdOfMovieTemplate.bind(this,
+      this.waitDocReady.bind(this,
+        this.addEvents.bind(this,
+          this.loadMovieTemplate.bind(this,
+            this.loadSid.bind(this,
+              // two flows - auth=yes and auth=no
+              this.handleSid.bind(this,
+                this.authFlowSelector.bind(this)
+              ))))));
 
   appFlow();
 };
