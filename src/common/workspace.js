@@ -104,4 +104,9 @@ Mdl.prototype.addEvents = function(next) {
   next();
 };
 
+// last in a flow
+Mdl.prototype.last = function() {
+  console.log('last func');
+};
+
 module.exports = Mdl;

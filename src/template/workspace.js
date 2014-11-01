@@ -122,10 +122,6 @@ Mdl.prototype.checkNonReadyEpisodeBids = function(next) {
   srv.r1011(handleNonReadyEpisodeBids.bind(this, next));
 };
 
-Mdl.prototype.last = function() {
-  console.log('last func');
-};
-
 Mdl.prototype.authFlowSelector = function() {
   // when movie template is loaded
 
