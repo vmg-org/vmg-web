@@ -8,6 +8,7 @@ var fbHelper = require('./fb-helper');
 var devHelper = require('./dev-helper');
 var srv = require('../vmg-services/srv');
 var lgr = require('../vmg-helpers/lgr');
+var mdlUserSession = require('./user-session');
 
 var handleLogout = function() {
   // from cookie or context
@@ -26,7 +27,7 @@ var handleUserSession = function(next, err, userSession) {
     // remove sid - show auth buttons
     if (err.message === 'unauthorized') {
       // update a page
-      alert('Your session is outdated: a page will be reloaded. Please login again');
+      //    alert('Your session is outdated: a page will be reloaded. Please login again');
       handleLogout();
       return;
     }
@@ -36,8 +37,9 @@ var handleUserSession = function(next, err, userSession) {
   }
 
   // TODO: #33! handle if userSession is null (expired);
-  this.userSession = userSession;
-  shr.setItem(config.AUTH_STORAGE_KEY, userSession.id); // set again
+  console.log('usse', userSession);
+  this.userSession = mdlUserSession.init(userSession);
+  this.userSession.saveOnClient();
   next();
 };
 

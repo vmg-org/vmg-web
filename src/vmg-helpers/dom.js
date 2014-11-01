@@ -17,8 +17,10 @@ function replacer(dataItem, match, p1) {
   var val = dataItem[arrDot[0]];
 
   for (var ind = 1; ind < arrDot.length; ind += 1) {
-    // only for JSON objects
-    val = val[arrDot[ind]];
+    if (typeof val !== 'undefined') {
+      // only for JSON objects
+      val = val[arrDot[ind]];
+    }
   }
 
   // TODO: #41! dev checking: remove on production

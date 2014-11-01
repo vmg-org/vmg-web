@@ -13,6 +13,8 @@ var mapKeys = function(data, prop) {
 
 var Mdl = function(data, root) {
   this.root = root;
+
+  this.zpath = this.root.zpath + '.movieTemplate';
   Object.keys(data).forEach(mapKeys.bind(this, data));
   // different pages might require diff computed values, but usuall only one flow
   // add computed values
@@ -26,8 +28,8 @@ var Mdl = function(data, root) {
     }
   }
 
-  this.fnc_move_to_edit = 'app.movieTemplate.moveToEdit()';
-  this.fnc_prolong = 'app.movieTemplate.prolong()';
+  this.fnc_move_to_edit = this.zpath + '.moveToEdit()';
+  this.fnc_prolong = this.zpath + '.prolong()';
   //  ahr.each(data.episode_templates, function(item) {
   //    item.name_order = 'Episode ' + item.order_in_movie;
   //  });
@@ -60,32 +62,6 @@ Mdl.prototype.loadEpisodeTemplates = function(cbkFlow) {
   srv.r1009(this.id, this.handleEpisodeTemplates.bind(this, cbkFlow));
 };
 
-var handlePlayerReady = function(vjs, etm) {
-  etm.vjs = vjs;
-  //  console.log('player is ready', vjs, etm);
-  //  window.app.etmPlayer[etm.id] = vjs;
-  //      this.src({
-  //        type: 'video/mp4',
-  //        src: 'https://s3.amazonaws.com/vmg-bucket/converted/966808401-web.mp4'
-  //      });
-};
-
-var buildEtmPlayer = function(etm) {
-  var videoElem = document.createElement('video');
-  // for flash data-tag is not sufficient to apply a new source of video
-  //    $(videoElem).attr('data-id', this.episodeTemplates[ind].id);
-  $(videoElem).addClass('video-js vjs-default-skin');
-  $('.att-player[data-id=' + etm.id + ']').html(videoElem);
-  // Player builds using videojs and inserted a link
-  window.videojs(videoElem, {
-    width: '100%',
-    height: '100%',
-    controls: true
-  }, function() {
-    // this = player
-    handlePlayerReady(this, etm);
-  });
-};
 
 Mdl.prototype.fillEpisodeTemplates = function(next) {
   if (this.episodeTemplatesErr) {
@@ -96,7 +72,9 @@ Mdl.prototype.fillEpisodeTemplates = function(next) {
 
   dhr.impl(this.root.bem, this.root.cls.episodeTemplateScope, 'episode_template', this.episodeTemplates);
 
-  this.episodeTemplates.forEach(buildEtmPlayer);
+  this.episodeTemplates.forEach(function(etm) {
+    etm.buildEtmPlayer();
+  });
 
   // take this, only if uploaded files exists: potentially - update bids dynamically - init players here
   next();
@@ -141,6 +119,38 @@ Mdl.prototype.moveToEdit = function() {
 
 Mdl.prototype.prolong = function() {
   alert('under construction');
+};
+
+// One bid per movie template for one user
+Mdl.prototype.handleUserEpisodeBids = function(next, err, episodeBidArr) {
+  if (err) {
+    dhr.html('.' + this.root.cls.notif, 'Server error: retrieving users\' bids');
+    dhr.showElems('.' + this.root.cls.notif);
+    return;
+  }
+
+  this.root.isUserAlreadyInBids = episodeBidArr.length > 0 ? true : false;
+
+  // attach episode-bids to this.episodeTemplates
+  ahr.each(this.episodeTemplates, function(etm) {
+    var asdf = ahr.filter(episodeBidArr, function(ebd) {
+      return ebd.id_of_episode_template === etm.id;
+    });
+
+    etm.episode_bid_arr_user = asdf;
+  });
+
+  //  console.log('episodeBidArr', this.episodeTemplates);
+
+  next();
+};
+
+Mdl.prototype.checkLocalEpisodeBids = function(next) {
+  var idOfEpisodeTemplateArr = ahr.map(this.episodeTemplates, function(item) {
+    return item.id;
+  });
+
+  srv.r1010(idOfEpisodeTemplateArr.join(','), this.handleUserEpisodeBids.bind(this, next));
 };
 
 exports.init = function(data, root) {

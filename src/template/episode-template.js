@@ -15,12 +15,20 @@ var Mdl = function(data, movieTemplate, ind) {
   //  this.ind = movieTemplate.episodeTemplates[
 
   this.movieTemplate = movieTemplate;
+  this.zpath = this.movieTemplate.zpath + '.episodeTemplates[' + ind + ']';
+
   this.root = this.movieTemplate.root;
   // all fields from server
   Object.keys(data).forEach(mapKeys.bind(this, data));
 
   this.episode_bid_count_non_ready = ahr.toInt(data.episode_bid_count) - ahr.toInt(data.episode_bid_count_ready);
-  this.fnc_show_atts = 'app.movieTemplate.episodeTemplates[' + ind + '].showAtts(this);';
+  this.fnc_show_atts = this.zpath + '.showAtts(this);';
+  this.fnc_upload_now = this.zpath + '.startUploadNow(this);';
+  this.fnc_upload_later = this.zpath + '.startUploadLater(this);';
+  this.vjs = null; // video js object
+  this.episode_bid_arr_user = null; //  loaded from movie template in one request for all episodes
+
+  this.createdEpisodeBid = null; // just created bid
 };
 
 Mdl.prototype.showAtts = function(elem) {
@@ -32,8 +40,6 @@ Mdl.prototype.showAtts = function(elem) {
   } else {
     jqrContainer.show('slow');
     this.loadBids(this.fillBids.bind(this));
-    //   var attRow = dhr.getElems('.' + this.cls.attRow);
-    //  att.run.apply(this, [idOfEpisodeTemplate, jqrContainer, attRow]);
   }
 };
 
@@ -46,11 +52,9 @@ Mdl.prototype.handleLoadBids = function(next, err, data) {
     alert(err.message || '%=serverError=%');
     return;
   }
-  console.log('load bids', err, data);
   // next - fill bids
 
   this.episodeBids = data.map(this.mapEpisodeBid.bind(this));
-  //  window.app.playBid = playBid;
   next();
 };
 
@@ -68,21 +72,77 @@ Mdl.prototype.fillBids = function() {
     return item.buildHtml();
   });
 
-  console.log('fill bids', arrHtml);
   var jqrInfoScope = $('.' + this.root.cls.attInfoScope + '[data-id="' + this.id + '"]');
   jqrInfoScope.html(arrHtml.join(''));
 
-  //  var readyHtml = dhr.hfb(this.bem, this.cls.attInfoScope, 'episode_bid', this.tmpBids);
+};
+
+// cant send a this
+var handlePlayerReady = function(vjs, etm) {
+  etm.vjs = vjs;
+};
+
+Mdl.prototype.buildEtmPlayer = function() {
+  var videoElem = document.createElement('video');
+  // for flash data-tag is not sufficient to apply a new source of video
+  //    $(videoElem).attr('data-id', this.episodeTemplates[ind].id);
+  $(videoElem).addClass('video-js vjs-default-skin');
+  $('.' + this.root.cls.attPlayer + '[data-id=' + this.id + ']').html(videoElem);
+
+  var etm = this;
+
+  // Player builds using videojs and inserted a link
+  window.videojs(videoElem, {
+    width: '100%',
+    height: '100%',
+    controls: true
+  }, function() {
+    // this = player
+    handlePlayerReady(this, etm);
+  });
+};
+
+Mdl.prototype.handlePostBid = function(next, err, episodeBid) {
+  if (err) {
+    alert(err.message || '%=serverError=%');
+    return;
+  }
+
+  // created bid for upload (now or later)
+  this.createdEpisodeBid = episodeBid;
+
+  next();
+};
+
+Mdl.prototype.postBid = function(next) {
+  var dto = {
+    id_of_episode_template: this.id, // id of etm
+    media_spec_item: {}
+  };
+
+  srv.w2002(dto, this.handlePostBid.bind(this, next));
+};
+
+Mdl.prototype.afterUploadLater = function() {
+  window.location.reload();
+};
+
+Mdl.prototype.startUploadLater = function(elem) {
+  dhr.disable(elem); // to double-click prevent
+  this.postBid(this.afterUploadLater.bind(this));
+};
+
+Mdl.prototype.afterUploadNow = function() {
+  window.location.href = './upload.html?m=' + this.createdEpisodeBid.id_of_media_spec;
+};
+
+Mdl.prototype.startUploadNow = function(elem) {
+  dhr.disable(elem);
+  this.postBid(this.afterUploadNow.bind(this));
 };
 
 exports.init = function(data, movieTemplate, ind) {
   return new Mdl(data, movieTemplate, ind);
 };
-//var fillBids = function(idOfEpisodeTemplate) {
-//  var readyHtml = dhr.hfb(this.bem, this.cls.attInfoScope, 'episode_bid', this.tmpBids);
-//  var jqrInfoScope = $('.' + this.cls.attInfoScope + '[data-id="' + idOfEpisodeTemplate + '"]');
-//
-//  jqrInfoScope.html($(readyHtml).children());
-//};
 
 module.exports = exports;
