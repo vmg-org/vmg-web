@@ -1,6 +1,6 @@
 module.exports = {
   movieTemplateScope: 'shw-movie-templates',
-  genreTagScope: 'shw-genre-tags',
+  movieGenreScope: 'shw-movie-genre-scope',
   episodeTemplateScope: 'shw-episodes',
   // movie owner fncs
   fncProlongTemplate: 'shw-movie-template__prolong-fnc',

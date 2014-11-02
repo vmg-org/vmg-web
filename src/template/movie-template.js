@@ -5,6 +5,7 @@ var ahr = require('../vmg-helpers/app');
 var srv = require('../vmg-services/srv');
 var lgr = require('../vmg-helpers/lgr');
 var mdlEpisodeTemplate = require('./episode-template');
+var mdlMovieGenre = require('./movie-genre');
 var dhr = require('../vmg-helpers/dom');
 var hbrs = require('../vmg-helpers/hbrs');
 
@@ -23,11 +24,6 @@ var Mdl = function(data, root) {
   this.created_str = ahr.getTimeStr(this.created, 'lll');
   this.finished_str = ahr.getTimeStr(this.finished, 'lll');
   // as solution: no genre in a movie. But in most cases - it is exists
-  if (this.movie_genre_item) {
-    if (this.movie_genre_item.genre_tag_item) {
-      this.movie_genre_item.genre_tag_item.style = 'color: ' + this.movie_genre_item.genre_tag_item.color;
-    }
-  }
 
   this.isUserOwner = null; // true or false only for auth users
 
@@ -36,6 +32,9 @@ var Mdl = function(data, root) {
   //  ahr.each(data.episode_templates, function(item) {
   //    item.name_order = 'Episode ' + item.order_in_movie;
   //  });
+  if (this.movie_genre_item) {
+    this.movie_genre_item = mdlMovieGenre.init(this.movie_genre_item, this);
+  }
   this.markup = hbrs.compile(this.root.markups.shwMovieTemplate);
 };
 
@@ -99,8 +98,8 @@ Mdl.prototype.fillMovieTemplate = function(next) {
 
   // if genre exists - show this block
   if (this.movie_genre_item) {
-    dhr.impl(this.root.bem, this.root.cls.genreTagScope, 'genre_tag', [this.movie_genre_item.genre_tag_item]);
-    dhr.showElems('.' + this.root.cls.genreTagScope);
+    dhr.html('.' + this.root.cls.movieGenreScope, this.movie_genre_item.buildHtml());
+    dhr.showElems('.' + this.root.cls.movieGenreScope);
   }
 
   var flow = this.loadEpisodeTemplates.bind(this,
