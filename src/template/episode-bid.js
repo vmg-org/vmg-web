@@ -22,11 +22,12 @@ var Mdl = function(data, episodeTemplate, ind) {
   this.fnc_rate_best = this.zpath + '.rateBest(this);';
   this.media_spec_item = mdlMediaSpec.init(data.media_spec_item, this);
   this.root = this.episodeTemplate.movieTemplate.root;
-  this.markup = hbrs.compile(this.root.markups.attInfo0);
+  this.markup0 = hbrs.compile(this.root.markups.attInfo0);
+  this.markup1 = hbrs.compile(this.root.markups.attInfo1);
 };
 
 Mdl.prototype.buildHtml = function() {
-  return this.markup(this);
+  return this['markup' + this.moder_rating](this);
 };
 
 Mdl.prototype.handleLoadFileCut = function(cbkFlow, err, fileCutArr) {
@@ -67,12 +68,20 @@ Mdl.prototype.playVideo = function() {
   flow();
 };
 
+Mdl.prototype.changeRating = function(ratingVal) {
+  this.moder_rating = ratingVal;
+  //  console.log(this.buildHtml());
+  this.episodeTemplate.fillBids();
+};
+
 Mdl.prototype.rateGood = function() {
   alert('under construction');
 };
+
 Mdl.prototype.rateBad = function() {
-  alert('under construction');
+  this.changeRating(1);
 };
+
 Mdl.prototype.rateBest = function() {
   alert('under construction');
 };

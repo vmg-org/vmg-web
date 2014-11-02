@@ -6,6 +6,7 @@ var srv = require('../vmg-services/srv');
 var lgr = require('../vmg-helpers/lgr');
 var mdlEpisodeTemplate = require('./episode-template');
 var dhr = require('../vmg-helpers/dom');
+var hbrs = require('../vmg-helpers/hbrs');
 
 var mapKeys = function(data, prop) {
   this[prop] = data[prop];
@@ -35,6 +36,11 @@ var Mdl = function(data, root) {
   //  ahr.each(data.episode_templates, function(item) {
   //    item.name_order = 'Episode ' + item.order_in_movie;
   //  });
+  this.markup = hbrs.compile(this.root.markups.shwMovieTemplate);
+};
+
+Mdl.prototype.buildHtml = function() {
+  return this.markup(this);
 };
 
 Mdl.prototype.mapEpisodeTemplate = function(etm, ind) {
@@ -72,7 +78,11 @@ Mdl.prototype.fillEpisodeTemplates = function(next) {
     return;
   }
 
-  dhr.impl(this.root.bem, this.root.cls.episodeTemplateScope, 'episode_template', this.episodeTemplates);
+  var arrHtml = this.episodeTemplates.map(function(etmItem) {
+    return etmItem.buildHtml();
+  });
+
+  dhr.html('.' + this.root.cls.episodeTemplateScope, arrHtml.join(''));
 
   this.episodeTemplates.forEach(function(etm) {
     etm.buildEtmPlayer();
@@ -84,7 +94,8 @@ Mdl.prototype.fillEpisodeTemplates = function(next) {
 };
 
 Mdl.prototype.fillMovieTemplate = function(next) {
-  dhr.impl(this.root.bem, this.root.cls.movieTemplateScope, 'movie_template', [this]);
+
+  dhr.html('.' + this.root.cls.movieTemplateScope, this.buildHtml());
 
   // if genre exists - show this block
   if (this.movie_genre_item) {
@@ -94,8 +105,6 @@ Mdl.prototype.fillMovieTemplate = function(next) {
 
   var flow = this.loadEpisodeTemplates.bind(this,
     this.fillEpisodeTemplates.bind(this, next));
-  // TODO: #33! episodes - later in next request
-  //  dhr.impl(this.bem, this.cls.episodeTemplateScope, 'episode_template', this.movieTemplate.episode_template_arr);
   flow();
 };
 

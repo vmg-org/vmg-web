@@ -5,6 +5,7 @@ var ahr = require('../vmg-helpers/app');
 var dhr = require('../vmg-helpers/dom');
 var mdlEpisodeBid = require('./episode-bid');
 var srv = require('../vmg-services/srv');
+var hbrs = require('../vmg-helpers/hbrs');
 
 var mapKeys = function(data, prop) {
   this[prop] = data[prop];
@@ -29,6 +30,11 @@ var Mdl = function(data, movieTemplate, ind) {
   this.episode_bid_arr_user = null; //  loaded from movie template in one request for all episodes
 
   this.createdEpisodeBid = null; // just created bid
+  this.markup = hbrs.compile(this.root.markups.shwEpisode);
+};
+
+Mdl.prototype.buildHtml = function() {
+  return this.markup(this);
 };
 
 Mdl.prototype.showAtts = function(elem) {
@@ -74,7 +80,6 @@ Mdl.prototype.fillBids = function() {
 
   var jqrInfoScope = $('.' + this.root.cls.attInfoScope + '[data-id="' + this.id + '"]');
   jqrInfoScope.html(arrHtml.join(''));
-
 };
 
 // cant send a this
