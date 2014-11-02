@@ -14,7 +14,7 @@ module.exports = {
   attContainer: 'shw-episode__attachments',
   attRow: 'att-row',
   attInfoScope: 'att-info-scope',
-  attInfo: 'att-info',
+  attInfo: 'att-info-0',
   attContentScope: 'att-content-scope',
   attPlayer: 'att-player'
 };

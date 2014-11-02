@@ -16,12 +16,14 @@ var bem = require('../../../vmg-bem/bems/template.bemjson');
 var srv = require('../vmg-services/srv');
 var mdlMovieTemplate = require('./movie-template');
 var pblWorkspace = require('../common/workspace');
+var markups = require('./markups');
 
 //$.extend(cls, commonCls);
 
 var Mdl = function(zpath) {
-  pblWorkspace.apply(this, [cls]);
+  pblWorkspace.apply(this, [cls]);  
   this.zpath = zpath;
+  this.markups = markups;
   this.idOfMovieTemplate = null;
   this.movieTemplate = null; // contains episodeTemplates
   this.bem = bem;
