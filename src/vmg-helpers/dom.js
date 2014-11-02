@@ -12,38 +12,6 @@ var bhLib = require('bh');
 var bh = new(bhLib.BH); // jshint ignore:line
 var ahr = require('../vmg-helpers/app');
 
-function replacer(dataItem, match, p1) {
-  var arrDot = p1.split('__'); // "ab.cd" 
-  var val = dataItem[arrDot[0]];
-
-  for (var ind = 1; ind < arrDot.length; ind += 1) {
-    if (typeof val !== 'undefined') {
-      // only for JSON objects
-      val = val[arrDot[ind]];
-    }
-  }
-
-  // TODO: #41! dev checking: remove on production
-  //  var val = dataItem[p1];
-
-
-  if (val === null) {
-    val = '';
-    console.log('replacer: null: ', p1, val);
-  }
-  if (typeof val === 'undefined') {
-    val = '';
-    console.log('replacer: undefined: ', p1, val);
-  }
-
-  //  if (ahr.isJson(val)){
-  //var arrDot = 
-  //  }
-  // with $1 object doesnt works
-  // todo #31! or throw an error
-  return '"' + val + '"';
-}
-
 /*
  * Map it
  * @param {Object} sampleSchema - { block: 'asdf', content: []}
@@ -68,8 +36,9 @@ var mapSampleItem = function(sampleSchema, dataItem) {
   //var matches = strSchema.match(/@@(\w+/g);
   //  if (ahr.isJson(dataItem)) {
 
-  var genSchema = strSchema.replace(/"@@(\w+)"/g, replacer.bind(null, dataItem));
-  return ahr.parseJson(genSchema);
+  var genSchema = ahr.rplc(strSchema, dataItem);
+  //strSchema.replace(/"@@(\w+)"/g, replacer.bind(null, dataItem));
+  return JSON.parse(genSchema);
 };
 
 exports.getBlockSchema = function(bem, elemName) {

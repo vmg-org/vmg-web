@@ -167,4 +167,41 @@ ahr.inherits = function(childCtor, parentCtor) {
   childCtor.prototype.constructor = childCtor;
 };
 
+var replacer = function(dataItem, match, p1) {
+  var arrDot = p1.split('__'); // "ab.cd" 
+  var val = dataItem[arrDot[0]];
+
+  for (var ind = 1; ind < arrDot.length; ind += 1) {
+    if (typeof val !== 'undefined') {
+      // only for JSON objects
+      val = val[arrDot[ind]];
+    }
+  }
+
+  // TODO: #41! dev checking: remove on production
+  //  var val = dataItem[p1];
+
+
+  if (val === null) {
+    val = '';
+    console.log('replacer: null: ', p1, val);
+  }
+  if (typeof val === 'undefined') {
+    val = '';
+    console.log('replacer: undefined: ', p1, val);
+  }
+
+  //  if (ahr.isJson(val)){
+  //var arrDot = 
+  //  }
+  // with $1 object doesnt works
+  // todo #31! or throw an error
+  //return val;
+  return ('"' + val + '"');
+};
+
+ahr.rplc = function(str, dataObj) {
+  return str.replace(/"@@(\w+)"/g, replacer.bind(null, dataObj));
+};
+
 module.exports = ahr;
