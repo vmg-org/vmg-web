@@ -69,7 +69,7 @@ Mdl.prototype.loadBids = function(next) {
     next();
     return;
   }
-
+  // load ready bids
   srv.r1015(this.id, this.handleLoadBids.bind(this, next));
 };
 
@@ -144,6 +144,14 @@ Mdl.prototype.afterUploadNow = function() {
 Mdl.prototype.startUploadNow = function(elem) {
   dhr.disable(elem);
   this.postBid(this.afterUploadNow.bind(this));
+};
+
+Mdl.prototype.isBestBidExists = function() {
+  var arrBest = this.episodeBids.filter(function(item) {
+    return item.moder_rating === 4;
+  });
+
+  return (arrBest.length > 0);
 };
 
 exports.init = function(data, movieTemplate, ind) {

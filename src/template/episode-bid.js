@@ -13,17 +13,34 @@ var Mdl = function(data, episodeTemplate, ind) {
   this.created = data.created;
   this.id_of_episode_template = data.id_of_episode_template;
   this.moder_rating = data.moder_rating;
-  this.moder_rating_str = 'Rating: ' + this.moder_rating; // doesnt update if moder_rating updates: TODO: #33!
   this.fileCutArr = null;
 
-  this.fnc_play = this.zpath + '.playVideo(this)';
-  this.fnc_rate_good = this.zpath + '.rateGood(this);';
-  this.fnc_rate_bad = this.zpath + '.rateBad(this);';
-  this.fnc_rate_best = this.zpath + '.rateBest(this);';
   this.media_spec_item = mdlMediaSpec.init(data.media_spec_item, this);
   this.root = this.episodeTemplate.movieTemplate.root;
   this.markup0 = hbrs.compile(this.root.markups.attInfo0);
   this.markup1 = hbrs.compile(this.root.markups.attInfo1);
+  this.markup2 = hbrs.compile(this.root.markups.attInfo2);
+  this.markup4 = hbrs.compile(this.root.markups.attInfo4);
+
+  this.calcProps();
+};
+
+var rates = {
+  0: 'Not rated',
+  1: 'Rejected',
+  2: 'Accepted',
+  3: 'Not best',
+  4: 'Best'
+};
+
+// after init or changing
+Mdl.prototype.calcProps = function() {
+  this.moder_rating_str = rates[this.moder_rating];
+  this.fnc_play = this.zpath + '.playVideo(this)';
+  this.fnc_rate_good = this.zpath + '.rateGood(this);';
+  this.fnc_rate_bad = this.zpath + '.rateBad(this);';
+  this.fnc_rate_best = this.zpath + '.rateBest(this);';
+  this.fnc_rate_none = this.zpath + '.rateNone(this);';
 };
 
 Mdl.prototype.buildHtml = function() {
@@ -79,6 +96,7 @@ Mdl.prototype.toDto = function() {
 
 Mdl.prototype.handleChanging = function(err, data) {
   console.log('changed', err, data);
+  this.calcProps();
   this.episodeTemplate.fillBids();
 };
 
@@ -88,8 +106,12 @@ Mdl.prototype.changeRating = function(ratingVal) {
   //  console.log(this.buildHtml());
 };
 
+Mdl.prototype.rateNone = function() {
+  this.changeRating(0);
+};
+
 Mdl.prototype.rateGood = function() {
-  alert('under construction');
+  this.changeRating(2);
 };
 
 Mdl.prototype.rateBad = function() {
@@ -97,7 +119,13 @@ Mdl.prototype.rateBad = function() {
 };
 
 Mdl.prototype.rateBest = function() {
-  alert('under construction');
+  // check other states - it is client logic - to one best
+  if (this.episodeTemplate.isBestBidExists()) {
+    alert('Best bid exists already');
+    return;
+  }
+  // TODO: #33! hide other BEST buttons | or show notif, when clicked by its
+  this.changeRating(4);
 };
 
 exports.init = function(data, episodeTemplate, ind) {
