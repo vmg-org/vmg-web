@@ -1,6 +1,10 @@
 module.exports = {
   movieInfoScope: 'movie-info-cover',
-  moviePlayerScope: 'movie-player-cover',
-  movieCommentScope: 'movie-comments'
+  wchPlayerScope: 'movie-player-cover',
+  movieCommentScope: 'movie-comments',
+  wchPlayer: 'wch-player' // contains data-id for every episode
+//  vjsContainer1: 'vjs-container-1',
+//  vjsContainer2: 'vjs-container-2',
+//  vjsContainer3: 'vjs-container-3'
 };
 //onload: "app.fillMovie(this, event, 'movie-info-cover', 'movie-player-cover'); app.fillComments(this, event, 'movie-comments'); app.updateCommentsByInterval(this, event, 'movie-comments');"

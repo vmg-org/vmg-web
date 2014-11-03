@@ -7,9 +7,10 @@
 var pblWorkspace = require('../common/workspace');
 var ahr = require('../vmg-helpers/app');
 var cls = require('./cls');
-var bem = require('../../../vmg-bem/bems/watch.bemjson');
 var fllHelper = require('./fll');
 var mdlMovieTemplate = require('./movie-template');
+var markups = require('./markups');
+var bem = require('../../../vmg-bem/bems/watch.bemjson');
 
 var Mdl = function(zpath) {
   pblWorkspace.apply(this, [cls]);
@@ -17,6 +18,7 @@ var Mdl = function(zpath) {
   this.bem = bem;
   this.idOfMovieTemplate = null;
   this.movieTemplate = null;
+  this.markups = markups;
 };
 
 ahr.inherits(Mdl, pblWorkspace);
@@ -71,15 +73,15 @@ Mdl.prototype.startFlow = function() {
     this.loadIdOfMovieTemplate.bind(this,
       this.loadMovieTemplate.bind(this,
         this.waitDocReady.bind(this,
-          fllHelper.fillMovie.bind(this,
-            this.addEvents.bind(this,
-              fllHelper.fillComments.bind(this,
-                fllHelper.updateCommentsByInterval.bind(this,
-                  this.loadSid.bind(this,
-                    // two flows - auth=yes and auth=no
-                    this.handleSid.bind(this,
-                      this.authFlowSelector.bind(this)
-                    )))))))));
+          //          fllHelper.fillMovie.bind(this,
+          this.addEvents.bind(this,
+            fllHelper.fillComments.bind(this,
+              fllHelper.updateCommentsByInterval.bind(this,
+                this.loadSid.bind(this,
+                  // two flows - auth=yes and auth=no
+                  this.handleSid.bind(this,
+                    this.authFlowSelector.bind(this)
+                  ))))))));
 
   appFlow();
 };

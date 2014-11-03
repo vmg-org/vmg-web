@@ -27,7 +27,7 @@ exports.updateCommentsByInterval = function(next) {
 
 exports.fillMovie = function(next) {
   var targetNameInfo = this.cls.movieInfoScope;
-  var targetNamePlayer = this.cls.moviePlayerScope;
+  var targetNamePlayer = this.cls.wchPlayerScope;
 
   var movieRecordData = [{
     movie_title: 'Big rabbit',
