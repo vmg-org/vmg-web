@@ -68,10 +68,24 @@ Mdl.prototype.playVideo = function() {
   flow();
 };
 
+Mdl.prototype.toDto = function() {
+  return {
+    id_of_media_spec: this.id_of_media_spec,
+    id_of_episode_template: this.id_of_episode_template,
+    created: this.created,
+    moder_rating: this.moder_rating
+  };
+};
+
+Mdl.prototype.handleChanging = function(err, data) {
+  console.log('changed', err, data);
+  this.episodeTemplate.fillBids();
+};
+
 Mdl.prototype.changeRating = function(ratingVal) {
   this.moder_rating = ratingVal;
+  srv.w2006(this.toDto(), this.handleChanging.bind(this));
   //  console.log(this.buildHtml());
-  this.episodeTemplate.fillBids();
 };
 
 Mdl.prototype.rateGood = function() {

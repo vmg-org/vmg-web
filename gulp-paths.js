@@ -13,7 +13,7 @@ pth.bowerLibs = './bower_components/';
 //pth.markup = pth.bowerLibs + 'vmg-bem/dst/';
 
 // todo: #41! change paths to bower_component (fot non-local development)
-pth.markup =  '../vmg-bem/dst/';
+pth.markup = '../vmg-bem/dst/';
 
 // dev path contains unminified bundle js (for speed and debug with comments) and unminified css files 
 // and dev urls to other resources
@@ -21,6 +21,16 @@ pth.markup =  '../vmg-bem/dst/';
 pth.libs = {
   jquery: pth.bowerLibs + 'jquery/dist/jquery.js',
   modernizr: pth.bowerLibs + 'modernizr/modernizr.js'
+};
+
+var vjsRoot = pth.bowerLibs + 'video.js/dist/video-js/';
+
+pth.vjs = {
+  js: vjsRoot + 'video.js',
+  css: vjsRoot + 'video-js.min.css',
+  flash: vjsRoot + 'video-js.swf',
+  fonts: vjsRoot + 'font/*.*',
+  langs: vjsRoot + 'lang/*.js'
 };
 
 exports = pth;

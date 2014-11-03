@@ -30,6 +30,9 @@ var gitLog = require('git-log');
 var pth = require('./gulp-paths');
 var uglify = require('gulp-uglify');
 
+var gulpVjs = require('./gulp-vjs');
+gulpVjs.run(gulp, pth); //import tasks for video js
+
 // add new pages only here
 var pages = ['index', 'upload', 'watch', 'template', 'template-editor', 'enhance', 'cabinet'];
 
@@ -94,7 +97,7 @@ function startExpress() {
 
 // =============== TASK DECLARATION ===============================
 // for dst - change 'bwf' to 'uglify' (it is included)
-gulp.task('build', ['copy_markup', 'copy_libs', 'jshint', 'bwf'], function() {});
+gulp.task('build', ['copy_markup', 'copy_libs', 'copy_vjs', 'jshint', 'bwf'], function() {});
 
 // This is a separate task, don't clean for every build - just replace
 // Clean a dst folder, if there are unrequired files
@@ -111,6 +114,7 @@ gulp.task('copy_markup', function() {
   return gulp.src(pth.markup + '**/*')
     .pipe(gulp.dest(pth.dst));
 });
+
 
 gulp.task('copy_libs', function() {
   return gulp.src([

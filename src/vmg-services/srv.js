@@ -116,6 +116,11 @@ exports.w2005 = function(dto, next) {
   apiRqst.sendPost('w2005', {}, dto, next);
 };
 
+// update episode_bid.moder_rating
+exports.w2006 = function(dto, next) {
+  apiRqst.sendPost('w2006', {}, dto, next);
+};
+
 exports.d4000 = function(next) {
   apiRqst.sendDelete('d4000', {}, next);
 };
