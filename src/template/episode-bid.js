@@ -13,7 +13,7 @@ var Mdl = function(data, episodeTemplate, ind) {
   this.created = data.created;
   this.id_of_episode_template = data.id_of_episode_template;
   this.moder_rating = data.moder_rating;
-  this.moder_rating_str = 'Rating: ' + this.moder_rating;
+  this.moder_rating_str = 'Rating: ' + this.moder_rating; // doesnt update if moder_rating updates: TODO: #33!
   this.fileCutArr = null;
 
   this.fnc_play = this.zpath + '.playVideo(this)';
