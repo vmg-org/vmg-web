@@ -6,7 +6,8 @@ exports.attInfo1 = require('../../../vmg-bem/tmpl/_att-info-1.json');
 exports.attInfo2 = require('../../../vmg-bem/tmpl/_att-info-2.json');
 exports.attInfo4 = require('../../../vmg-bem/tmpl/_att-info-4.json');
 exports.shwEpisode = require('../../../vmg-bem/tmpl/_shw-episode.json');
-exports.shwMovieTemplate = require('../../../vmg-bem/tmpl/_shw-movie-template.json');
+exports.shwMovieAuthor = require('../../../vmg-bem/tmpl/_shw-movie--author.json');
+exports.shwMovieUsual = require('../../../vmg-bem/tmpl/_shw-movie--usual.json');
 exports.shwMovieGenre = require('../../../vmg-bem/tmpl/_shw-movie-genre.json');
 
 module.exports = exports;

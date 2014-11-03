@@ -85,6 +85,13 @@ exports.r1015 = function(id_of_episode_template, next) {
   }, next);
 };
 
+// load best episodes for movie
+exports.r1016 = function(id_of_movie_template, next) {
+  apiRqst.sendGetPublic('r1016', {
+    id_of_movie_template: id_of_movie_template
+  }, next);
+};
+
 // DELETE methods =======
 exports.d4001 = function(id_of_media_spec, next) {
   apiRqst.sendDelete('d4001', {

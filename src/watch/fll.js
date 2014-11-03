@@ -51,7 +51,16 @@ exports.fillMovie = function(next) {
   window.videojs(videoElem, {
     width: '100%',
     height: '100%',
-    controls: true
+    controls: true,
+    controlBar: {
+      muteToggle: true,
+      fullscreenToggle: true,
+      remainingTimeDisplay: false,
+      durationDisplay: false,
+      currentTimeDisplay: false,
+      timeDivider: false,
+      progressControl: false
+    }
   }, function() {
     //      $('.' + targetNamePlayer).show();
     console.log('player is loaded');

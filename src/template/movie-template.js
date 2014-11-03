@@ -29,17 +29,24 @@ var Mdl = function(data, root) {
 
   this.fnc_move_to_edit = this.zpath + '.moveToEdit()';
   this.fnc_prolong = this.zpath + '.prolong()';
+  this.fnc_remove = this.zpath + '.remove()';
+  this.fnc_merge_best = this.zpath + '.mergeBest()';
   //  ahr.each(data.episode_templates, function(item) {
   //    item.name_order = 'Episode ' + item.order_in_movie;
   //  });
   if (this.movie_genre_item) {
     this.movie_genre_item = mdlMovieGenre.init(this.movie_genre_item, this);
   }
-  this.markup = hbrs.compile(this.root.markups.shwMovieTemplate);
+  this.markupUsual = hbrs.compile(this.root.markups.shwMovieUsual);
+  this.markupAuthor = hbrs.compile(this.root.markups.shwMovieAuthor);
 };
 
 Mdl.prototype.buildHtml = function() {
-  return this.markup(this);
+  if (this.isUserOwner) {
+    return this.markupAuthor(this);
+  } else {
+    return this.markupUsual(this);
+  }
 };
 
 Mdl.prototype.mapEpisodeTemplate = function(etm, ind) {
@@ -92,9 +99,13 @@ Mdl.prototype.fillEpisodeTemplates = function(next) {
   return;
 };
 
-Mdl.prototype.fillMovieTemplate = function(next) {
-
+Mdl.prototype.fillMovieInfo = function() {
   dhr.html('.' + this.root.cls.movieTemplateScope, this.buildHtml());
+};
+
+Mdl.prototype.fillMovieTemplate = function(next) {
+  this.fillMovieInfo();
+
 
   // if genre exists - show this block
   if (this.movie_genre_item) {
@@ -128,6 +139,17 @@ Mdl.prototype.moveToEdit = function() {
 };
 
 Mdl.prototype.prolong = function() {
+  alert('under construction');
+};
+
+Mdl.prototype.remove = function() {
+  alert('under construction');
+};
+Mdl.prototype.mergeBest = function() {
+  // - check all best videos? - load all bids? -it is not necessary (check on a server)
+  // - send a command POST: job_merge
+  // - check this job by some interval
+  // - 
   alert('under construction');
 };
 
@@ -171,6 +193,7 @@ Mdl.prototype.handleUserRights = function(next) {
       console.log('movie has owner');
       if (this.root.userSession.social_profile_item.id_of_user_profile === this.movie_creator_item.id_of_user_profile) {
         this.isUserOwner = true;
+        this.fillMovieInfo();
       } else {
         this.isUserOwner = false;
       }

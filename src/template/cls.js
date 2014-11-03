@@ -3,9 +3,9 @@ module.exports = {
   movieGenreScope: 'shw-movie-genre-scope',
   episodeTemplateScope: 'shw-episodes',
   // movie owner fncs
-  fncProlongTemplate: 'shw-movie-template__prolong-fnc',
-  fncEditTemplate: 'shw-movie-template__edit-fnc',
-  fncRemoveTemplate: 'shw-movie-template__remove-fnc',
+  fncProlongTemplate: 'shw-movie--author__prolong-fnc',
+  fncEditTemplate: 'shw-movie--author__edit-fnc',
+  fncRemoveTemplate: 'shw-movie--author__remove-fnc',
   fncTweetStory: 'shw-episode__fnc-tweet-story',
   fncShowAttachments: 'shw-episode__fnc-show-attachments',
   // player fncs
