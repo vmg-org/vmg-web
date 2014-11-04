@@ -114,6 +114,7 @@ Mdl.prototype.handlePlayer = function(next, vjs) {
 // One player for all files
 Mdl.prototype.buildPlayer = function(next) {
   var elemVid = dhr.getElem('.' + this.root.cls.wchVid);
+  $(elemVid).addClass('video-js vjs-default-skin');
   var ths = this;
   window.videojs(elemVid, {
     width: '100%',

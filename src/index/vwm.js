@@ -13,13 +13,11 @@ var handleLoadMovieTemplates = function(next, err, arr) {
 
   // insert blank images instead empty urls
   ahr.each(arr, function(item) {
-    console.log(item);
     item.preview_img_url = item.preview_img_url || './css/img/movie-black.png';
     item.url_to_watch = './template.html?t=' + item.id;
   });
 
   this.movieTemplates = arr;
-  console.log(this.movieTemplates);
   next();
 };
 
@@ -27,21 +25,6 @@ exports.loadMovieTemplates = function(next) {
   srv.r1001(handleLoadMovieTemplates.bind(this, next));
 };
 
-var cbkWelcomeRecordList = function(next, err, data) {
-  if (err) {
-    this.movieRecordsErr = err;
-    next();
-    lgr.info(this.movieRecordsErr);
-    return;
-  }
-
-  this.movieRecords = data;
-  next();
-};
-
-exports.loadMovieRecords = function(next) {
-  srv.getMovieRecordsTop(cbkWelcomeRecordList.bind(this, next));
-};
 
 exports.fillMovieTemplates = function(next) {
   if (this.movieTemplatesErr) {

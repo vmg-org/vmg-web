@@ -92,6 +92,11 @@ exports.r1016 = function(id_of_movie_template, next) {
   }, next);
 };
 
+// best ready templates
+exports.r1017 = function(next) {
+  apiRqst.sendGetPublic('r1017', {}, next);
+};
+
 // DELETE methods =======
 exports.d4001 = function(id_of_media_spec, next) {
   apiRqst.sendDelete('d4001', {

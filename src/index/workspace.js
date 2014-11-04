@@ -9,6 +9,9 @@ var ahr = require('../vmg-helpers/app');
 var bem = require('../../../vmg-bem/bems/index.bemjson');
 var vwmHelper = require('./vwm');
 var cls = require('./cls');
+var lgr = require('../vmg-helpers/lgr');
+var srv = require('../vmg-services/srv');
+var mdlMovieRecord = require('./movie-record');
 
 var Mdl = function(zpath) {
   pblWorkspace.apply(this, [cls]);
@@ -19,6 +22,27 @@ var Mdl = function(zpath) {
 };
 
 ahr.inherits(Mdl, pblWorkspace);
+
+Mdl.prototype.mapMovieRecord = function(itemData){
+  return mdlMovieRecord.init(itemData, this);
+};
+
+Mdl.prototype.cbkWelcomeMovieRecords = function(next, err, data) {
+  if (err) {
+    this.movieRecordsErr = err;
+    next();
+    lgr.info(this.movieRecordsErr);
+    return;
+  }
+  console.log('mr', data);
+  this.movieRecords = data.map(this.mapMovieRecord.bind(this));
+  next();
+};
+
+Mdl.prototype.loadWelcomeMovieRecords = function(next) {
+  // r1017
+  srv.r1017(this.cbkWelcomeMovieRecords.bind(this, next));
+};
 
 Mdl.prototype.authFlowSelector = function() {
   if (this.userSession) {
@@ -33,7 +57,7 @@ Mdl.prototype.authFlowSelector = function() {
 
 Mdl.prototype.startFlow = function() {
   var appFlow =
-    vwmHelper.loadMovieRecords.bind(this,
+    this.loadWelcomeMovieRecords.bind(this,
       vwmHelper.loadMovieTemplates.bind(this,
         this.waitDocReady.bind(this,
           this.addEvents.bind(this,
