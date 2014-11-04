@@ -13,75 +13,75 @@ var Mdl = function(data, root, zpath) {
   this.zpath = zpath;
   Object.keys(data).forEach(this.mapKeys.bind(this, data));
   this.episodeTemplates = null;
+  this.vjs = null; // player for all episodes (merged in one consequently)
 };
 
 Mdl.prototype.mapKeys = function(data, prop) {
   this[prop] = data[prop];
 };
 
-// put videos to created markup
-Mdl.prototype.implEtmsVideos = function(next) {
-  var arrFlow = [
-    this.episodeTemplates[0].buildPlayer.bind(this.episodeTemplates[0], next)
-  ];
+var cacheSrc = function(src, next) {
+  console.log('src cache', src);
+  var vdo = document.createElement('video');
+  vdo.addEventListener('loadeddata', function() {
+    next();
+  });
+  vdo.src = src; // start loading
+  vdo.load(); // Causes the element to reset and start selecting and loading a new media resource from scratch.
 
-  for (var ind = 1; ind < this.episodeTemplates.length; ind += 1) {
-    arrFlow[ind] = this.episodeTemplates[ind].buildPlayer.bind(this.episodeTemplates[ind], arrFlow[ind - 1]);
-  }
-
-  arrFlow[arrFlow.length - 1]();
+  // xhr creates OPTIONS request and wrond accept-types
+  //  console.log('src cache', src);
+  //  var xhr = new XMLHttpRequest();
+  //  xhr.onload = function() {
+  //    next();
+  //  };
+  //  xhr.open('GET', src);
+  //  xhr.setRequestHeader('range', 'bytes=0-');
+  //  //  xhr.setRequestHeader('Accept-Encoding', 'identity;q=1, *;q=0');
+  //
+  //  //		  Range:bytes=0-
+  //
+  //  xhr.send('');
 };
 
-var handleEnded = function(prevEtm, nextEtm) {
-  prevEtm.vjs.src(nextEtm.mediaSrc);
-  prevEtm.vjs.play();
-  //  var isPrevIsFs = prevEtm.vjs.isFullscreen();
-  //  if (isPrevIsFs) {
-  //    prevEtm.vjs.isFullscreen(false); // exitFullscreen();
+Mdl.prototype.cacheOtherVideos = function() {
+  console.log('video data loaded, load other episodes');
+
+  var src1 = this.episodeTemplates[1].mediaSrc;
+  var src2 = this.episodeTemplates[2].mediaSrc;
+
+  cacheSrc(src1,
+    cacheSrc.bind(null, src2, function() {
+      console.log('all loaded to cache');
+    }));
+
+  //  for (var ind = 1; ind < this.episodeTemplates.length; ind += 1) {
+  //    cacheSrc(this.episodeTemplates[ind].mediaSrc);
   //  }
-  ////  prevEtm.hideContainer();
-  ////  prevEtm.vjs.hide(); 
-  //  nextEtm.showContainer();
-  //  if (isPrevIsFs){
-  //    nextEtm.vjs.isFullscreen(true);
-  //  }
-  //
-  //  nextEtm.vjs.play();
+};
+
+Mdl.prototype.handleEnded = function(counterScope) {
+  counterScope.ind += 1;
+  if (counterScope.ind < this.episodeTemplates.length) {
+    this.vjs.src(this.episodeTemplates[counterScope.ind].mediaSrc);
+    this.vjs.play();
+  } else {
+    // set again
+    this.vjs.src(this.episodeTemplates[0].mediaSrc);
+  }
 };
 
 Mdl.prototype.startRelay = function() {
   console.log('implemented');
-  //  var ths = this;
-  var firstEtm = this.episodeTemplates[0];
-  var secondEtm = this.episodeTemplates[1];
-  var thirdEtm = this.episodeTemplates[2];
-  // load and start first episode
-  firstEtm.setVideoSrc();
-  firstEtm.showContainer();
-  firstEtm.vjs.play();
+  // if first video in cache - usually other too (but not in all cases)
+  this.vjs.one('loadeddata', this.cacheOtherVideos.bind(this));
 
-  firstEtm.vjs.on('loadedalldata', function() {
-    secondEtm.setVideoSrc(); // start load   
-    //    console.log('loadedalldata');
-  });
-
-  firstEtm.vjs.on('ended', handleEnded.bind(null, firstEtm, secondEtm));
-
-  secondEtm.vjs.on('loadedalldata', function() {
-    thirdEtm.setVideoSrc();
-  });
-
-  secondEtm.vjs.on('ended', handleEnded.bind(null, firstEtm, thirdEtm));
-};
-
-Mdl.prototype.implEtmsMarkup = function() {
-  var arrEtmMarkup = this.episodeTemplates.map(function(item) {
-    return item.buildHtml();
-  });
-
-  dhr.html('.' + this.root.cls.wchPlayerScope, arrEtmMarkup.join(''));
-
-  this.implEtmsVideos(this.startRelay.bind(this));
+  var counterScope = {
+    ind: 0
+  };
+  this.vjs.on('ended', this.handleEnded.bind(this, counterScope));
+  this.vjs.src(this.episodeTemplates[0].mediaSrc);
+  this.vjs.play();
 };
 
 Mdl.prototype.buildEtm = function(etmData, ind) {
@@ -99,14 +99,44 @@ Mdl.prototype.handleLoadEpisodeTemplates = function(err, data) {
     return alert('Author of a movie has not build a full video. Please, choose another video.');
   }
 
-  this.implEtmsMarkup();
+  this.buildPlayer(this.startRelay.bind(this));
 };
 
 Mdl.prototype.loadEpisodeTemplates = function() {
   srv.r1016(this.id, this.handleLoadEpisodeTemplates.bind(this));
 };
 
-Mdl.prototype.buildPlayer = function() {
+Mdl.prototype.handlePlayer = function(next, vjs) {
+  this.vjs = vjs;
+  next();
+};
+
+// One player for all files
+Mdl.prototype.buildPlayer = function(next) {
+  var elemVid = dhr.getElem('.' + this.root.cls.wchVid);
+  var ths = this;
+  window.videojs(elemVid, {
+    width: '100%',
+    height: '100%',
+    autoplay: false,
+    preload: 'metadata',
+    controls: true,
+    controlBar: {
+      muteToggle: true,
+      fullscreenToggle: true,
+      remainingTimeDisplay: false,
+      durationDisplay: false,
+      currentTimeDisplay: false,
+      timeDivider: false,
+      progressControl: false,
+      playToggle: true
+    }
+  }, function() {
+    ths.handlePlayer(next, this);
+    //      $('.' + targetNamePlayer).show();
+    //    console.log('player is loaded');
+    // This is functionally the same as the previous example.
+  });
   // build a player
   // take first url
   // set to source
