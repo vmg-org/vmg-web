@@ -11,7 +11,6 @@ var handleJobOutput = function(next, err, jobOutput) {
 
   // conversion started (it is about 10 second for 2MB
   // go to /enhance page to show and enhance a converted video
-  //next(null, jobOutput);
   // check in other page
   next(null, jobOutput);
 };
