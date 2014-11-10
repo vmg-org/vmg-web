@@ -3,6 +3,7 @@
 var hbrs = require('../vmg-helpers/hbrs');
 var srv = require('../vmg-services/srv');
 var mdlMediaSpec = require('./media-spec');
+var mdlBidCheck = require('./bid-check');
 
 var Mdl = function(data, episodeTemplate, ind) {
   this.episodeTemplate = episodeTemplate;
@@ -15,27 +16,39 @@ var Mdl = function(data, episodeTemplate, ind) {
   this.moder_rating = data.moder_rating;
   this.fileCutArr = null;
 
+  if (data.bid_check_item) {
+    this.bidCheck = mdlBidCheck.init(data.bid_check_item, this);
+  } else {
+    this.bidCheck = null;
+  }
+
   this.media_spec_item = mdlMediaSpec.init(data.media_spec_item, this);
   this.root = this.episodeTemplate.movieTemplate.root;
   this.markup0 = hbrs.compile(this.root.markups.attInfo0);
-  this.markup1 = hbrs.compile(this.root.markups.attInfo1);
-  this.markup2 = hbrs.compile(this.root.markups.attInfo2);
+  this.markupDeclined = hbrs.compile(this.root.markups.attInfo1);
+  this.markupApproved = hbrs.compile(this.root.markups.attInfo2);
   this.markup4 = hbrs.compile(this.root.markups.attInfo4);
 
   this.calcProps();
 };
 
-var rates = {
-  0: 'Not rated',
-  1: 'Rejected',
-  2: 'Accepted',
-  3: 'Not best',
-  4: 'Best'
-};
-
 // after init or changing
 Mdl.prototype.calcProps = function() {
-  this.moder_rating_str = rates[this.moder_rating];
+  if (this.bidCheck) {
+    if (this.bidCheck.is_approved === true) {
+      this.moder_rating_str = 'Accepted';
+    } else if (this.bidCheck.is_approved === false) {
+      this.moder_rating_str = 'Rejected';
+    }
+  } else {
+    var rates = {
+      0: 'Not rated',
+      4: 'Best'
+    };
+
+    this.moder_rating_str = rates[this.moder_rating];
+  }
+
   this.fnc_play = this.zpath + '.playVideo(this)';
   this.fnc_rate_good = this.zpath + '.rateGood(this);';
   this.fnc_rate_bad = this.zpath + '.rateBad(this);';
@@ -44,7 +57,20 @@ Mdl.prototype.calcProps = function() {
 };
 
 Mdl.prototype.buildHtml = function() {
-  return this['markup' + this.moder_rating](this);
+  if (this.moder_rating === 4) {
+    return this['markup' + this.moder_rating](this);
+  }
+
+  if (this.bidCheck) {
+    if (this.bidCheck.is_approved === true) {
+      return this.markupApproved(this);
+    }
+    if (this.bidCheck.is_approved === false) {
+      return this.markupDeclined(this);
+    }
+  }
+
+  return this.markup0(this);
 };
 
 Mdl.prototype.handleLoadFileCut = function(cbkFlow, err, fileCutArr) {
@@ -107,15 +133,40 @@ Mdl.prototype.changeRating = function(ratingVal) {
 };
 
 Mdl.prototype.rateNone = function() {
-  this.changeRating(0);
+  this.addBidCheck(null);
+};
+
+Mdl.prototype.handleAddBidCheck = function(err, data) {
+  if (err) {
+    return alert(err.message || 'server error');
+  }
+
+  if (!data) {
+    console.log('bid check - removed');
+    this.bidCheck = null;
+  } else {
+    this.bidCheck = mdlBidCheck.init(data, this);
+  }
+  this.calcProps();
+  this.episodeTemplate.fillBids();
+};
+
+Mdl.prototype.addBidCheck = function(isApproved) {
+  var bidCheck = {
+    id_of_media_spec: this.id_of_media_spec,
+    is_approved: isApproved,
+    description: ''
+  };
+
+  srv.w2007(bidCheck, this.handleAddBidCheck.bind(this));
 };
 
 Mdl.prototype.rateGood = function() {
-  this.changeRating(2);
+  this.addBidCheck(true);
 };
 
 Mdl.prototype.rateBad = function() {
-  this.changeRating(1);
+  this.addBidCheck(false);
 };
 
 Mdl.prototype.rateBest = function() {
