@@ -10,11 +10,17 @@ var bem = require('../../../vmg-bem/bems/cabinet.bemjson');
 var vwmHelper = require('./vwm');
 var fllHelper = require('./fll');
 var cls = require('./cls');
+var srv = require('../vmg-services/srv');
+//var dhr = require('../vmg-helpers/dom');
+//var lgr = require('../vmg-helpers/lgr');
+var mdlNonreadyBid = require('./nonready-bid');
+var markups = require('./markups');
 
 var Mdl = function(zpath) {
   pblWorkspace.apply(this, [cls]);
   this.zpath = zpath;
   this.bem = bem;
+  this.markups = markups;
   this.readyEpisodeBids = null; // Uploaded bids, with media_spec_item, episode_template_item, movie_template_item
   this.nonReadyEpisodeBid = null; // A bid of current user with is_ready = false (usually - one or none)
   this.openedMovieTemplates = null;
@@ -23,19 +29,38 @@ var Mdl = function(zpath) {
 
 ahr.inherits(Mdl, pblWorkspace);
 
+Mdl.prototype.handleNonReadyEpisodeBids = function(next, err, result) {
+  if (err) {
+    this.handleError(err);
+    return;
+  }
+
+  if (result && result.length > 0) {
+    this.nonReadyEpisodeBid = mdlNonreadyBid.init(result[0], this, this.zpath + '.nonReadyEpisodeBid');
+    this.nonReadyEpisodeBid.loadBidInfo(next);
+    return;
+  }
+  next();
+  console.log('nonreadybids', result);
+};
+
+Mdl.prototype.loadNonReadyEpisodeBids = function(next) {
+  // is_ready = false
+  srv.r1011(this.handleNonReadyEpisodeBids.bind(this, next));
+};
+
+
 Mdl.prototype.authFlowSelector = function() {
   if (this.userSession) {
     var afterAuthFlow =
       this.userSession.showAuth.bind(this.userSession,
-        vwmHelper.loadNonReadyEpisodeBids.bind(this,
-          vwmHelper.loadBidInfo.bind(this,
-            fllHelper.fillBidInfo.bind(this,
-              vwmHelper.loadReadyEpisodeBids.bind(this,
-                fllHelper.fillReadyEpisodeBids.bind(this,
-                  vwmHelper.loadOpenedMovieTemplates.bind(this,
-                    fllHelper.fillOpenedMovieTemplates.bind(this,
-                      this.last)
-                  )))))));
+        this.loadNonReadyEpisodeBids.bind(this, // with bid info
+          vwmHelper.loadReadyEpisodeBids.bind(this,
+            fllHelper.fillReadyEpisodeBids.bind(this,
+              vwmHelper.loadOpenedMovieTemplates.bind(this,
+                fllHelper.fillOpenedMovieTemplates.bind(this,
+                  this.last)
+              )))));
     afterAuthFlow();
   } else {
     // show message and apply events and login buttons with authFlow

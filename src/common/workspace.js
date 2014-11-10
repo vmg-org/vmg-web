@@ -14,6 +14,7 @@ var srv = require('../vmg-services/srv');
 //var lgr = require('../vmg-helpers/lgr');
 var mdlUserSession = require('./user-session');
 var pph = require('./popup-helper');
+var lgr = require('../vmg-helpers/lgr');
 
 var Mdl = function(cls) {
   this.doc = window.document;
@@ -113,8 +114,18 @@ Mdl.prototype.last = function() {
   console.log('last func');
 };
 
+Mdl.prototype.handleError = function(err) {
+  dhr.html('.' + this.cls.notif, err.message || '%=serverError=%');
+  dhr.showElems('.' + this.cls.notif);
+  lgr.error(err);
+};
+
 Mdl.prototype.reloadPage = function() {
   this.doc.location.reload();
+};
+
+Mdl.prototype.rdr = function(urlToRdr) {
+  this.doc.location.href = urlToRdr;
 };
 
 module.exports = Mdl;
