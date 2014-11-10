@@ -146,9 +146,12 @@ Mdl.prototype.startUploadNow = function(elem) {
   this.postBid(this.afterUploadNow.bind(this));
 };
 
-Mdl.prototype.isBestBidExists = function() {
+Mdl.prototype.isBidRatingExists = function(rating) {
   var arrBest = this.episodeBids.filter(function(item) {
-    return item.moder_rating === 4;
+    if (item.bidRating) {
+      return item.bidRating.rating === rating;
+    }
+    return false;
   });
 
   return (arrBest.length > 0);

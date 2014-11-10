@@ -128,12 +128,14 @@ exports.w2005 = function(dto, next) {
   apiRqst.sendPost('w2005', {}, dto, next);
 };
 
-// update episode_bid.moder_rating
-exports.w2006 = function(dto, next) {
-  apiRqst.sendPost('w2006', {}, dto, next);
-};
+// bid_check
 exports.w2007 = function(dto, next) {
   apiRqst.sendPost('w2007', {}, dto, next);
+};
+
+// bid_rating
+exports.w2008 = function(dto, next) {
+  apiRqst.sendPost('w2008', {}, dto, next);
 };
 
 exports.d4000 = function(next) {
