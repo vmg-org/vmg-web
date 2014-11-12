@@ -112,7 +112,7 @@ Mdl.prototype.handlePostBid = function(next, err, episodeBid) {
     alert(err.message || '%=serverError=%');
     return;
   }
-
+  console.log('created bid', episodeBid);
   // created bid for upload (now or later)
   this.createdEpisodeBid = episodeBid;
 
