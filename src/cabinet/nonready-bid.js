@@ -77,7 +77,9 @@ Mdl.prototype.handleCancelBid = function(err) {
 };
 
 Mdl.prototype.fncActBidCancel = function() {
-  srv.d4001(this.id_of_media_spec, this.handleCancelBid.bind(this));
+  srv.w2010({
+    id_of_media_spec: this.id_of_media_spec // DELETE by primary key
+  }, this.handleCancelBid.bind(this));
 };
 
 Mdl.prototype.fncActBidUpload = function() {

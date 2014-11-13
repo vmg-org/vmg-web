@@ -97,12 +97,6 @@ exports.r1017 = function(next) {
   apiRqst.sendGetPublic('r1017', {}, next);
 };
 
-// DELETE methods =======
-exports.d4001 = function(id_of_media_spec, next) {
-  apiRqst.sendDelete('d4001', {
-    id_of_media_spec: id_of_media_spec
-  }, next);
-};
 
 exports.w2000 = function(dto, next) {
   apiRqst.sendPost('w2000', {}, dto, next);
@@ -138,8 +132,15 @@ exports.w2008 = function(dto, next) {
   apiRqst.sendPost('w2008', {}, dto, next);
 };
 
-exports.d4000 = function(next) {
-  apiRqst.sendDelete('d4000', {}, next);
+// Delete non-uploaded episode bid
+exports.w2010 = function(dto, next) {
+  apiRqst.sendPost('w2010', {}, dto, next);
+};
+
+// Delete a session, no required model, get id from sid
+exports.w2011 = function(next) {
+  // send empty object: in some future cases might be addt parameters to send to the server
+  apiRqst.sendPost('w2011', {}, {}, next);
 };
 
 exports.getGenreTags = function(next) {

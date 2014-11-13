@@ -21,11 +21,12 @@ Mdl.prototype.saveOnClient = function() {
 
 var handleLogout = function() {
   // from cookie or context
-  srv.d4000(function(errDel) {
+  srv.w2011(function(errDel) {
     // if sid is wrong - skip this error
     lgr.error(errDel);
     // no callbask: if err - expired sessions will be removed automatically from db
     shr.removeItem(config.AUTH_STORAGE_KEY);
+
     window.location.reload();
   });
 };
