@@ -132,6 +132,11 @@ exports.w2008 = function(dto, next) {
   apiRqst.sendPost('w2008', {}, dto, next);
 };
 
+/** Delete job_output with array of file_output and media_file */
+exports.w2009 = function(jobOutput, next) {
+  apiRqst.sendPost('w2009', {}, jobOutput, next);
+};
+
 // Delete non-uploaded episode bid
 exports.w2010 = function(dto, next) {
   apiRqst.sendPost('w2010', {}, dto, next);
@@ -141,6 +146,11 @@ exports.w2010 = function(dto, next) {
 exports.w2011 = function(next) {
   // send empty object: in some future cases might be addt parameters to send to the server
   apiRqst.sendPost('w2011', {}, {}, next);
+};
+
+/** Delete a jobSource with files */
+exports.w2012 = function(jobSource, next){
+  apiRqst.sendPost('w2012', {}, jobSource, next);
 };
 
 exports.getGenreTags = function(next) {

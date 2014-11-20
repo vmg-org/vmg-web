@@ -76,10 +76,46 @@ Mdl.prototype.handleCancelBid = function(err) {
   // clean episodeInfo
 };
 
-Mdl.prototype.fncActBidCancel = function() {
+Mdl.prototype.handleDelJobSource = function(err){
+  if (err){
+    alert(err.message || 'server error');
+    return;
+  }
+
   srv.w2010({
     id_of_media_spec: this.id_of_media_spec // DELETE by primary key
   }, this.handleCancelBid.bind(this));
+};
+
+Mdl.prototype.handleDelJobOutput = function(err){
+  if (err){
+    alert(err.message || 'server error');
+    return;
+  }
+
+  if (this.bidInfo.media_spec_item.job_source_item) {
+    srv.w2012(this.bidInfo.media_spec_item.job_source_item, this.handleDelJobSource.bind(this));
+  }
+  else {
+    this.handleDelJobSource(null);
+  }
+};
+
+/**
+ * Cancel a bid
+ *     Remove by id_of_media_spec - it is a primary key
+ *     Remove job_output if exist (with array of file_output and media_file)
+ *     Remove job_source if exist
+ *     Remove episode_bid with all links (media_owner, media_spec etc)
+ *     If a job_cut exists - it automatically lock the bid (you can not remove a bid after it)
+ */
+Mdl.prototype.fncActBidCancel = function() {
+  if (this.bidInfo.media_spec_item.job_output_item) {
+    srv.w2009(this.bidInfo.media_spec_item.job_output_item, this.handleDelJobOutput.bind(this));
+  }
+  else{
+    this.handleDelJobOutput(null);
+  }
 };
 
 Mdl.prototype.fncActBidUpload = function() {
