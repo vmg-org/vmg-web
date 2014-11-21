@@ -8,7 +8,7 @@ var shr = require('../vmg-helpers/shr');
 var config = require('../config');
 var dhr = require('../vmg-helpers/dom');
 var googHelper = require('./goog-helper');
-var fbHelper = require('./fb-helper');
+var fbHelper = require('./fb-mdl');
 var devHelper = require('./dev-helper');
 var srv = require('../vmg-services/srv');
 //var lgr = require('../vmg-helpers/lgr');
@@ -68,7 +68,8 @@ Mdl.prototype.waitUserLogin = function(nextFlow) {
   window.googAsyncInit = googHelper.init.bind(this, cbk);
   dhr.loadGoogLib('googAsyncInit');
 
-  window.fbAsyncInit = fbHelper.init.bind(this, cbk);
+  var mdlFb = fbHelper.init(this, config.FB_CLIENT_ID);
+  window.fbAsyncInit = mdlFb.initLib.bind(mdlFb, cbk);
   dhr.loadFbLib(); // fbAsyncInit by default    
   // we can't send next functions to this handlers, that show buttons now
 
