@@ -34,7 +34,7 @@ var gulpVjs = require('./gulp-vjs');
 gulpVjs.run(gulp, pth); //import tasks for video js
 
 // add new pages only here
-var pages = ['index', 'upload', 'watch', 'template', 'template-editor', 'enhance', 'cabinet'];
+var pages = ['index', 'explore', 'upload', 'watch', 'template', 'template-editor', 'enhance', 'cabinet'];
 
 var jshintNotify = function(file) {
   if (file.jshint.success) {
