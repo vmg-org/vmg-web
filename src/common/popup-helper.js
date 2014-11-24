@@ -4,21 +4,21 @@ var dhr = require('../vmg-helpers/dom');
 exports.turnPopup = function(popupName) {
   var targetElems = dhr.getElems('.' + popupName);
   if (dhr.isElems(targetElems, ':visible')) {
-    dhr.hideElems(targetElems, 'fast');
+    dhr.hideElems(targetElems);
   } else {
-    dhr.showElems(targetElems, 'fast');
+    dhr.showElems(targetElems);
   }
 };
 
 exports.hidePopupByEscape = function(popupName, e) {
   if (e.keyCode === 27) {
-    dhr.hideElems('.' + popupName, 'fast');
+    dhr.hideElems('.' + popupName);
   }
 };
 
 exports.hidePopupIfOut = function(popupName, e) {
-  if (e.currentTarget === e.target.parentElement) {
-    dhr.hideElems('.' + popupName, 'fast');
+  if (e.currentTarget === e.target) { //.parentElement) {
+    dhr.hideElems('.' + popupName);
   }
 };
 

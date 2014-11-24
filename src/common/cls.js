@@ -7,7 +7,7 @@ module.exports = {
   fncLogout: 'auth-profile__logout',
   menuCall: 'menu-call',
   menuPopup: 'menu-popup',
-  menuViewClose: 'menu-view__close',
+  menuViewClose: 'menu-popup__close',
   notifWrapClose: 'notif-wrap__close',
   notif: 'notif-wrap__notif'
 };
