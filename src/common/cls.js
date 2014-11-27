@@ -1,4 +1,10 @@
+/**
+ * Common classes
+ */
 module.exports = {
+  popupScope: 'popup-scope',
+  authScope: 'auth-scope',
+  authPopup: 'auth-popup',
   authNo: 'auth-no',
   authProfile: 'auth-profiles',
   fncGoog: 'auth-no__auth-button_social_goog',

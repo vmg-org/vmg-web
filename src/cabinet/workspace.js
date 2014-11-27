@@ -17,10 +17,8 @@ var mdlNonreadyBid = require('./nonready-bid');
 var markups = require('./markups');
 
 var Mdl = function(zpath) {
-  pblWorkspace.apply(this, [cls]);
-  this.zpath = zpath;
+  pblWorkspace.apply(this, [cls, markups, zpath]);
   this.bem = bem;
-  this.markups = markups;
   this.readyEpisodeBids = null; // Uploaded bids, with media_spec_item, episode_template_item, movie_template_item
   this.nonReadyEpisodeBid = null; // A bid of current user with is_ready = false (usually - one or none)
   this.openedMovieTemplates = null;
@@ -65,9 +63,7 @@ Mdl.prototype.authFlowSelector = function() {
   } else {
     // show message and apply events and login buttons with authFlow
 
-    this.waitUserLogin(function() {
-      window.location.reload();
-    });
+    this.waitUserLogin();
   }
 };
 

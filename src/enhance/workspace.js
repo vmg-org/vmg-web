@@ -22,11 +22,11 @@ var srv = require('../vmg-services/srv');
 var pblWorkspace = require('../common/workspace');
 var cls = require('./cls');
 var bem = require('../../../vmg-bem/bems/enhance.bemjson');
+var markups = {};
 
 var Mdl = function(zpath) {
   console.log('wsp', arguments);
-  pblWorkspace.apply(this, [cls]);
-  this.zpath = zpath;
+  pblWorkspace.apply(this, [cls, markups, zpath]);
   this.esc = {
     notif: dhr.getElem('.' + this.cls.notif),
     loader: dhr.getElem('.' + this.cls.loader),
@@ -260,12 +260,8 @@ Mdl.prototype.authFlowSelector = function() {
     this.userSession.showAuth(this.last);
     this.getBidInfo();
   } else {
-    var authNoFlow =
-      this.waitUserLogin.bind(this,
-        this.reloadPage.bind(this)
-      );
+    this.waitUserLogin();
     // show message and apply events and login buttons with authFlow
-    authNoFlow();
   }
 };
 

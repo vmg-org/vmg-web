@@ -8,10 +8,10 @@ var pblWorkspace = require('../common/workspace');
 var ahr = require('../vmg-helpers/app');
 var bem = require('../../../vmg-bem/bems/index.bemjson');
 var cls = require('./cls');
+var markups = {};
 
 var Mdl = function(zpath) {
-  pblWorkspace.apply(this, [cls]);
-  this.zpath = zpath;
+  pblWorkspace.apply(this, [cls, markups, zpath]);
   this.bem = bem;
 };
 
@@ -22,21 +22,19 @@ Mdl.prototype.authFlowSelector = function() {
     this.userSession.showAuth(this.last);
   } else {
     // show message and apply events and login buttons with authFlow
-    this.waitUserLogin(function() {
-      window.location.reload();
-    });
+    this.waitUserLogin();
   }
 };
 
 Mdl.prototype.startFlow = function() {
   var appFlow =
-        this.waitDocReady.bind(this,
-          this.addEvents.bind(this,
-              this.loadSid.bind(this,
-                // two flows - auth=yes and auth=no
-                this.handleSid.bind(this,
-                  this.authFlowSelector.bind(this)
-                ))));
+    this.waitDocReady.bind(this,
+      this.addEvents.bind(this,
+        this.loadSid.bind(this,
+          // two flows - auth=yes and auth=no
+          this.handleSid.bind(this,
+            this.authFlowSelector.bind(this)
+          ))));
 
   appFlow();
 };

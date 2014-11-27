@@ -4,6 +4,7 @@
  */
 'use strict';
 var commonCls = require('./cls');
+var commonMarkups = require('./markups');
 var shr = require('../vmg-helpers/shr');
 var config = require('../config');
 var dhr = require('../vmg-helpers/dom');
@@ -15,18 +16,69 @@ var srv = require('../vmg-services/srv');
 var mdlUserSession = require('./user-session');
 var pph = require('./popup-helper');
 var lgr = require('../vmg-helpers/lgr');
+var hbrs = require('../vmg-helpers/hbrs');
 
-var Mdl = function(cls) {
+var Mdl = function(cls, markups, zpath) {
   this.doc = window.document;
+  this.zpath = zpath;
   $.extend(cls, commonCls);
   this.cls = cls;
+
+  $.extend(markups, commonMarkups);
+  this.markups = markups;
+
   this.sid = null;
   this.userSession = null; // is authenticated
+
+  this.markupAuthNo = hbrs.compile(this.markups.authNo);
+  this.markupAuthPopup = hbrs.compile(this.markups.authPopup);
+  this.fnc_open_login_popup = this.zpath + '.openLoginPopup()';
+  this.fnc_close_auth_popup = this.zpath + '.closeAuthPopup()';
+  this.fnc_close_auth_popup_out = this.zpath + '.closeAuthPopupOut(this, event)';
+  this.isAuthPopupLoaded = false;
 };
 
 Mdl.prototype.loadSid = function(next) {
   this.sid = shr.getItem(config.AUTH_STORAGE_KEY) || null;
   next();
+};
+
+Mdl.prototype.openLoginPopup = function() {
+  if (this.isAuthPopupLoaded) {
+    dhr.showElems('.' + this.cls.authPopup);
+    return;
+  }
+  this.isAuthPopupLoaded = true;
+  var cbk = this.handleUserSession.bind(this, function() {
+    window.location.reload();
+  });
+  // next flow - only after user action (auth)
+  window.googAsyncInit = googHelper.init.bind(this, cbk);
+  dhr.loadGoogLib('googAsyncInit');
+
+  var mdlFb = fbHelper.init(this, config.FB_CLIENT_ID);
+  window.fbAsyncInit = mdlFb.initLib.bind(mdlFb, cbk);
+  dhr.loadFbLib(); // fbAsyncInit by default    
+  // we can't send next functions to this handlers, that show buttons now
+
+  // apply context
+  devHelper.init.apply(this, [cbk]);
+
+  var htmlAuthPopup = this.markupAuthPopup(this);
+  dhr.html('.' + this.cls.popupScope, htmlAuthPopup);
+
+  //  dhr.showElems('.' + this.cls.authPopup);
+  console.log('popup opened');
+};
+
+Mdl.prototype.closeAuthPopup = function() {
+  dhr.hideElems('.' + this.cls.authPopup);
+};
+
+Mdl.prototype.closeAuthPopupOut = function(elem, e) {
+  if (e.currentTarget === e.target) { //.parentElement) {
+    $(elem).hide();
+  }
 };
 
 Mdl.prototype.waitDocReady = function(next) {
@@ -62,21 +114,15 @@ Mdl.prototype.showNoAuthWarning = function(next) {
   next();
 };
 
-Mdl.prototype.waitUserLogin = function(nextFlow) {
-  var cbk = this.handleUserSession.bind(this, nextFlow);
-  // next flow - only after user action (auth)
-  window.googAsyncInit = googHelper.init.bind(this, cbk);
-  dhr.loadGoogLib('googAsyncInit');
+Mdl.prototype.waitUserLogin = function() {
 
-  var mdlFb = fbHelper.init(this, config.FB_CLIENT_ID);
-  window.fbAsyncInit = mdlFb.initLib.bind(mdlFb, cbk);
-  dhr.loadFbLib(); // fbAsyncInit by default    
-  // we can't send next functions to this handlers, that show buttons now
+  // get auth-no template
+  // add params if need
+  // add to auth-scope
 
-  // apply context
-  devHelper.init.apply(this, [cbk]);
-
-  dhr.showElems('.' + this.cls.authNo);
+  var htmlAuthNo = this.markupAuthNo(this);
+  var elemAuthScope = dhr.getElem('.' + this.cls.authScope);
+  dhr.html(elemAuthScope, htmlAuthNo);
 };
 
 Mdl.prototype.handleSid = function(next) {
@@ -98,6 +144,7 @@ Mdl.prototype.addEvents = function(next) {
   dhr.on(elemMenuCall, 'click', pph.turnPopup.bind(null, this.cls.menuPopup));
 
   dhr.on(this.doc.body, 'keyup', pph.hidePopupByEscape.bind(null, this.cls.menuPopup));
+  dhr.on(this.doc.body, 'keyup', pph.hidePopupByEscape.bind(null, this.cls.authPopup));
   var elemMenuPopup = dhr.getElem('.' + this.cls.menuPopup);
   dhr.on(elemMenuPopup, 'click', pph.hidePopupIfOut.bind(null, this.cls.menuPopup));
 

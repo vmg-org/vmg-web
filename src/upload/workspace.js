@@ -11,14 +11,15 @@ var pblWorkspace = require('../common/workspace');
 var ahr = require('../vmg-helpers/app');
 var bem = require('../../../vmg-bem/bems/upload.bemjson');
 var cls = require('./cls');
+var markups = {};
 var fileHandler = require('./file-handler');
 var dhr = require('../vmg-helpers/dom');
 var jobSourceChecker = require('./job-source-checker');
 var srv = require('../vmg-services/srv');
 
 var Mdl = function(zpath) {
-  pblWorkspace.apply(this, [cls]);
-  this.zpath = zpath;
+  pblWorkspace.apply(this, [cls, markups, zpath]);
+
   // required for common auth models
   this.bem = bem;
   this.idOfMediaSpec = null;
@@ -149,9 +150,7 @@ Mdl.prototype.authFlowSelector = function() {
     // show message and apply events and login buttons with authFlow
     var authNoFlow =
       this.showNoAuthWarning.bind(this,
-        this.waitUserLogin.bind(this,
-          this.reloadPage.bind(this)
-        ));
+        this.waitUserLogin.bind(this));
 
     authNoFlow();
   }

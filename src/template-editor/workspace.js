@@ -4,12 +4,12 @@ var bem = require('../../../vmg-bem/bems/template-editor.bemjson');
 var vwmHelper = require('./vwm');
 var fllHelper = require('./fll');
 var cls = require('./cls');
+var markups = {};
 var pblWorkspace = require('../common/workspace');
 var ahr = require('../vmg-helpers/app');
 
-var Mdl = function(zpath) {	
-  pblWorkspace.apply(this, [cls]);
-  this.zpath = zpath;
+var Mdl = function(zpath) {
+  pblWorkspace.apply(this, [cls, markups, zpath]);
   this.bem = bem;
   this.genreTags = null;
   this.prevMovieTemplate = null;
@@ -83,11 +83,7 @@ Mdl.prototype.authFlowSelector = function() {
     // show message and apply events and login buttons with authFlow
     var authNoFlow =
       this.showNoAuthWarning.bind(this,
-        this.waitUserLogin.bind(this,
-          function() {
-            window.location.reload();
-          }
-        ));
+        this.waitUserLogin.bind(this));
     authNoFlow();
   }
 };

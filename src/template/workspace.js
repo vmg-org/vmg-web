@@ -21,9 +21,7 @@ var markups = require('./markups');
 //$.extend(cls, commonCls);
 
 var Mdl = function(zpath) {
-  pblWorkspace.apply(this, [cls]);  
-  this.zpath = zpath;
-  this.markups = markups;
+  pblWorkspace.apply(this, [cls, markups, zpath]);
   this.idOfMovieTemplate = null;
   this.movieTemplate = null; // contains episodeTemplates
   this.bem = bem;
@@ -129,9 +127,7 @@ Mdl.prototype.authFlowSelector = function() {
     this.movieTemplate.startFlow(this.last);
   } else {
     // show message and apply events and login buttons with authFlow
-    this.waitUserLogin(function() {
-      window.location.reload();
-    });
+    this.waitUserLogin();
   }
 };
 

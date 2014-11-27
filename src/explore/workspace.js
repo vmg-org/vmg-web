@@ -12,10 +12,10 @@ var cls = require('./cls');
 var lgr = require('../vmg-helpers/lgr');
 var srv = require('../vmg-services/srv');
 var mdlMovieRecord = require('./movie-record');
+var markups = {};
 
 var Mdl = function(zpath) {
-  pblWorkspace.apply(this, [cls]);
-  this.zpath = zpath;
+  pblWorkspace.apply(this, [cls, markups, zpath]);
   this.bem = bem;
   this.movieRecords = null;
   this.movieRecordsErr = null;
@@ -49,9 +49,7 @@ Mdl.prototype.authFlowSelector = function() {
     this.userSession.showAuth(this.last);
   } else {
     // show message and apply events and login buttons with authFlow
-    this.waitUserLogin(function() {
-      window.location.reload();
-    });
+    this.waitUserLogin();
   }
 };
 

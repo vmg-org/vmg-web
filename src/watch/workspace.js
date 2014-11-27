@@ -13,12 +13,10 @@ var markups = require('./markups');
 var bem = require('../../../vmg-bem/bems/watch.bemjson');
 
 var Mdl = function(zpath) {
-  pblWorkspace.apply(this, [cls]);
-  this.zpath = zpath;
+  pblWorkspace.apply(this, [cls, markups, zpath]);
   this.bem = bem;
   this.idOfMovieTemplate = null;
   this.movieTemplate = null;
-  this.markups = markups;
 };
 
 ahr.inherits(Mdl, pblWorkspace);
@@ -61,9 +59,7 @@ Mdl.prototype.authFlowSelector = function() {
     this.userSession.showAuth(this.last);
   } else {
     // show message and apply events and login buttons with authFlow
-    this.waitUserLogin(function() {
-      window.location.reload();
-    });
+    this.waitUserLogin();
   }
 };
 
