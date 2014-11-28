@@ -1,9 +1,12 @@
 /**
  * Common classes
+ *     usually - scopes: a scope contains auto-generated blocks
+ *     usually scopes are elements of upper blocks
  */
 module.exports = {
-  popupScope: 'popup-scope',
+  popupScope: 'page-index__popup-scope', // TODO: #42! change to element of all pages
   authScope: 'auth-scope',
+  authButtons: 'auth-login__buttons',
   authPopup: 'auth-popup',
   authNo: 'auth-no',
   authProfile: 'auth-profiles',

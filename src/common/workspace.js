@@ -17,6 +17,7 @@ var mdlUserSession = require('./user-session');
 var pph = require('./popup-helper');
 var lgr = require('../vmg-helpers/lgr');
 var hbrs = require('../vmg-helpers/hbrs');
+var mdlAuthIssuer = require('./auth-issuer');
 
 var Mdl = function(cls, markups, zpath) {
   this.doc = window.document;
@@ -36,6 +37,26 @@ var Mdl = function(cls, markups, zpath) {
   this.fnc_close_auth_popup = this.zpath + '.closeAuthPopup()';
   this.fnc_close_auth_popup_out = this.zpath + '.closeAuthPopupOut(this, event)';
   this.isAuthPopupLoaded = false;
+
+  this.authIssuers = null;
+  this.loadAuthIssuers();
+  console.log(this.authIssuers);
+};
+
+Mdl.prototype.initAuthIssuer = function(item){
+  return mdlAuthIssuer.init(item, this);
+};
+
+Mdl.prototype.loadAuthIssuers = function() {
+  var issData = [{
+    id: 'goog'
+  }, {
+    id: 'fb'
+  }, {
+    id: 'dev'
+  }];
+
+  this.authIssuers = issData.map(this.initAuthIssuer.bind(this));
 };
 
 Mdl.prototype.loadSid = function(next) {
@@ -69,6 +90,9 @@ Mdl.prototype.openLoginPopup = function() {
 
   //  dhr.showElems('.' + this.cls.authPopup);
   console.log('popup opened');
+
+  var htmlButtons = 'superhtml'; // TODO: #33! generate buttons
+  dhr.html('.' + this.cls.authButtons, htmlButtons);
 };
 
 Mdl.prototype.closeAuthPopup = function() {
