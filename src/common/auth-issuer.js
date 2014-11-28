@@ -3,29 +3,31 @@
  *     all of these buttons have one callback: handlePostUserSession from root
  */
 var hbrs = require('../vmg-helpers/hbrs');
-var fbHelper = require('./fb-mdl');
-var googHelper = require('./goog-helper');
-var devHelper = require('./dev-helper');
-var config = require('../config');
-var dhr = require('../vmg-helpers/dom');
+//var googHelper = require('./goog-helper');
+//var devHelper = require('./dev-helper');
+//var dhr = require('../vmg-helpers/dom');
+var ahr = require('../vmg-helpers/app');
 
 var Mdl = function(dto, root, zpath) {
   this.root = root;
   this.zpath = zpath;
   this.id = dto.id;
-
+  this.icon_key = dto.icon_key;
+  this.app_id =  dto.app_id;  //config.FB_CLIENT_ID;
   this.fnc_start_auth = this.zpath + '.startAuth()';
 
-  //  this.cbkLogin = this.root.handleUserSession;
-
+  this.authLib = null;
   this.isAuthLibLoaded = false;
   this.markupAuthButton = hbrs.compile(this.root.markups.authButton);
   this.markupAuthPreButton = hbrs.compile(this.root.markups.authPreButton);
-  this.calcProps();
+
+  this.login_with = 'Logging with';
+
+  // defined in descendants
+  //this.icon_key;
 };
 
-Mdl.prototype.calcProps = function() {
-  switch (this.id) {
+/*  switch (this.id) {
     case 'goog':
       this.icon_key = 'c';
       break;
@@ -36,8 +38,14 @@ Mdl.prototype.calcProps = function() {
       this.icon_key = 'i';
       break;
   }
+*/
 
-  this.login_with = 'Logging with'; // plus name of provider, if needed (or icons not loaded)
+/**
+ * Load a lib to OAuth
+ */
+Mdl.prototype.loadAuthLib = function() {
+  console.log('load auth lib from main');
+  // override this in subclasses
 };
 
 /**
@@ -53,39 +61,53 @@ Mdl.prototype.buildHtml = function() {
   }
 };
 
-Mdl.prototype.loadAuthLib = function(cbk) {
-  console.log('loadAuthLib', this.id);
-  if (this.id === 'fb') {
-    var mdlFb = fbHelper.init(this, config.FB_CLIENT_ID);
-    window.fbAsyncInit = mdlFb.initLib.bind(mdlFb, cbk);
-    dhr.loadFbLib(); // fbAsyncInit by default    
-  } else if (this.id === 'goog') {
-    // next flow - only after user action (auth)
-    window.googAsyncInit = googHelper.init.bind(this.root, cbk);
-    dhr.loadGoogLib('googAsyncInit');
-  } else if (this.id === 'dev') {
-    // we can't send next functions to this handlers, that show buttons now
+/** 
+ * Abstract method
+ */
+Mdl.prototype.loadAuthLib = function() {
+  throw new Error('required ovveride');
+  /*
+    if (this.id === 'fb') {
+      var mdlFb = fbHelper.init(this, config.FB_CLIENT_ID);
+      window.fbAsyncInit = mdlFb.initLib.bind(mdlFb, cbk);
+      dhr.loadFbLib(); // fbAsyncInit by default    
+    } else if (this.id === 'goog') {
+      // next flow - only after user action (auth)
+      window.googAsyncInit = googHelper.init.bind(this.root, cbk);
+      dhr.loadGoogLib('googAsyncInit');
+    } else if (this.id === 'dev') {
+      // we can't send next functions to this handlers, that show buttons now
 
-    // apply context
-    devHelper.init.apply(this.root, [cbk]);
-  } else {
-    throw new Error('no such auth issuer');
-  }
+      // apply context
+      devHelper.init.apply(this.root, [cbk]);
+    } else {
+      throw new Error('no such auth issuer');
+    }
+  */
 };
 
-Mdl.prototype.activate = function(cbkStartAuth) {
-  this.startAuth = cbkStartAuth;
+/**
+ * Usually only once per page
+ */
+Mdl.prototype.activate = function() {
   this.isAuthLibLoaded = true;
   this.root.buildAuthButtons();
 };
 
+/**
+ * Click the button to start OAuth process
+ */
 Mdl.prototype.startAuth = function() {
-  // redefined 
-  //  console.log(this.id);
+  throw new Error('required override startAuth');
 };
 
-exports.init = function(dto, root, zpath) {
-  return new Mdl(dto, root, zpath);
+exports.inhProps = function(cntx, arrArgs) {
+  Mdl.apply(cntx, arrArgs);
+  //  ahr.inherits(cntx, Mdl);
+};
+
+exports.inhMethods = function(cntx) {
+  ahr.inherits(cntx, Mdl);
 };
 
 module.exports = exports;

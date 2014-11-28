@@ -14,7 +14,7 @@ var mdlUserSession = require('./user-session');
 var pph = require('./popup-helper');
 var lgr = require('../vmg-helpers/lgr');
 var hbrs = require('../vmg-helpers/hbrs');
-var mdlAuthIssuer = require('./auth-issuer');
+var mdlFbIssuer = require('./auth-issuer-fb');
 
 var Mdl = function(cls, markups, zpath) {
   this.doc = window.document;
@@ -41,17 +41,41 @@ var Mdl = function(cls, markups, zpath) {
 };
 
 Mdl.prototype.initAuthIssuer = function(item, ind) {
-  return mdlAuthIssuer.init(item, this, this.zpath + '.authIssuers[' + ind + ']');
+  if (item.id === 'fb') {
+    var obj = mdlFbIssuer.init(item, this, this.zpath + '.authIssuers[' + ind + ']');
+    console.log('obj', obj);
+    return obj;
+  } else {
+    // nothing
+  }
+};
+
+Mdl.prototype.afterLogin = function(err, userSession) {
+  this.handleUserSession(function() {
+    window.location.reload();
+  }, err, userSession);
+  /*  var cbkAfterLogin = this.handleUserSession.bind(this, function() {
+      window.location.reload();
+    });
+
+    cbkAfterLogin();*/
 };
 
 Mdl.prototype.loadAuthIssuers = function() {
+
   var issData = [{
-    id: 'goog'
-  }, {
-    id: 'fb'
-  }, {
-    id: 'dev'
+    id: 'fb',
+    app_id: config.FB_CLIENT_ID,
+    icon_key: 'b'
   }];
+  /*{
+      id: 'goog'
+    }, {
+      id: 'fb'
+    }, {
+      id: 'dev'
+    }
+  ];*/
 
   this.authIssuers = issData.map(this.initAuthIssuer.bind(this));
 };
@@ -67,9 +91,7 @@ Mdl.prototype.openLoginPopup = function() {
     return;
   }
   this.isAuthPopupLoaded = true;
-  var cbk = this.handleUserSession.bind(this, function() {
-    window.location.reload();
-  });
+
 
   var htmlAuthPopup = this.markupAuthPopup(this);
   dhr.html('.' + this.cls.popupScope, htmlAuthPopup);
@@ -78,7 +100,7 @@ Mdl.prototype.openLoginPopup = function() {
 
   // start load libs for buttons
   this.authIssuers.forEach(function(issItem) {
-    issItem.loadAuthLib(cbk);
+    issItem.loadAuthLib();
   });
 
   // draw pre or ready buttons
