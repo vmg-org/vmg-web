@@ -7,15 +7,21 @@ var hbrs = require('../vmg-helpers/hbrs');
 //var devHelper = require('./dev-helper');
 //var dhr = require('../vmg-helpers/dom');
 var ahr = require('../vmg-helpers/app');
+var srv = require('../vmg-services/srv');
 
 var Mdl = function(dto, root, zpath) {
   this.root = root;
   this.zpath = zpath;
   this.id = dto.id;
   this.icon_key = dto.icon_key;
-  this.app_id =  dto.app_id;  //config.FB_CLIENT_ID;
+  this.app_id = dto.app_id; //config.FB_CLIENT_ID;
   this.fnc_start_auth = this.zpath + '.startAuth()';
 
+  /**
+   * Retrieved after login (if success)
+   * @type {String}
+   */
+  this.social_token = null;
   this.authLib = null;
   this.isAuthLibLoaded = false;
   this.markupAuthButton = hbrs.compile(this.root.markups.authButton);
@@ -40,12 +46,18 @@ var Mdl = function(dto, root, zpath) {
   }
 */
 
+Mdl.prototype.postLoginToApi = function() {
+  srv.w2001({
+    id_of_auth_issuer: 'fb',
+    social_token: this.social_token
+  }, this.root.afterLogin.bind(this.root));
+};
+
 /**
  * Load a lib to OAuth
  */
 Mdl.prototype.loadAuthLib = function() {
-  console.log('load auth lib from main');
-  // override this in subclasses
+  throw new Error('required override loadAuthLib');
 };
 
 /**

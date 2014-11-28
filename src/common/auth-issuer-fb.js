@@ -12,9 +12,7 @@
  * @module
  */
 
-var srv = require('../vmg-services/srv');
 var mdlAuthIssuer = require('./auth-issuer');
-//var config = require('../config');
 var dhr = require('../vmg-helpers/dom');
 
 /**
@@ -22,14 +20,14 @@ var dhr = require('../vmg-helpers/dom');
  */
 var Mdl = function(dto, root, zpath) {
   mdlAuthIssuer.inhProps(this, [dto, root, zpath]);
-
-
 };
 
 mdlAuthIssuer.inhMethods(Mdl);
 
-
-// https://developers.facebook.com/docs/reference/javascript/FB.login/v2.2
+/**
+ * If an user is not logged on a provider
+ *    https://developers.facebook.com/docs/reference/javascript/FB.login/v2.2
+ */
 Mdl.prototype.handleLogin = function(response) {
   console.log(response);
   if (response.authResponse) {
@@ -52,11 +50,13 @@ Mdl.prototype.handleLoginStatus = function(response) {
     // Logged into your app and Facebook.
     console.log(response.authResponse);
     var authResult = response.authResponse;
-    srv.w2001({
-      id_of_auth_issuer: 'fb',
-      social_token: authResult.accessToken
-    }, this.root.afterLogin.bind(this.root));
+    this.social_token = authResult.accessToken;
+    this.postLoginToApi();
   } else if (response.status === 'unknown') {
+    // The person is not logged into Facebook, so we're not sure if
+    // they are logged into this app or not.
+    //'Please log ' + 'into Facebook.';
+    // TODO: #33!  this doesn't work - required a click event (block popup - if not a click)
     this.authLib.login(this.handleLogin.bind(this));
   } else {
     this.root.afterLogin(new Error(response.status));
@@ -68,10 +68,7 @@ Mdl.prototype.handleLoginStatus = function(response) {
   //      document.getElementById('status').innerHTML = '';
   //      //	    'Please log ' +     'into this app.';
   //    } else {
-  //      // The person is not logged into Facebook, so we're not sure if
-  //      // they are logged into this app or not.
-  //      document.getElementById('status').innerHTML = '';
-  //      //'Please log ' + 'into Facebook.';
+
   //    }
 };
 
