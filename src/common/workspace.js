@@ -8,9 +8,6 @@ var commonMarkups = require('./markups');
 var shr = require('../vmg-helpers/shr');
 var config = require('../config');
 var dhr = require('../vmg-helpers/dom');
-var googHelper = require('./goog-helper');
-var fbHelper = require('./fb-mdl');
-var devHelper = require('./dev-helper');
 var srv = require('../vmg-services/srv');
 //var lgr = require('../vmg-helpers/lgr');
 var mdlUserSession = require('./user-session');
@@ -43,8 +40,8 @@ var Mdl = function(cls, markups, zpath) {
   console.log(this.authIssuers);
 };
 
-Mdl.prototype.initAuthIssuer = function(item){
-  return mdlAuthIssuer.init(item, this);
+Mdl.prototype.initAuthIssuer = function(item, ind) {
+  return mdlAuthIssuer.init(item, this, this.zpath + '.authIssuers[' + ind + ']');
 };
 
 Mdl.prototype.loadAuthIssuers = function() {
@@ -73,25 +70,26 @@ Mdl.prototype.openLoginPopup = function() {
   var cbk = this.handleUserSession.bind(this, function() {
     window.location.reload();
   });
-  // next flow - only after user action (auth)
-  window.googAsyncInit = googHelper.init.bind(this, cbk);
-  dhr.loadGoogLib('googAsyncInit');
-
-  var mdlFb = fbHelper.init(this, config.FB_CLIENT_ID);
-  window.fbAsyncInit = mdlFb.initLib.bind(mdlFb, cbk);
-  dhr.loadFbLib(); // fbAsyncInit by default    
-  // we can't send next functions to this handlers, that show buttons now
-
-  // apply context
-  devHelper.init.apply(this, [cbk]);
 
   var htmlAuthPopup = this.markupAuthPopup(this);
   dhr.html('.' + this.cls.popupScope, htmlAuthPopup);
 
   //  dhr.showElems('.' + this.cls.authPopup);
-  console.log('popup opened');
 
-  var htmlButtons = 'superhtml'; // TODO: #33! generate buttons
+  // start load libs for buttons
+  this.authIssuers.forEach(function(issItem) {
+    issItem.loadAuthLib(cbk);
+  });
+
+  // draw pre or ready buttons
+  this.buildAuthButtons();
+};
+
+Mdl.prototype.buildAuthButtons = function() {
+  var htmlButtons = this.authIssuers.map(function(issItem) {
+    return issItem.buildHtml();
+  }).join('');
+
   dhr.html('.' + this.cls.authButtons, htmlButtons);
 };
 
@@ -109,6 +107,11 @@ Mdl.prototype.waitDocReady = function(next) {
   $(this.doc).ready(next);
 };
 
+/**
+ * After checking SID (r1003) or after POST login (w200x)
+ *     after checking SID - no needed to save again in userSession
+ *     after POST login - save a session and reload (redirect from a main site's page to a main user's page)
+ */
 Mdl.prototype.handleUserSession = function(next, err, userSession) {
   if (err) {
     // if sid is wrong or outdated - receive an error: 401

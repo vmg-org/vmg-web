@@ -12,11 +12,10 @@
 * @module 
 */
 
-var dhr = require('../vmg-helpers/dom');
 var srv = require('../vmg-services/srv');
 
-var Mdl = function(root, clientId){
-  this.root = root;
+var Mdl = function(authIssuer, clientId){
+  this.authIssuer = authIssuer;
   this.libFb = null; // initLib
   this.FB_CLIENT_ID = clientId;
 };
@@ -79,10 +78,12 @@ Mdl.prototype.fbSignIn = function(next) {
  *    1.2 If unknown (not in FB) or other: add Login event to the button
  */
 Mdl.prototype.setEvent = function(next){
-  var btn = dhr.getElem('.' + this.root.cls.fncFb);
-  dhr.off(btn, 'click');
-  dhr.on(btn, 'click', this.fbSignIn.bind(this, next));
-  dhr.showElems(btn);
+  var cbk = this.fbSignIn.bind(this, next);
+  this.authIssuer.activate(cbk);
+//  var btn = dhr.getElem('.' + this.root.cls.fncFb);
+//  dhr.off(btn, 'click');
+//  dhr.on(btn, 'click', this.fbSignIn.bind(this, next));
+//  dhr.showElems(btn);
   console.log('fb is loaded');
 };
 
@@ -101,8 +102,8 @@ Mdl.prototype.initLib = function(next) {
   this.setEvent(next);
 };
 
-exports.init = function(root, clientId){
-  return new Mdl(root, clientId);
+exports.init = function(authIssuer, clientId){
+  return new Mdl(authIssuer, clientId);
 };
 
 module.exports = exports;
