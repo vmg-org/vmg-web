@@ -72,7 +72,7 @@ var Mdl = function(dto, root, zpath) {
    * Text on a button
    * @type {String}
    */
-  this.login_with = 'Logging with';
+  this.login_with = 'Log in with';
 };
 
 

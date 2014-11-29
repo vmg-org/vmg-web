@@ -5,7 +5,7 @@
  */
 module.exports = {
   popupScope: 'page-index__popup-scope', // TODO: #42! change to element of all pages
-  authScope: 'auth-scope',
+  authScope: 'site-header__auth-no-wrap',
   authButtons: 'auth-login__buttons',
   authPopup: 'auth-popup',
   authNo: 'auth-no',
