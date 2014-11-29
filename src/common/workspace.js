@@ -31,6 +31,7 @@ var Mdl = function(cls, markups, zpath) {
   this.userSession = null; // is authenticated
 
   this.markupAuthNo = hbrs.compile(this.markups.authNo);
+
   this.markupAuthPopup = hbrs.compile(this.markups.authPopup);
   this.fnc_open_login_popup = this.zpath + '.openLoginPopup()';
   this.fnc_close_auth_popup = this.zpath + '.closeAuthPopup()';
@@ -160,7 +161,7 @@ Mdl.prototype.handleUserSession = function(next, err, userSession) {
 
   // TODO: #33! handle if userSession is null (expired);
   console.log('usse', userSession);
-  this.userSession = mdlUserSession.init(userSession, this);
+  this.userSession = mdlUserSession.init(userSession, this, this.zpath + '.userSession');
   this.userSession.saveOnClient();
   next();
 };
@@ -178,8 +179,8 @@ Mdl.prototype.waitUserLogin = function() {
   // add to auth-scope
 
   var htmlAuthNo = this.markupAuthNo(this);
-  var elemAuthScope = dhr.getElem('.' + this.cls.authScope);
-  dhr.html(elemAuthScope, htmlAuthNo);
+  var elemAuthNoWrap = dhr.getElem('.' + this.cls.authNoWrap);
+  dhr.html(elemAuthNoWrap, htmlAuthNo);
 };
 
 Mdl.prototype.handleSid = function(next) {

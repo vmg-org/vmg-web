@@ -6,13 +6,11 @@
 
 var pblWorkspace = require('../common/workspace');
 var ahr = require('../vmg-helpers/app');
-var bem = require('../../../vmg-bem/bems/index.bemjson');
 var cls = require('./cls');
 var markups = {};
 
 var Mdl = function(zpath) {
   pblWorkspace.apply(this, [cls, markups, zpath]);
-  this.bem = bem;
 };
 
 ahr.inherits(Mdl, pblWorkspace);

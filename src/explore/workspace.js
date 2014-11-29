@@ -1,6 +1,7 @@
 /** 
  * Root viewmodel for this page
  * @module
+ * @todo: #43! remove bem dependency
  */
 'use strict';
 
