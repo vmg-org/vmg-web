@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: vmg-helpers/app.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: vmg-helpers/app.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @module app-helper */
+
+'use strict';
+
+var moment = require('moment');
+
+var ahr = {};
+
+/**
+ * Required for NodeList and old browser without forEach method
+ */
+ahr.each = function(arr, cbk) {
+  for (var i = 0, lim = arr.length; i &lt; lim; i += 1) {
+    // can be passed index and full arr as required (as 2-nd and 3-rd element) like in forEach
+    cbk(arr[i], i);
+  }
+};
+
+ahr.filter = function(arr, cbk) {
+  return arr.filter(cbk);
+};
+
+// convert only strings (or numbers)
+ahr.toInt = function(val) {
+  if (val === 0) {
+    return 0;
+  }
+
+  // Skip NaN, undefined, empty strings
+  if (!val) {
+    return null;
+  }
+
+  if (typeof val === 'number') {
+    return parseInt(val, 10); // get off from decimal
+  }
+
+  // Convert only strings - only valid strings (exclude 3254las2323
+  if (typeof val === 'string') {
+    // skip invalid strings
+    var result = +val;
+    // 0 - checked before
+    if (result || result === 0) {
+      return parseInt(result, 10);
+    }
+  }
+  // May be some additional checking
+  return null;
+};
+
+ahr.map = function(arr, cbk) {
+  return arr.map(cbk);
+};
+
+ahr.stringify = function(obj) {
+  return JSON.stringify(obj);
+};
+
+ahr.parseJson = function(str) {
+  return JSON.parse(str);
+};
+
+ahr.isArray = function(obj) {
+  return Array.isArray(obj);
+};
+
+var jsonConstructor = {}.constructor;
+
+ahr.isJson = function(obj) {
+  return ((obj !== null) &amp;&amp; (obj.constructor === jsonConstructor));
+};
+
+var handleItem = function(result, obj, reqName, reqValue, curName) {
+  var curValue = obj[curName];
+
+  //  if (typeof curValue === 'string') {
+  //    console.log(curName, curValue);
+  //  }
+
+  if (curName === reqName &amp;&amp; curValue === reqValue) {
+    console.log('hoora');
+    result.push(obj);
+    return;
+  }
+
+  if (ahr.isJson(curValue)) {
+    // once again
+    ahr.each(Object.keys(curValue), handleItem.bind(null, result, curValue, reqName, reqValue));
+  } else if (ahr.isArray(curValue)) {
+    // for every - once again
+    //
+    ahr.each(curValue, function(someItem) {
+      if (ahr.isJson(someItem)) {
+        ahr.each(Object.keys(someItem), handleItem.bind(null, result, someItem, reqName, reqValue));
+      }
+    });
+  }
+};
+
+
+/**
+ * Get (only one) object where keyName == keyValue
+ * @param {Object} obj - N-level object, where need to looking for
+ * @param {String} keyName - Any string for key: left side
+ * @param {String} keyValue - Any string for value: right side
+ */
+ahr.extractJsonMatch = function(obj, reqName, reqValue) {
+  var result = [];
+  ahr.each(Object.keys(obj), handleItem.bind(null, result, obj, reqName, reqValue));
+  // only first match (if exists)
+  if (result.length === 0) {
+    // simple null instead a link
+    return null;
+  } else {
+    // cloned object instead a link
+    return $.extend({}, result[0]);
+  }
+};
+
+ahr.getTimeStr = function(unixTimeStamp, timeFormat) {
+  return moment.unix(unixTimeStamp).format(timeFormat);
+};
+
+ahr.getQueryParam = function(name) {
+  name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+  var regex = new RegExp("[\\?&amp;]" + name + "=([^&amp;#]*)"),
+    results = regex.exec(location.search);
+  return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+};
+
+/**
+ * Inherit the prototype methods from one constructor into another.
+ * @example
+ * Usage:
+ * &lt;pre>
+ * function ParentClass(a, b) { }
+ * ParentClass.prototype.foo = function(a) { }
+ *
+ * function ChildClass(a, b, c) {
+ *   goog.base(this, a, b);
+ * }
+ * goog.inherits(ChildClass, ParentClass);
+ *
+ * var child = new ChildClass('a', 'b', 'see');
+ * child.foo(); // This works.
+ * &lt;/pre>
+ *
+ * In addition, a superclass' implementation of a method can be invoked as
+ * follows:
+ *
+ * &lt;pre>
+ * ChildClass.prototype.foo = function(a) {
+ *   ChildClass.superClass_.foo.call(this, a);
+ *   // Other code here.
+ * };
+ * &lt;/pre>
+ *
+ * @param {Function} childCtor Child class.
+ * @param {Function} parentCtor Parent class.
+ */
+ahr.inherits = function(childCtor, parentCtor) {
+  function TempCtor() {}
+  TempCtor.prototype = parentCtor.prototype;
+  childCtor.superClass_ = parentCtor.prototype;
+  childCtor.prototype = new TempCtor();
+  /** @override */
+  childCtor.prototype.constructor = childCtor;
+};
+
+var replacer = function(dataItem, match, p1) {
+  var arrDot = p1.split('__'); // "ab.cd" 
+  var val = dataItem[arrDot[0]];
+
+  for (var ind = 1; ind &lt; arrDot.length; ind += 1) {
+    if (typeof val !== 'undefined') {
+      // only for JSON objects
+      val = val[arrDot[ind]];
+    }
+  }
+
+  // TODO: #41! dev checking: remove on production
+  //  var val = dataItem[p1];
+
+
+  if (val === null) {
+    val = '';
+    console.log('replacer: null: ', p1, val);
+  }
+  if (typeof val === 'undefined') {
+    val = '';
+    console.log('replacer: undefined: ', p1, val);
+  }
+
+  //  if (ahr.isJson(val)){
+  //var arrDot = 
+  //  }
+  // with $1 object doesnt works
+  // todo #31! or throw an error
+  //return val;
+  return ('"' + val + '"');
+};
+
+ahr.rplc = function(str, dataObj) {
+  return str.replace(/"@@(\w+)"/g, replacer.bind(null, dataObj));
+};
+
+module.exports = ahr;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-app-helper.html">app-helper</a></li><li><a href="module-cabinet_fll.html">cabinet/fll</a></li><li><a href="module-cabinet_nonready-bid.html">cabinet/nonready-bid</a></li><li><a href="module-cabinet_vwm.html">cabinet/vwm</a></li><li><a href="module-cabinet_workspace.html">cabinet/workspace</a></li><li><a href="module-common_auth-issuer.html">common/auth-issuer</a></li><li><a href="module-common_auth-issuer-fb.html">common/auth-issuer-fb</a></li><li><a href="module-common_auth-issuer-goog.html">common/auth-issuer-goog</a></li><li><a href="module-common_dev-helper.html">common/dev-helper</a></li><li><a href="module-common_markups.html">common/markups</a></li><li><a href="module-common_popup-helper.html">common/popup-helper</a></li><li><a href="module-common_user-session.html">common/user-session</a></li><li><a href="module-common_workspace.html">common/workspace</a></li><li><a href="module-config.html">config</a></li><li><a href="module-dom-helper.html">dom-helper</a></li><li><a href="module-enhance_job-output-checker.html">enhance/job-output-checker</a></li><li><a href="module-enhance_workspace.html">enhance/workspace</a></li><li><a href="module-explore_movie-record.html">explore/movie-record</a></li><li><a href="module-explore_vwm.html">explore/vwm</a></li><li><a href="module-explore_workspace.html">explore/workspace</a></li><li><a href="module-index_workspace.html">index/workspace</a></li><li><a href="module-lgr.html">lgr</a></li><li><a href="module-template-editor_ehr.html">template-editor/ehr</a></li><li><a href="module-template-editor_fll.html">template-editor/fll</a></li><li><a href="module-template-editor_hpr.html">template-editor/hpr</a></li><li><a href="module-template-editor_vwm.html">template-editor/vwm</a></li><li><a href="module-template-editor_workspace.html">template-editor/workspace</a></li><li><a href="module-template_bid-check.html">template/bid-check</a></li><li><a href="module-template_bid-rating.html">template/bid-rating</a></li><li><a href="module-template_episode-bid.html">template/episode-bid</a></li><li><a href="module-template_episode-template.html">template/episode-template</a></li><li><a href="module-template_genre-tag.html">template/genre-tag</a></li><li><a href="module-template_markups.html">template/markups</a></li><li><a href="module-template_media-spec.html">template/media-spec</a></li><li><a href="module-template_movie-genre.html">template/movie-genre</a></li><li><a href="module-template_movie-template.html">template/movie-template</a></li><li><a href="module-template_run.html">template/run</a></li><li><a href="module-template_workspace.html">template/workspace</a></li><li><a href="module-upload_file-handler.html">upload/file-handler</a></li><li><a href="module-upload_job-source-checker.html">upload/job-source-checker</a></li><li><a href="module-upload_workspace.html">upload/workspace</a></li><li><a href="module-vmg-helpers_api-rqst.html">vmg-helpers/api-rqst</a></li><li><a href="module-vmg-helpers_hbrs.html">vmg-helpers/hbrs</a></li><li><a href="module-vmg-helpers_rqst.html">vmg-helpers/rqst</a></li><li><a href="module-vmg-helpers_shr.html">vmg-helpers/shr</a></li><li><a href="module-watch_episode-bid.html">watch/episode-bid</a></li><li><a href="module-watch_episode-template.html">watch/episode-template</a></li><li><a href="module-watch_file-cut.html">watch/file-cut</a></li><li><a href="module-watch_fll.html">watch/fll</a></li><li><a href="module-watch_genre-tag.html">watch/genre-tag</a></li><li><a href="module-watch_media-file.html">watch/media-file</a></li><li><a href="module-watch_media-spec.html">watch/media-spec</a></li><li><a href="module-watch_movie-genre.html">watch/movie-genre</a></li><li><a href="module-watch_movie-template.html">watch/movie-template</a></li><li><a href="module-watch_vwm.html">watch/vwm</a></li><li><a href="module-watch_workspace.html">watch/workspace</a></li></ul><h3>Classes</h3><ul><li><a href="module-common_auth-issuer-fb-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-goog-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-Mdl.html">Mdl</a></li></ul><h3>Global</h3><ul><li><a href="global.html#w2009">w2009</a></li><li><a href="global.html#w2012">w2012</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Fri Nov 28 2014 23:57:20 GMT+0300 (MSK)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

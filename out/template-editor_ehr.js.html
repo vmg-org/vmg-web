@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: template-editor/ehr.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: template-editor/ehr.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Event helper
+ * @module
+ */
+'use strict';
+var dhr = require('../vmg-helpers/dom');
+var hpr = require('./hpr');
+var ahr = require('../vmg-helpers/app');
+var srv = require('../vmg-services/srv');
+
+var checkBeforeCreate = function() {
+  var scope = this.crtScope;
+  var lim = this.inpLimit;
+  var arrErr = [];
+  if (!scope.genre_of_movie) {
+    arrErr.push('Genre (type of movie) - required');
+  }
+
+  arrErr = arrErr.concat(hpr.propErr(lim.name_of_movie, scope.name_of_movie, 'Movie name'));
+
+  scope.episodes.forEach(function(eps, ind) {
+    arrErr = arrErr.concat(hpr.propErr(lim.name_of_episode, eps.name, 'Episode ' + (ind + 1) + ' name'));
+    arrErr = arrErr.concat(hpr.propErr(lim.story_of_episode, eps.story, 'Episode ' + (ind + 1) + ' story'));
+    arrErr = arrErr.concat(hpr.propErr(lim.conds_of_episode, eps.conds, 'Episode ' + (ind + 1) + ' conditions'));
+  });
+
+  return arrErr;
+};
+
+var handlePostMovietemplate = function(movieTemplate, err, createdMovieTemplate) {
+  if (err) {
+    dhr.html('.' + this.cls.notif, err.message || '%=serverError=%');
+    dhr.showElems('.' + this.cls.notif);
+    return;
+  }
+
+  // TODO: #33! redirect to watch a template
+  window.location.href = './template.html?t=' + (createdMovieTemplate ? createdMovieTemplate.id : movieTemplate.id);
+};
+
+exports.createTemplate = function(elem, e, notifName) {
+  var arrErr = checkBeforeCreate.apply(this);
+
+  if (arrErr.length > 0) {
+    dhr.html('.' + notifName, arrErr.join('&lt;br>'));
+    dhr.showElems('.' + notifName);
+    window.scrollTo(0, 0);
+    return false;
+  }
+
+  var scp = this.crtScope;
+
+  var movieTemplate = {
+    name: scp.name_of_movie,
+    duration_of_episodes: scp.duration_of_episodes,
+    preview_img_url: '',
+    movie_genre_item: {
+      id_of_genre_tag: scp.genre_of_movie,
+      color_schema: 'no schema'
+    },
+    episode_template_arr: scp.episodes
+  };
+
+  var prevMovieTemplate = this.prevMovieTemplate;
+  if (prevMovieTemplate) {
+    // Edit
+    movieTemplate.id = prevMovieTemplate.id;
+    ahr.each(movieTemplate.episode_template_arr, function(etm, ind) {
+      etm.id = prevMovieTemplate.episode_template_arr[ind].id;
+    });
+  }
+
+  srv.w2000(movieTemplate, handlePostMovietemplate.bind(this, movieTemplate));
+
+  // It might be few buttons with this function
+  // Store all fields in every button - extra
+  //
+  // Every input control - saves his value to some specific place in global namespace. crtTemplate
+  // this button just check this place!!!!!!!
+  //    console.log('template is published', elem);
+  //  alert('Created! (demo)');
+};
+
+exports.onSelectGenre = function(elem, e, heroScopeName, animalScopeName) {
+  if (elem.value === 'hero') {
+    dhr.showElems('.' + heroScopeName, 'slow');
+  } else if (elem.value === 'animal') {
+    dhr.showElems('.' + animalScopeName, 'slow');
+  } else {
+    dhr.hideElems('.' + animalScopeName);
+    dhr.hideElems('.' + heroScopeName);
+  }
+
+  this.crtScope.genre_of_movie = elem.value;
+};
+
+exports.checkInputNameOfTemplate = function(elem, e, targetName) {
+  // how to get it?
+  // This data stores on model with other props, like name, story
+  // a radio button list sends a value to the function (it is like id)
+  //    var maxLength = 50;
+  //    var minLength = 3;
+  //    var required = true;
+  //    var rgx = /\w+/g;
+  //    var defaultValue = 'Best movie in the world'; // put to default or placeholder
+  if (hpr.propErr(this.inpLimit.name_of_movie, elem.value).length > 0) {
+    $('.' + targetName).show();
+  } else {
+    $('.' + targetName).hide();
+  }
+
+  this.crtScope.name_of_movie = elem.value;
+};
+
+exports.showTipNameOfTemplate = function(elem, e, targetName) {
+  $('.' + targetName).show().delay(1500).hide('fast');
+};
+
+exports.showTipNameOfEpisode = function(elem, e, targetName) {
+  $('.' + targetName + ':eq(' + (parseInt(elem.getAttribute('data-bind')) - 1) + ')').show().delay(1500).hide('fast');
+};
+
+exports.showTipStoryOfEpisode = function(elem, e, targetName) {
+  $('.' + targetName + ':eq(' + (parseInt(elem.getAttribute('data-bind')) - 1) + ')').show().delay(1500).hide('fast');
+};
+
+exports.showTipCondsOfEpisod = function(elem, e, targetName) {
+  $('.' + targetName + ':eq(' + (parseInt(elem.getAttribute('data-bind')) - 1) + ')').show().delay(1500).hide('fast');
+};
+
+exports.checkInputNameOfEpisode = function(elem, e, helpElemName) {
+  var orderNumber = parseInt(elem.getAttribute('data-bind'));
+  var helpElems = $('.' + helpElemName + ':eq(' + (orderNumber - 1) + ')');
+
+  if ((elem.value.length > this.inpLimit.name_of_episode.max_length) || (elem.value.length &lt; this.inpLimit.name_of_episode.min_length)) {
+    helpElems.show();
+  } else {
+    helpElems.hide();
+  }
+
+  this.crtScope.episodes[orderNumber - 1].name = elem.value;
+};
+
+exports.checkInputStoryOfEpisode = function(elem, e, helpElemName) {
+  var orderNumber = parseInt(elem.getAttribute('data-bind'));
+  var helpElems = $('.' + helpElemName + ':eq(' + (orderNumber - 1) + ')');
+  if ((elem.value.length > this.inpLimit.story_of_episode.max_length) || (elem.value.length &lt; this.inpLimit.story_of_episode.min_length)) {
+    helpElems.show();
+  } else {
+    helpElems.hide();
+  }
+
+  this.crtScope.episodes[orderNumber - 1].story = elem.value;
+};
+
+exports.checkInputCondsOfEpisode = function(elem, e, helpElemName) {
+  var orderNumber = parseInt(elem.getAttribute('data-bind'));
+  var helpElems = $('.' + helpElemName + ':eq(' + (orderNumber - 1) + ')');
+  if ((elem.value.length > this.inpLimit.conds_of_episode.max_length)) {
+    helpElems.show();
+  } else {
+    helpElems.hide();
+  }
+
+  this.crtScope.episodes[orderNumber - 1].conds = elem.value;
+};
+
+exports.onChangeDurationOfEpisodes = function(elem) {
+  this.crtScope.duration_of_episodes = ahr.toInt(elem.options[elem.selectedIndex].value);
+};
+
+module.exports = exports;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-app-helper.html">app-helper</a></li><li><a href="module-cabinet_fll.html">cabinet/fll</a></li><li><a href="module-cabinet_nonready-bid.html">cabinet/nonready-bid</a></li><li><a href="module-cabinet_vwm.html">cabinet/vwm</a></li><li><a href="module-cabinet_workspace.html">cabinet/workspace</a></li><li><a href="module-common_auth-issuer.html">common/auth-issuer</a></li><li><a href="module-common_auth-issuer-fb.html">common/auth-issuer-fb</a></li><li><a href="module-common_auth-issuer-goog.html">common/auth-issuer-goog</a></li><li><a href="module-common_dev-helper.html">common/dev-helper</a></li><li><a href="module-common_markups.html">common/markups</a></li><li><a href="module-common_popup-helper.html">common/popup-helper</a></li><li><a href="module-common_user-session.html">common/user-session</a></li><li><a href="module-common_workspace.html">common/workspace</a></li><li><a href="module-config.html">config</a></li><li><a href="module-dom-helper.html">dom-helper</a></li><li><a href="module-enhance_job-output-checker.html">enhance/job-output-checker</a></li><li><a href="module-enhance_workspace.html">enhance/workspace</a></li><li><a href="module-explore_movie-record.html">explore/movie-record</a></li><li><a href="module-explore_vwm.html">explore/vwm</a></li><li><a href="module-explore_workspace.html">explore/workspace</a></li><li><a href="module-index_workspace.html">index/workspace</a></li><li><a href="module-lgr.html">lgr</a></li><li><a href="module-template-editor_ehr.html">template-editor/ehr</a></li><li><a href="module-template-editor_fll.html">template-editor/fll</a></li><li><a href="module-template-editor_hpr.html">template-editor/hpr</a></li><li><a href="module-template-editor_vwm.html">template-editor/vwm</a></li><li><a href="module-template-editor_workspace.html">template-editor/workspace</a></li><li><a href="module-template_bid-check.html">template/bid-check</a></li><li><a href="module-template_bid-rating.html">template/bid-rating</a></li><li><a href="module-template_episode-bid.html">template/episode-bid</a></li><li><a href="module-template_episode-template.html">template/episode-template</a></li><li><a href="module-template_genre-tag.html">template/genre-tag</a></li><li><a href="module-template_markups.html">template/markups</a></li><li><a href="module-template_media-spec.html">template/media-spec</a></li><li><a href="module-template_movie-genre.html">template/movie-genre</a></li><li><a href="module-template_movie-template.html">template/movie-template</a></li><li><a href="module-template_run.html">template/run</a></li><li><a href="module-template_workspace.html">template/workspace</a></li><li><a href="module-upload_file-handler.html">upload/file-handler</a></li><li><a href="module-upload_job-source-checker.html">upload/job-source-checker</a></li><li><a href="module-upload_workspace.html">upload/workspace</a></li><li><a href="module-vmg-helpers_api-rqst.html">vmg-helpers/api-rqst</a></li><li><a href="module-vmg-helpers_hbrs.html">vmg-helpers/hbrs</a></li><li><a href="module-vmg-helpers_rqst.html">vmg-helpers/rqst</a></li><li><a href="module-vmg-helpers_shr.html">vmg-helpers/shr</a></li><li><a href="module-watch_episode-bid.html">watch/episode-bid</a></li><li><a href="module-watch_episode-template.html">watch/episode-template</a></li><li><a href="module-watch_file-cut.html">watch/file-cut</a></li><li><a href="module-watch_fll.html">watch/fll</a></li><li><a href="module-watch_genre-tag.html">watch/genre-tag</a></li><li><a href="module-watch_media-file.html">watch/media-file</a></li><li><a href="module-watch_media-spec.html">watch/media-spec</a></li><li><a href="module-watch_movie-genre.html">watch/movie-genre</a></li><li><a href="module-watch_movie-template.html">watch/movie-template</a></li><li><a href="module-watch_vwm.html">watch/vwm</a></li><li><a href="module-watch_workspace.html">watch/workspace</a></li></ul><h3>Classes</h3><ul><li><a href="module-common_auth-issuer-fb-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-goog-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-Mdl.html">Mdl</a></li></ul><h3>Global</h3><ul><li><a href="global.html#w2009">w2009</a></li><li><a href="global.html#w2012">w2012</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Fri Nov 28 2014 23:57:20 GMT+0300 (MSK)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

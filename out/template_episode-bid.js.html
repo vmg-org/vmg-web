@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: template/episode-bid.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: template/episode-bid.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @module */
+
+var hbrs = require('../vmg-helpers/hbrs');
+var srv = require('../vmg-services/srv');
+var mdlMediaSpec = require('./media-spec');
+var mdlBidCheck = require('./bid-check');
+var mdlBidRating = require('./bid-rating');
+
+var Mdl = function(data, episodeTemplate, ind) {
+  this.episodeTemplate = episodeTemplate;
+  this.zpath = this.episodeTemplate.zpath + '.episodeBids[' + ind + ']';
+  // todo
+  this.prntPlayer = null;
+  this.id_of_media_spec = data.id_of_media_spec;
+  this.created = data.created;
+  this.id_of_episode_template = data.id_of_episode_template;
+  this.fileCutArr = null;
+
+  if (data.bid_check_item) {
+    this.bidCheck = mdlBidCheck.init(data.bid_check_item, this);
+  } else {
+    this.bidCheck = null;
+  }
+
+  if (data.bid_rating_item) {
+    this.bidRating = mdlBidRating.init(data.bid_rating_item, this);
+  } else {
+    this.bidRating = null;
+  }
+
+  this.media_spec_item = mdlMediaSpec.init(data.media_spec_item, this);
+  this.root = this.episodeTemplate.movieTemplate.root;
+  this.markup0 = hbrs.compile(this.root.markups.attInfo0);
+  this.markupDeclined = hbrs.compile(this.root.markups.attInfo1);
+  this.markupApproved = hbrs.compile(this.root.markups.attInfo2);
+  this.markupRated = hbrs.compile(this.root.markups.attInfo4);
+
+  this.calcProps();
+};
+
+// after init or changing
+Mdl.prototype.calcProps = function() {
+  if (this.bidRating) {
+    switch (this.bidRating.rating) {
+      case 1:
+        this.moder_rating_str = 'Gold';
+        break;
+      case 2:
+        this.moder_rating_str = 'Silver';
+        break;
+      case 3:
+        this.moder_rating_str = 'Bronze';
+        break;
+    }
+  } else {
+    if (this.bidCheck) {
+      if (this.bidCheck.is_approved === true) {
+        this.moder_rating_str = 'Accepted';
+      } else if (this.bidCheck.is_approved === false) {
+        this.moder_rating_str = 'Rejected';
+      }
+    } else {
+      this.moder_rating_str = 'Not rated';
+    }
+  }
+  this.fnc_play = this.zpath + '.playVideo(this)';
+  this.fnc_rate_good = this.zpath + '.rateGood(this);';
+  this.fnc_rate_bad = this.zpath + '.rateBad(this);';
+  this.fnc_rate_gold = this.zpath + '.rateGold(this);';
+  this.fnc_rate_silver = this.zpath + '.rateSilver(this);';
+  this.fnc_rate_bronze = this.zpath + '.rateBronze(this);';
+  this.fnc_rate_none = this.zpath + '.rateNone(this);';
+};
+
+Mdl.prototype.buildHtml = function() {
+  if (this.bidRating) {
+    return this.markupRated(this);
+  }
+
+  if (this.bidCheck) {
+    if (this.bidCheck.is_approved === true) {
+      return this.markupApproved(this);
+    }
+    if (this.bidCheck.is_approved === false) {
+      return this.markupDeclined(this);
+    }
+  }
+
+  return this.markup0(this);
+};
+
+Mdl.prototype.handleLoadFileCut = function(cbkFlow, err, fileCutArr) {
+  if (err) {
+    alert(err.message || '%=serverError=%');
+    return;
+  }
+
+  this.fileCutArr = fileCutArr;
+  cbkFlow();
+};
+
+Mdl.prototype.loadFileCutArr = function(cbkFlow) {
+  srv.r1004(this.id_of_media_spec, this.handleLoadFileCut.bind(this, cbkFlow));
+};
+
+Mdl.prototype.fillPlayer = function() {
+  //  var mediaFile = this.fileCutArr[0].media_file_item; // only one at this moment
+  //  mediaFile.play():
+  // send all media file with all formats to the player as arr
+  var srcArr = this.fileCutArr.map(function(fileCut) {
+    return {
+      src: fileCut.media_file_item.url,
+      type: fileCut.media_file_item.id_of_container_format
+    };
+  });
+
+  this.episodeTemplate.vjs.src(srcArr);
+  console.log('srcArr', srcArr);
+};
+
+Mdl.prototype.playVideo = function() {
+  //  $(elem).hide();
+
+  // load file_cut for this media_spec
+  console.log('play', this.id_of_media_spec);
+  var flow = this.loadFileCutArr.bind(this, this.fillPlayer.bind(this));
+  flow();
+};
+
+Mdl.prototype.toDto = function() {
+  return {
+    id_of_media_spec: this.id_of_media_spec,
+    id_of_episode_template: this.id_of_episode_template,
+    created: this.created
+  };
+};
+
+Mdl.prototype.rateNone = function() {
+  if (this.bidRating) {
+    this.addBidRating(null);
+    return;
+  }
+  if (this.bidCheck) {
+    // only if no rating
+    this.addBidCheck(null);
+    return;
+  }
+};
+
+Mdl.prototype.handleAddBidCheck = function(err, data) {
+  if (err) {
+    return alert(err.message || 'server error');
+  }
+
+  if (!data) {
+    this.bidCheck = null;
+  } else {
+    this.bidCheck = mdlBidCheck.init(data, this);
+  }
+  this.calcProps();
+  this.episodeTemplate.fillBids();
+};
+
+Mdl.prototype.addBidCheck = function(isApproved) {
+  var bidCheck = {
+    id_of_media_spec: this.id_of_media_spec,
+    is_approved: isApproved,
+    description: ''
+  };
+
+  srv.w2007(bidCheck, this.handleAddBidCheck.bind(this));
+};
+
+Mdl.prototype.rateGood = function() {
+  this.addBidCheck(true);
+};
+
+Mdl.prototype.rateBad = function() {
+  this.addBidCheck(false);
+};
+
+Mdl.prototype.handleAddBidRating = function(err, data) {
+  if (err) {
+    alert(err.message || 'server error');
+    return;
+  }
+  if (data) {
+    this.bidRating = mdlBidRating.init(data, this);
+  } else {
+    this.bidRating = null;
+  }
+  this.calcProps();
+  this.episodeTemplate.fillBids();
+};
+
+Mdl.prototype.addBidRating = function(rating) {
+  var bidRating = {
+    id_of_media_spec: this.id_of_media_spec,
+    rating: rating
+  };
+
+  srv.w2008(bidRating, this.handleAddBidRating.bind(this));
+};
+
+Mdl.prototype.rateGold = function() {
+  // check other states - it is client logic - to one best
+  if (this.episodeTemplate.isBidRatingExists(1)) {
+    alert('A gold bid exists already');
+    return;
+  }
+  // TODO: #33! hide other BEST buttons | or show notif, when clicked by its
+  this.addBidRating(1);
+};
+Mdl.prototype.rateSilver = function() {
+  // check other states - it is client logic - to one best
+  if (this.episodeTemplate.isBidRatingExists(2)) {
+    alert('A silver bid exists already');
+    return;
+  }
+  // TODO: #33! hide other BEST buttons | or show notif, when clicked by its
+  this.addBidRating(2);
+};
+Mdl.prototype.rateBronze = function() {
+  // check other states - it is client logic - to one best
+  if (this.episodeTemplate.isBidRatingExists(3)) {
+    alert('A bronze bid exists already');
+    return;
+  }
+  // TODO: #33! hide other BEST buttons | or show notif, when clicked by its
+  this.addBidRating(3);
+};
+
+exports.init = function(data, episodeTemplate, ind) {
+  return new Mdl(data, episodeTemplate, ind);
+};
+
+module.exports = exports;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-app-helper.html">app-helper</a></li><li><a href="module-cabinet_fll.html">cabinet/fll</a></li><li><a href="module-cabinet_nonready-bid.html">cabinet/nonready-bid</a></li><li><a href="module-cabinet_vwm.html">cabinet/vwm</a></li><li><a href="module-cabinet_workspace.html">cabinet/workspace</a></li><li><a href="module-common_auth-issuer.html">common/auth-issuer</a></li><li><a href="module-common_auth-issuer-fb.html">common/auth-issuer-fb</a></li><li><a href="module-common_auth-issuer-goog.html">common/auth-issuer-goog</a></li><li><a href="module-common_dev-helper.html">common/dev-helper</a></li><li><a href="module-common_markups.html">common/markups</a></li><li><a href="module-common_popup-helper.html">common/popup-helper</a></li><li><a href="module-common_user-session.html">common/user-session</a></li><li><a href="module-common_workspace.html">common/workspace</a></li><li><a href="module-config.html">config</a></li><li><a href="module-dom-helper.html">dom-helper</a></li><li><a href="module-enhance_job-output-checker.html">enhance/job-output-checker</a></li><li><a href="module-enhance_workspace.html">enhance/workspace</a></li><li><a href="module-explore_movie-record.html">explore/movie-record</a></li><li><a href="module-explore_vwm.html">explore/vwm</a></li><li><a href="module-explore_workspace.html">explore/workspace</a></li><li><a href="module-index_workspace.html">index/workspace</a></li><li><a href="module-lgr.html">lgr</a></li><li><a href="module-template-editor_ehr.html">template-editor/ehr</a></li><li><a href="module-template-editor_fll.html">template-editor/fll</a></li><li><a href="module-template-editor_hpr.html">template-editor/hpr</a></li><li><a href="module-template-editor_vwm.html">template-editor/vwm</a></li><li><a href="module-template-editor_workspace.html">template-editor/workspace</a></li><li><a href="module-template_bid-check.html">template/bid-check</a></li><li><a href="module-template_bid-rating.html">template/bid-rating</a></li><li><a href="module-template_episode-bid.html">template/episode-bid</a></li><li><a href="module-template_episode-template.html">template/episode-template</a></li><li><a href="module-template_genre-tag.html">template/genre-tag</a></li><li><a href="module-template_markups.html">template/markups</a></li><li><a href="module-template_media-spec.html">template/media-spec</a></li><li><a href="module-template_movie-genre.html">template/movie-genre</a></li><li><a href="module-template_movie-template.html">template/movie-template</a></li><li><a href="module-template_run.html">template/run</a></li><li><a href="module-template_workspace.html">template/workspace</a></li><li><a href="module-upload_file-handler.html">upload/file-handler</a></li><li><a href="module-upload_job-source-checker.html">upload/job-source-checker</a></li><li><a href="module-upload_workspace.html">upload/workspace</a></li><li><a href="module-vmg-helpers_api-rqst.html">vmg-helpers/api-rqst</a></li><li><a href="module-vmg-helpers_hbrs.html">vmg-helpers/hbrs</a></li><li><a href="module-vmg-helpers_rqst.html">vmg-helpers/rqst</a></li><li><a href="module-vmg-helpers_shr.html">vmg-helpers/shr</a></li><li><a href="module-watch_episode-bid.html">watch/episode-bid</a></li><li><a href="module-watch_episode-template.html">watch/episode-template</a></li><li><a href="module-watch_file-cut.html">watch/file-cut</a></li><li><a href="module-watch_fll.html">watch/fll</a></li><li><a href="module-watch_genre-tag.html">watch/genre-tag</a></li><li><a href="module-watch_media-file.html">watch/media-file</a></li><li><a href="module-watch_media-spec.html">watch/media-spec</a></li><li><a href="module-watch_movie-genre.html">watch/movie-genre</a></li><li><a href="module-watch_movie-template.html">watch/movie-template</a></li><li><a href="module-watch_vwm.html">watch/vwm</a></li><li><a href="module-watch_workspace.html">watch/workspace</a></li></ul><h3>Classes</h3><ul><li><a href="module-common_auth-issuer-fb-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-goog-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-Mdl.html">Mdl</a></li></ul><h3>Global</h3><ul><li><a href="global.html#w2009">w2009</a></li><li><a href="global.html#w2012">w2012</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Fri Nov 28 2014 23:57:20 GMT+0300 (MSK)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

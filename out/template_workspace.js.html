@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: template/workspace.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: template/workspace.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** @module */
+'use strict';
+// show a block with loaders
+// load bids, if no bids - show notif
+// load file_cut for id_of_media_spec - show a video
+// when loaded
+//      plusButton - PUT episode-bid moder_rating - plus
+//      bestButton - PUT epis moder_rating - best
+// for template author - button: join best videos: send 3 ids of bids
+// If user is player (if not an owner of a movie template)
+//     Show buttons: upload now, later if not played already
+var ahr = require('../vmg-helpers/app');
+var dhr = require('../vmg-helpers/dom');
+var cls = require('./cls');
+var bem = require('../../../vmg-bem/bems/template.bemjson');
+var srv = require('../vmg-services/srv');
+var mdlMovieTemplate = require('./movie-template');
+var pblWorkspace = require('../common/workspace');
+var markups = require('./markups');
+
+//$.extend(cls, commonCls);
+
+var Mdl = function(zpath) {
+  pblWorkspace.apply(this, [cls, markups, zpath]);
+  this.idOfMovieTemplate = null;
+  this.movieTemplate = null; // contains episodeTemplates
+  this.bem = bem;
+  this.isUserAlreadyInBids = null;
+  this.nonReadyEpisodeBids = null; // All bids of current user with is_ready = false (usually - one or none)
+  //  this.episodeBid = null; // created episode bid (to redirect to upload)
+};
+
+ahr.inherits(Mdl, pblWorkspace);
+
+Mdl.prototype.loadIdOfMovieTemplate = function(next) {
+  var paramT = ahr.getQueryParam('t');
+  if (!paramT) {
+    return alert('required: "?t=123" param in url: id of movie template');
+  }
+
+  paramT = ahr.toInt(paramT);
+
+  if (!paramT) {
+    return alert('required: "?t=123" param in url: id of movie template (integer)');
+  }
+
+  this.idOfMovieTemplate = paramT;
+
+  next();
+};
+
+Mdl.prototype.handleMovieTemplate = function(next, err, data) {
+  if (err) {
+    alert(err.message);
+    //	  locHelper.moveToError(this.doc, msg);
+    //    this.doc.location.href = 'error.html';
+    // redirect to error page
+    return;
+  }
+
+  if (!data) {
+    alert('Template is not found');
+    return;
+  }
+
+  this.movieTemplate = mdlMovieTemplate.init(data, this);
+  this.movieTemplate.fillMovieTemplate(next);
+  //  next();
+};
+
+Mdl.prototype.loadMovieTemplate = function(next) {
+  srv.r1002(this.idOfMovieTemplate,
+    this.handleMovieTemplate.bind(this, next));
+};
+
+
+
+Mdl.prototype.fillUserBids = function(next) {
+  if (this.nonReadyEpisodeBids.length > 0) {
+    dhr.html('.' + this.cls.notif, 'You have a later-uploaded episode. Please upload a video or cancel it. &lt;a href="./cabinet.html">Go to my cabinet&lt;/a>');
+    dhr.showElems('.' + this.cls.notif);
+    next();
+    return;
+  }
+  // The same - as upper checking
+  //  if (this.isUserAlreadyInBids === true) {
+  //    next();
+  //    return;
+  //  }
+
+
+  var elemsUploadLater = dhr.getElems('.' + this.cls.fncUploadLater); // 'shw-episode__fnc-upload-later',
+  var elemsUploadNow = dhr.getElems('.' + this.cls.fncUploadNow); //    fncUploadNow: 'shw-episode__fnc-upload-now'
+  //  if (this.isUserAlreadyInBids === true) {
+  //    dhr.disable(elemUploadLater);
+  //    dhr.disable(elemUploadNow);
+  //  }
+
+  dhr.showElems(elemsUploadLater);
+  dhr.showElems(elemsUploadNow);
+
+  next();
+};
+
+var handleNonReadyEpisodeBids = function(next, err, episodeBidArr) {
+  if (err) {
+    dhr.html('.' + this.cls.notif, 'Server error: retrieving users\' bids');
+    dhr.showElems('.' + this.cls.notif);
+    return;
+  }
+
+  // usuall arr - one or null (not-uploaded bid)
+  this.nonReadyEpisodeBids = episodeBidArr;
+  next();
+};
+
+// One per user
+Mdl.prototype.checkNonReadyEpisodeBids = function(next) {
+  srv.r1011(handleNonReadyEpisodeBids.bind(this, next));
+};
+
+Mdl.prototype.authFlowSelector = function() {
+  // when movie template is loaded
+
+  if (this.userSession) {
+    this.userSession.showAuth(this.last);
+    this.movieTemplate.startFlow(this.last);
+  } else {
+    // show message and apply events and login buttons with authFlow
+    this.waitUserLogin();
+  }
+};
+
+Mdl.prototype.start = function() {
+  var appFlow =
+    this.loadIdOfMovieTemplate.bind(this,
+      this.waitDocReady.bind(this,
+        this.addEvents.bind(this,
+          this.loadMovieTemplate.bind(this,
+            this.loadSid.bind(this,
+              // two flows - auth=yes and auth=no
+              this.handleSid.bind(this,
+                this.authFlowSelector.bind(this)
+              ))))));
+
+  appFlow();
+};
+
+exports.init = function(doc, zpath) {
+  return new Mdl(doc, zpath);
+};
+
+module.exports = exports;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-app-helper.html">app-helper</a></li><li><a href="module-cabinet_fll.html">cabinet/fll</a></li><li><a href="module-cabinet_nonready-bid.html">cabinet/nonready-bid</a></li><li><a href="module-cabinet_vwm.html">cabinet/vwm</a></li><li><a href="module-cabinet_workspace.html">cabinet/workspace</a></li><li><a href="module-common_auth-issuer.html">common/auth-issuer</a></li><li><a href="module-common_auth-issuer-fb.html">common/auth-issuer-fb</a></li><li><a href="module-common_auth-issuer-goog.html">common/auth-issuer-goog</a></li><li><a href="module-common_dev-helper.html">common/dev-helper</a></li><li><a href="module-common_markups.html">common/markups</a></li><li><a href="module-common_popup-helper.html">common/popup-helper</a></li><li><a href="module-common_user-session.html">common/user-session</a></li><li><a href="module-common_workspace.html">common/workspace</a></li><li><a href="module-config.html">config</a></li><li><a href="module-dom-helper.html">dom-helper</a></li><li><a href="module-enhance_job-output-checker.html">enhance/job-output-checker</a></li><li><a href="module-enhance_workspace.html">enhance/workspace</a></li><li><a href="module-explore_movie-record.html">explore/movie-record</a></li><li><a href="module-explore_vwm.html">explore/vwm</a></li><li><a href="module-explore_workspace.html">explore/workspace</a></li><li><a href="module-index_workspace.html">index/workspace</a></li><li><a href="module-lgr.html">lgr</a></li><li><a href="module-template-editor_ehr.html">template-editor/ehr</a></li><li><a href="module-template-editor_fll.html">template-editor/fll</a></li><li><a href="module-template-editor_hpr.html">template-editor/hpr</a></li><li><a href="module-template-editor_vwm.html">template-editor/vwm</a></li><li><a href="module-template-editor_workspace.html">template-editor/workspace</a></li><li><a href="module-template_bid-check.html">template/bid-check</a></li><li><a href="module-template_bid-rating.html">template/bid-rating</a></li><li><a href="module-template_episode-bid.html">template/episode-bid</a></li><li><a href="module-template_episode-template.html">template/episode-template</a></li><li><a href="module-template_genre-tag.html">template/genre-tag</a></li><li><a href="module-template_markups.html">template/markups</a></li><li><a href="module-template_media-spec.html">template/media-spec</a></li><li><a href="module-template_movie-genre.html">template/movie-genre</a></li><li><a href="module-template_movie-template.html">template/movie-template</a></li><li><a href="module-template_run.html">template/run</a></li><li><a href="module-template_workspace.html">template/workspace</a></li><li><a href="module-upload_file-handler.html">upload/file-handler</a></li><li><a href="module-upload_job-source-checker.html">upload/job-source-checker</a></li><li><a href="module-upload_workspace.html">upload/workspace</a></li><li><a href="module-vmg-helpers_api-rqst.html">vmg-helpers/api-rqst</a></li><li><a href="module-vmg-helpers_hbrs.html">vmg-helpers/hbrs</a></li><li><a href="module-vmg-helpers_rqst.html">vmg-helpers/rqst</a></li><li><a href="module-vmg-helpers_shr.html">vmg-helpers/shr</a></li><li><a href="module-watch_episode-bid.html">watch/episode-bid</a></li><li><a href="module-watch_episode-template.html">watch/episode-template</a></li><li><a href="module-watch_file-cut.html">watch/file-cut</a></li><li><a href="module-watch_fll.html">watch/fll</a></li><li><a href="module-watch_genre-tag.html">watch/genre-tag</a></li><li><a href="module-watch_media-file.html">watch/media-file</a></li><li><a href="module-watch_media-spec.html">watch/media-spec</a></li><li><a href="module-watch_movie-genre.html">watch/movie-genre</a></li><li><a href="module-watch_movie-template.html">watch/movie-template</a></li><li><a href="module-watch_vwm.html">watch/vwm</a></li><li><a href="module-watch_workspace.html">watch/workspace</a></li></ul><h3>Classes</h3><ul><li><a href="module-common_auth-issuer-fb-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-goog-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-Mdl.html">Mdl</a></li></ul><h3>Global</h3><ul><li><a href="global.html#w2009">w2009</a></li><li><a href="global.html#w2012">w2012</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Fri Nov 28 2014 23:57:20 GMT+0300 (MSK)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

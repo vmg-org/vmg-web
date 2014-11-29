@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: common/auth-issuer-fb.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: common/auth-issuer-fb.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** 
+ * FB Oauth
+ *   https://developers.facebook.com/docs/facebook-login/login-flow-for-web/v2.2
+ *   Asking for Permissions
+ *   One of the most important parts of launching the Login Dialog is choosing what data your app would like access to. These examples have all used the scope parameter, which is how you ask for access to someone's data. These are all called Permissions.
+ *   Permissions are covered in depth in our permissions guide. However, there are a few things to remember when dealing with permissions and the login dialog:
+ *  You ask for permissions when the dialog is created. The resulting set of permissions is tied to the access token that's returned.
+ * Other platforms may have a different set of permissions. For example, on iOS you can ask for places a person's been tagged, while in the web version of your app that permission is not required for the experience.
+ *  You can add permissions later when you need more capabilities. When you need a new permission, you simply add the permission you need to the list you've already granted, re-launch the Login Dialog and it will ask for the new permission.
+ *  The Login Dialog lets people decline to share certain permissions with your app that you ask for. Your app should handle this case. Learn more about this in our permissions dialog.
+ *  Apps that ask for more than public_profile, email and user_friends must be reviewed by Facebook before they can be made available to the general public. Learn more in our documentation for login review and our general review guidelines.
+ * @module
+ */
+
+var mdlAuthIssuer = require('./auth-issuer');
+var dhr = require('../vmg-helpers/dom');
+
+/**
+ * Auth issuer for FB
+ * @constructor
+ * @augments module:common/auth-issuer~Mdl
+ */
+var Mdl = function() {
+  mdlAuthIssuer.inhProps(this, arguments);
+};
+
+mdlAuthIssuer.inhMethods(Mdl);
+
+/**
+ * If an user is not logged on a provider
+ *    https://developers.facebook.com/docs/reference/javascript/FB.login/v2.2
+ */
+Mdl.prototype.handleLogin = function(response) {
+  console.log(response);
+  if (response.authResponse) {
+    alert('welcome');
+  } else {
+    alert('error');
+  }
+};
+
+/**
+ * Handle login status
+ *    this = workspace
+ */
+Mdl.prototype.handleLoginStatus = function(response) {
+  // The response object is returned with a status field that lets the
+  // app know the current login status of the person.
+  // Full docs on the response object can be found in the documentation
+  // for FB.getLoginStatus().
+  if (response.status === 'connected') {
+    // Logged into your app and Facebook.
+    console.log(response.authResponse);
+    var authResult = response.authResponse;
+    this.social_token = authResult.accessToken;
+    this.postLoginToApi();
+  } else if (response.status === 'unknown') {
+    // The person is not logged into Facebook, so we're not sure if
+    // they are logged into this app or not.
+    //'Please log ' + 'into Facebook.';
+    // TODO: #33!  this doesn't work - required a click event (block popup - if not a click)
+    this.authLib.login(this.handleLogin.bind(this));
+  } else {
+    this.root.afterLogin(new Error(response.status));
+    console.log(response);
+    //    alert(response.status);
+  }
+  //    } else if (response.status === 'not_authorized') {
+  //      // The person is logged into Facebook, but not your app.
+  //      document.getElementById('status').innerHTML = '';
+  //      //	    'Please log ' +     'into this app.';
+  //    } else {
+
+  //    }
+};
+
+/**
+ * Start FB auth
+ */
+Mdl.prototype.startAuth = function() {
+  console.log('fb signin');
+  this.authLib.getLoginStatus(this.handleLoginStatus.bind(this));
+};
+
+// https://developers.facebook.com/docs/javascript/reference/FB.init/v2.2
+/**
+ * Set event to the button to login with FB
+ *    1. Check login status:
+ *    1.1 If auth-ed: add PostSession to the button
+ *    1.2 If unknown (not in FB) or other: add Login event to the button
+ */
+Mdl.prototype.handleAuthLib = function() {
+  window.FB.init({
+    appId: this.app_id, // FB_CLIENT_ID, // config.FB_CLIENT_ID,
+    cookie: false, // enable cookies to allow the server to access the session
+    xfbml: false, // http://www.tutorialarena.com/blog/what-is-xfbml.php
+    status: false,
+    version: 'v2.2' // use version 2.2
+  });
+
+  this.authLib = window.FB;
+
+  this.activate();
+};
+
+/**
+ * Load a lib: async query - build scripts
+ */
+Mdl.prototype.loadAuthLib = function() {
+  window.fbAsyncInit = this.handleAuthLib.bind(this);
+  dhr.loadFbLib(); // fbAsyncInit by default    ;
+};
+
+/**
+ * Creates an obj
+ */
+exports.init = function() {
+  // add methods
+  var obj = Object.create(Mdl.prototype);
+  // add props
+  Mdl.apply(obj, arguments);
+  // return created object
+  return obj;
+};
+
+module.exports = exports;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-app-helper.html">app-helper</a></li><li><a href="module-cabinet_fll.html">cabinet/fll</a></li><li><a href="module-cabinet_nonready-bid.html">cabinet/nonready-bid</a></li><li><a href="module-cabinet_vwm.html">cabinet/vwm</a></li><li><a href="module-cabinet_workspace.html">cabinet/workspace</a></li><li><a href="module-common_auth-issuer.html">common/auth-issuer</a></li><li><a href="module-common_auth-issuer-fb.html">common/auth-issuer-fb</a></li><li><a href="module-common_auth-issuer-goog.html">common/auth-issuer-goog</a></li><li><a href="module-common_dev-helper.html">common/dev-helper</a></li><li><a href="module-common_markups.html">common/markups</a></li><li><a href="module-common_popup-helper.html">common/popup-helper</a></li><li><a href="module-common_user-session.html">common/user-session</a></li><li><a href="module-common_workspace.html">common/workspace</a></li><li><a href="module-config.html">config</a></li><li><a href="module-dom-helper.html">dom-helper</a></li><li><a href="module-enhance_job-output-checker.html">enhance/job-output-checker</a></li><li><a href="module-enhance_workspace.html">enhance/workspace</a></li><li><a href="module-explore_movie-record.html">explore/movie-record</a></li><li><a href="module-explore_vwm.html">explore/vwm</a></li><li><a href="module-explore_workspace.html">explore/workspace</a></li><li><a href="module-index_workspace.html">index/workspace</a></li><li><a href="module-lgr.html">lgr</a></li><li><a href="module-template-editor_ehr.html">template-editor/ehr</a></li><li><a href="module-template-editor_fll.html">template-editor/fll</a></li><li><a href="module-template-editor_hpr.html">template-editor/hpr</a></li><li><a href="module-template-editor_vwm.html">template-editor/vwm</a></li><li><a href="module-template-editor_workspace.html">template-editor/workspace</a></li><li><a href="module-template_bid-check.html">template/bid-check</a></li><li><a href="module-template_bid-rating.html">template/bid-rating</a></li><li><a href="module-template_episode-bid.html">template/episode-bid</a></li><li><a href="module-template_episode-template.html">template/episode-template</a></li><li><a href="module-template_genre-tag.html">template/genre-tag</a></li><li><a href="module-template_markups.html">template/markups</a></li><li><a href="module-template_media-spec.html">template/media-spec</a></li><li><a href="module-template_movie-genre.html">template/movie-genre</a></li><li><a href="module-template_movie-template.html">template/movie-template</a></li><li><a href="module-template_run.html">template/run</a></li><li><a href="module-template_workspace.html">template/workspace</a></li><li><a href="module-upload_file-handler.html">upload/file-handler</a></li><li><a href="module-upload_job-source-checker.html">upload/job-source-checker</a></li><li><a href="module-upload_workspace.html">upload/workspace</a></li><li><a href="module-vmg-helpers_api-rqst.html">vmg-helpers/api-rqst</a></li><li><a href="module-vmg-helpers_hbrs.html">vmg-helpers/hbrs</a></li><li><a href="module-vmg-helpers_rqst.html">vmg-helpers/rqst</a></li><li><a href="module-vmg-helpers_shr.html">vmg-helpers/shr</a></li><li><a href="module-watch_episode-bid.html">watch/episode-bid</a></li><li><a href="module-watch_episode-template.html">watch/episode-template</a></li><li><a href="module-watch_file-cut.html">watch/file-cut</a></li><li><a href="module-watch_fll.html">watch/fll</a></li><li><a href="module-watch_genre-tag.html">watch/genre-tag</a></li><li><a href="module-watch_media-file.html">watch/media-file</a></li><li><a href="module-watch_media-spec.html">watch/media-spec</a></li><li><a href="module-watch_movie-genre.html">watch/movie-genre</a></li><li><a href="module-watch_movie-template.html">watch/movie-template</a></li><li><a href="module-watch_vwm.html">watch/vwm</a></li><li><a href="module-watch_workspace.html">watch/workspace</a></li></ul><h3>Classes</h3><ul><li><a href="module-common_auth-issuer-fb-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-goog-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-Mdl.html">Mdl</a></li></ul><h3>Global</h3><ul><li><a href="global.html#w2009">w2009</a></li><li><a href="global.html#w2012">w2012</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Fri Nov 28 2014 23:57:20 GMT+0300 (MSK)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

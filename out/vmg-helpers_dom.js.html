@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: vmg-helpers/dom.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: vmg-helpers/dom.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Operations with DOM, using JQuery
+ *     JQuery only here for future replacement to usual functions and don't load JQuery
+ * @module dom-helper
+ */
+
+/**
+ * Jquery is self-loaded (from dns or local)
+ */
+
+var bhLib = require('bh');
+var bh = new(bhLib.BH); // jshint ignore:line
+var ahr = require('../vmg-helpers/app');
+
+/*
+ * Map it
+ * @param {Object} sampleSchema - { block: 'asdf', content: []}
+ * @param {Object} dataItem - {name: 'asdfasdfa' }
+ */
+var mapSampleItem = function(sampleSchema, dataItem) {
+  // find in schema - object where mdl = mdlName
+  // var mdlObj = ahr.findJsonMatch(sampleSchema, 'mdl', mdlName);
+
+  // all content of this object - with movie_record context
+  // change all matches with our data: @@name - dataItem.name
+  // stringify it or recurse?
+
+  var strSchema = ahr.stringify(sampleSchema);
+
+  // change every key in dataItem
+
+  //  ahr.each(Object.keys(dataItem), ementEachData
+  //  console.log(strSchema);
+  //  var allMatches = strSchema.match(/"@@\w+"/g);
+  //  console.log(allMatches);
+  //var matches = strSchema.match(/@@(\w+/g);
+  //  if (ahr.isJson(dataItem)) {
+
+  var genSchema = ahr.rplc(strSchema, dataItem);
+  //strSchema.replace(/"@@(\w+)"/g, replacer.bind(null, dataItem));
+  return JSON.parse(genSchema);
+};
+
+exports.getBlockSchema = function(bem, elemName) {
+  // block with retry and demo keys
+  return ahr.extractJsonMatch(bem, 'block', elemName);
+  // first inner schema
+};
+
+// Fill schema and html it
+exports.htmlBemBlock = function(blockSchema, dataItem) {
+  var filledSchema = mapSampleItem(blockSchema, dataItem);
+  return bh.apply(filledSchema);
+  //  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema));
+};
+
+exports.hfb = function(bem, elemName, mdlName, data) {
+  // get an object where block == key
+  // get content of this object
+  // get first item of array (of content)
+  // create markup from this item
+  // put the data to the markup
+  // add it to the our elem
+  // 
+  // get object instead link
+  var result = exports.getBlockSchema(bem, elemName);
+
+  var sampleSchema = result.content[0];
+
+  // insert data to schema (only one level)
+  var fullArr = ahr.map(data, mapSampleItem.bind(null, sampleSchema));
+
+  result.content = fullArr;
+  var readyHtml = bh.apply(result);
+  return readyHtml;
+};
+
+exports.impl = function(bem, elemName, mdlName, data, isEffect) {
+  var readyHtml = exports.hfb(bem, elemName, mdlName, data);
+  // bh can't generate html without a parent block
+  //   without parent block - their elements with wrong names
+  //   but we need only elements markup
+  var jqrNewElems = $(readyHtml).children();
+  var lists = $('.' + elemName); // may be few lists with movie-records in a page (retry logic)
+  //  } else {
+  //    // Link to  Element - elemName
+  //    lists = $(elemName);
+  //    console.log('lists', lists);
+  //  }
+
+  if (isEffect) {
+    jqrNewElems.hide();
+  }
+  $(lists).append(jqrNewElems);
+  if (isEffect) {
+    jqrNewElems.slideDown();
+  }
+};
+
+exports.alert = function(msg) {
+  window.alert(msg);
+};
+
+var getElems = function(className) {
+  return $(className);
+};
+
+exports.getElems = getElems;
+
+var getElem = function(className) {
+  return getElems(className)[0];
+};
+
+exports.getElem = getElem;
+
+exports.on = function(elem, eventName, cbk) {
+  $(elem).on(eventName, cbk);
+};
+
+exports.off = function(elem, eventName) {
+  $(elem).off(eventName);
+};
+
+exports.trigger = function(elems, eventName) {
+  $(elems).trigger(eventName);
+};
+
+exports.isElems = function(elems, prop) {
+  //jqrTargetElems.is(':visible') 
+  return $(elems).is(prop);
+};
+// elem - className or dom elem
+exports.addClass = function(elem, className) {
+  $(elem).addClass(className);
+};
+
+exports.removeClass = function(elem, className) {
+  $(elem).removeClass(className);
+};
+
+exports.showElems = function(elems, effectName) {
+  $(elems).show(effectName);
+};
+
+exports.hideElems = function(elems, effectName) {
+  $(elems).hide(effectName);
+};
+
+exports.div = function(optClass) {
+  var div = document.createElement('div');
+  if (optClass) {
+    $(div).addClass(optClass);
+  }
+  return div;
+};
+
+exports.html = function(elem, htmlStr) {
+  $(elem).html(htmlStr);
+};
+
+exports.getVal = function(elem) {
+  return $(elem).val();
+};
+
+exports.setVal = function(elem, val) {
+  $(elem).val(val);
+};
+
+/**
+ * Load Google lib for SignIn and other methods
+ */
+exports.loadGoogLib = function(fname) {
+  var po = document.createElement('script');
+  po.type = 'text/javascript';
+  po.async = true;
+  po.defer = true;
+
+  // onload doesn't work right after. gapi.auth and gapi.client is undefined
+  //  po.src = 'https://plus.google.com/js/client:plusone.js';
+  //  po.onload = next;
+  //    script src="https://apis.google.com/js/client:platform.js" async defer>&lt;/script>
+  // po.src = "https://apis.google.com/js/client:plusone.js";
+  po.src = "https://apis.google.com/js/client:platform.js?onload=" + fname;
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(po, s);
+};
+
+/**
+ * Load FB with default callback: window.fbAsyncInit
+ */
+exports.loadFbLib = function() {
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) {
+      return;
+    }
+    js = d.createElement(s);
+    js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+};
+
+exports.setError = function(elem) {
+  exports.html(elem, '&lt;span style="color:orangered">error retrieving information&lt;/span>');
+};
+
+exports.disable = function(elems) {
+  $(elems).prop("disabled", true);
+};
+
+module.exports = exports;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-app-helper.html">app-helper</a></li><li><a href="module-cabinet_fll.html">cabinet/fll</a></li><li><a href="module-cabinet_nonready-bid.html">cabinet/nonready-bid</a></li><li><a href="module-cabinet_vwm.html">cabinet/vwm</a></li><li><a href="module-cabinet_workspace.html">cabinet/workspace</a></li><li><a href="module-common_auth-issuer.html">common/auth-issuer</a></li><li><a href="module-common_auth-issuer-fb.html">common/auth-issuer-fb</a></li><li><a href="module-common_auth-issuer-goog.html">common/auth-issuer-goog</a></li><li><a href="module-common_dev-helper.html">common/dev-helper</a></li><li><a href="module-common_markups.html">common/markups</a></li><li><a href="module-common_popup-helper.html">common/popup-helper</a></li><li><a href="module-common_user-session.html">common/user-session</a></li><li><a href="module-common_workspace.html">common/workspace</a></li><li><a href="module-config.html">config</a></li><li><a href="module-dom-helper.html">dom-helper</a></li><li><a href="module-enhance_job-output-checker.html">enhance/job-output-checker</a></li><li><a href="module-enhance_workspace.html">enhance/workspace</a></li><li><a href="module-explore_movie-record.html">explore/movie-record</a></li><li><a href="module-explore_vwm.html">explore/vwm</a></li><li><a href="module-explore_workspace.html">explore/workspace</a></li><li><a href="module-index_workspace.html">index/workspace</a></li><li><a href="module-lgr.html">lgr</a></li><li><a href="module-template-editor_ehr.html">template-editor/ehr</a></li><li><a href="module-template-editor_fll.html">template-editor/fll</a></li><li><a href="module-template-editor_hpr.html">template-editor/hpr</a></li><li><a href="module-template-editor_vwm.html">template-editor/vwm</a></li><li><a href="module-template-editor_workspace.html">template-editor/workspace</a></li><li><a href="module-template_bid-check.html">template/bid-check</a></li><li><a href="module-template_bid-rating.html">template/bid-rating</a></li><li><a href="module-template_episode-bid.html">template/episode-bid</a></li><li><a href="module-template_episode-template.html">template/episode-template</a></li><li><a href="module-template_genre-tag.html">template/genre-tag</a></li><li><a href="module-template_markups.html">template/markups</a></li><li><a href="module-template_media-spec.html">template/media-spec</a></li><li><a href="module-template_movie-genre.html">template/movie-genre</a></li><li><a href="module-template_movie-template.html">template/movie-template</a></li><li><a href="module-template_run.html">template/run</a></li><li><a href="module-template_workspace.html">template/workspace</a></li><li><a href="module-upload_file-handler.html">upload/file-handler</a></li><li><a href="module-upload_job-source-checker.html">upload/job-source-checker</a></li><li><a href="module-upload_workspace.html">upload/workspace</a></li><li><a href="module-vmg-helpers_api-rqst.html">vmg-helpers/api-rqst</a></li><li><a href="module-vmg-helpers_hbrs.html">vmg-helpers/hbrs</a></li><li><a href="module-vmg-helpers_rqst.html">vmg-helpers/rqst</a></li><li><a href="module-vmg-helpers_shr.html">vmg-helpers/shr</a></li><li><a href="module-watch_episode-bid.html">watch/episode-bid</a></li><li><a href="module-watch_episode-template.html">watch/episode-template</a></li><li><a href="module-watch_file-cut.html">watch/file-cut</a></li><li><a href="module-watch_fll.html">watch/fll</a></li><li><a href="module-watch_genre-tag.html">watch/genre-tag</a></li><li><a href="module-watch_media-file.html">watch/media-file</a></li><li><a href="module-watch_media-spec.html">watch/media-spec</a></li><li><a href="module-watch_movie-genre.html">watch/movie-genre</a></li><li><a href="module-watch_movie-template.html">watch/movie-template</a></li><li><a href="module-watch_vwm.html">watch/vwm</a></li><li><a href="module-watch_workspace.html">watch/workspace</a></li></ul><h3>Classes</h3><ul><li><a href="module-common_auth-issuer-fb-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-goog-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-Mdl.html">Mdl</a></li></ul><h3>Global</h3><ul><li><a href="global.html#w2009">w2009</a></li><li><a href="global.html#w2012">w2012</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Fri Nov 28 2014 23:57:20 GMT+0300 (MSK)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

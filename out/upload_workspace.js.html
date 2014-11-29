@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: upload/workspace.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: upload/workspace.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/** 
+ * Root viewmodel for this page
+ * @module
+ * @todo: #33! Add notification with upload limits: duration > 15, 30 second, &lt; 1 min
+ * @todo: #43! Touch events for mobile devices for drag and drop feature
+ * @todo: #42! check accept-types in file-input, to check only video
+ */
+'use strict';
+
+var pblWorkspace = require('../common/workspace');
+var ahr = require('../vmg-helpers/app');
+var bem = require('../../../vmg-bem/bems/upload.bemjson');
+var cls = require('./cls');
+var markups = {};
+var fileHandler = require('./file-handler');
+var dhr = require('../vmg-helpers/dom');
+var jobSourceChecker = require('./job-source-checker');
+var srv = require('../vmg-services/srv');
+
+var Mdl = function(zpath) {
+  pblWorkspace.apply(this, [cls, markups, zpath]);
+
+  // required for common auth models
+  this.bem = bem;
+  this.idOfMediaSpec = null;
+  this.episodeBid = null;
+};
+
+ahr.inherits(Mdl, pblWorkspace);
+
+Mdl.prototype.handleLoadEpisodeBid = function(err, episodeBid) {
+  if (err) {
+    alert(err.message || 'server error');
+    return;
+  }
+
+  // If already exists this job - redirect to cabinet
+  if (episodeBid.media_spec_item.job_source_item) {
+    this.doc.location.href = './cabinet.html';
+    return;
+  }
+
+  // TODO: #33! Show bid info in panel
+};
+
+/** Get info with movie info, media_spec and all jobs*/
+Mdl.prototype.loadEpisodeBid = function() {
+  srv.r1008(this.idOfMediaSpec, this.handleLoadEpisodeBid.bind(this));
+};
+
+Mdl.prototype.attachSelectorEvents = function(next) {
+  var cls = this.cls;
+  var elemOpener = dhr.getElem('.' + this.cls.opener);
+  // when click on opener - fire click on input
+  dhr.on(elemOpener, 'click', function() {
+    dhr.trigger('.' + cls.selectorInput, 'click');
+  });
+
+  dhr.showElems('.' + this.cls.selector);
+
+  next();
+};
+
+/**
+ * Handle output job
+ * @param {Object} jobOutput - A job is created (for conversion a source file to outputs)
+ */
+var handleJob = function(elemLoader, err, jobOutput) {
+  if (err) {
+    console.log('error', err);
+    return alert(err.message);
+  }
+
+  console.log('handleJob', jobOutput);
+  window.location.replace('./enhance.html?m=' + jobOutput.id_of_media_spec);
+};
+
+var handleResultOfUpload = function(elemSelector, elemLoader, elemNotif, err, jobSource) {
+  if (err) {
+    dhr.html(elemNotif, err.message);
+    dhr.showElems(elemNotif);
+    // show again to choose another file
+    dhr.hideElems(elemLoader);
+    dhr.showElems(elemSelector);
+    // TODO: #34! handle this error: update a page for user, try again with remove previous job_source in some cases?
+    return;
+  }
+
+  dhr.html(elemLoader, 'verification of an uploaded file...');
+  jobSourceChecker.run(jobSource, handleJob.bind(null, elemLoader));
+};
+
+// To show max duration - need to get BidInfo
+// Limit by filesize: 15s - 50MB 30s- 100MB
+// Event to select of dnd files
+Mdl.prototype.attachUploadEvents = function(next) {
+  var idOfMediaSpec = this.idOfMediaSpec;
+
+  if (!idOfMediaSpec) {
+    throw new Error('no idOfMediaSpec');
+  }
+
+  var elemSelector = dhr.getElem('.' + this.cls.selector);
+  var elemSelectorInput = dhr.getElem('.' + this.cls.selectorInput);
+  var elemLoader = dhr.getElem('.' + this.cls.loader);
+  var elemNotif = dhr.getElem('.' + this.cls.notif);
+
+  window.FileAPI.event.on(elemSelectorInput, 'change', function(evt) {
+    var files = window.FileAPI.getFiles(evt); // Retrieve file list
+    dhr.hideElems(elemSelector);
+    dhr.showElems(elemLoader);
+    fileHandler.run(files, elemLoader, idOfMediaSpec, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
+  });
+
+  window.FileAPI.event.dnd(elemSelector, function(over) {
+    elemSelector.style.backgroundColor = over ? '#ffb' : '';
+  }, function(files) {
+    dhr.hideElems(elemSelector);
+    dhr.showElems(elemLoader);
+    fileHandler.run(files, elemLoader, idOfMediaSpec, handleResultOfUpload.bind(null, elemSelector, elemLoader, elemNotif));
+  });
+
+  next();
+};
+
+Mdl.prototype.loadIdOfMediaSpec = function(next) {
+  var mParam = ahr.getQueryParam('m');
+  mParam = ahr.toInt(mParam);
+
+  if (!mParam) {
+    alert('No param in url: ?m=123 as integer');
+    return;
+  }
+
+  this.idOfMediaSpec = mParam;
+  next();
+};
+
+Mdl.prototype.authFlowSelector = function() {
+  if (this.userSession) {
+    this.userSession.showAuth(this.last);
+    this.loadEpisodeBid();
+    var afterAuthFlow =
+      this.attachUploadEvents.bind(this,
+        this.attachSelectorEvents.bind(this,
+          this.last));
+
+    afterAuthFlow();
+  } else {
+    // show message and apply events and login buttons with authFlow
+    var authNoFlow =
+      this.showNoAuthWarning.bind(this,
+        this.waitUserLogin.bind(this));
+
+    authNoFlow();
+  }
+};
+
+Mdl.prototype.startFlow = function() {
+  // load a movie details
+  var appFlow =
+    this.loadIdOfMediaSpec.bind(this,
+      this.loadSid.bind(this,
+        this.handleSid.bind(this,
+          this.waitDocReady.bind(this,
+            this.addEvents.bind(this,
+              // two flows - auth=yes and auth=no
+              this.authFlowSelector.bind(this)
+            )))));
+
+  appFlow();
+
+};
+
+exports.init = function(zpath) {
+  return new Mdl(zpath);
+};
+
+module.exports = exports;
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Modules</h3><ul><li><a href="module-app-helper.html">app-helper</a></li><li><a href="module-cabinet_fll.html">cabinet/fll</a></li><li><a href="module-cabinet_nonready-bid.html">cabinet/nonready-bid</a></li><li><a href="module-cabinet_vwm.html">cabinet/vwm</a></li><li><a href="module-cabinet_workspace.html">cabinet/workspace</a></li><li><a href="module-common_auth-issuer.html">common/auth-issuer</a></li><li><a href="module-common_auth-issuer-fb.html">common/auth-issuer-fb</a></li><li><a href="module-common_auth-issuer-goog.html">common/auth-issuer-goog</a></li><li><a href="module-common_dev-helper.html">common/dev-helper</a></li><li><a href="module-common_markups.html">common/markups</a></li><li><a href="module-common_popup-helper.html">common/popup-helper</a></li><li><a href="module-common_user-session.html">common/user-session</a></li><li><a href="module-common_workspace.html">common/workspace</a></li><li><a href="module-config.html">config</a></li><li><a href="module-dom-helper.html">dom-helper</a></li><li><a href="module-enhance_job-output-checker.html">enhance/job-output-checker</a></li><li><a href="module-enhance_workspace.html">enhance/workspace</a></li><li><a href="module-explore_movie-record.html">explore/movie-record</a></li><li><a href="module-explore_vwm.html">explore/vwm</a></li><li><a href="module-explore_workspace.html">explore/workspace</a></li><li><a href="module-index_workspace.html">index/workspace</a></li><li><a href="module-lgr.html">lgr</a></li><li><a href="module-template-editor_ehr.html">template-editor/ehr</a></li><li><a href="module-template-editor_fll.html">template-editor/fll</a></li><li><a href="module-template-editor_hpr.html">template-editor/hpr</a></li><li><a href="module-template-editor_vwm.html">template-editor/vwm</a></li><li><a href="module-template-editor_workspace.html">template-editor/workspace</a></li><li><a href="module-template_bid-check.html">template/bid-check</a></li><li><a href="module-template_bid-rating.html">template/bid-rating</a></li><li><a href="module-template_episode-bid.html">template/episode-bid</a></li><li><a href="module-template_episode-template.html">template/episode-template</a></li><li><a href="module-template_genre-tag.html">template/genre-tag</a></li><li><a href="module-template_markups.html">template/markups</a></li><li><a href="module-template_media-spec.html">template/media-spec</a></li><li><a href="module-template_movie-genre.html">template/movie-genre</a></li><li><a href="module-template_movie-template.html">template/movie-template</a></li><li><a href="module-template_run.html">template/run</a></li><li><a href="module-template_workspace.html">template/workspace</a></li><li><a href="module-upload_file-handler.html">upload/file-handler</a></li><li><a href="module-upload_job-source-checker.html">upload/job-source-checker</a></li><li><a href="module-upload_workspace.html">upload/workspace</a></li><li><a href="module-vmg-helpers_api-rqst.html">vmg-helpers/api-rqst</a></li><li><a href="module-vmg-helpers_hbrs.html">vmg-helpers/hbrs</a></li><li><a href="module-vmg-helpers_rqst.html">vmg-helpers/rqst</a></li><li><a href="module-vmg-helpers_shr.html">vmg-helpers/shr</a></li><li><a href="module-watch_episode-bid.html">watch/episode-bid</a></li><li><a href="module-watch_episode-template.html">watch/episode-template</a></li><li><a href="module-watch_file-cut.html">watch/file-cut</a></li><li><a href="module-watch_fll.html">watch/fll</a></li><li><a href="module-watch_genre-tag.html">watch/genre-tag</a></li><li><a href="module-watch_media-file.html">watch/media-file</a></li><li><a href="module-watch_media-spec.html">watch/media-spec</a></li><li><a href="module-watch_movie-genre.html">watch/movie-genre</a></li><li><a href="module-watch_movie-template.html">watch/movie-template</a></li><li><a href="module-watch_vwm.html">watch/vwm</a></li><li><a href="module-watch_workspace.html">watch/workspace</a></li></ul><h3>Classes</h3><ul><li><a href="module-common_auth-issuer-fb-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-goog-Mdl.html">Mdl</a></li><li><a href="module-common_auth-issuer-Mdl.html">Mdl</a></li></ul><h3>Global</h3><ul><li><a href="global.html#w2009">w2009</a></li><li><a href="global.html#w2012">w2012</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.3.0-alpha10</a> on Fri Nov 28 2014 23:57:20 GMT+0300 (MSK)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

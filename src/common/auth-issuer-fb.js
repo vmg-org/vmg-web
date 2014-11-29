@@ -16,10 +16,12 @@ var mdlAuthIssuer = require('./auth-issuer');
 var dhr = require('../vmg-helpers/dom');
 
 /**
- * Inherited from auth-issuer
+ * Auth issuer for FB
+ * @constructor
+ * @augments module:common/auth-issuer~Mdl
  */
-var Mdl = function(dto, root, zpath) {
-  mdlAuthIssuer.inhProps(this, [dto, root, zpath]);
+var Mdl = function() {
+  mdlAuthIssuer.inhProps(this, arguments);
 };
 
 mdlAuthIssuer.inhMethods(Mdl);
@@ -30,10 +32,11 @@ mdlAuthIssuer.inhMethods(Mdl);
  */
 Mdl.prototype.handleLogin = function(response) {
   console.log(response);
-  if (response.authResponse) {
-    alert('welcome');
+  if (response.status === 'connected') {
+    this.social_token = response.authResponse.accessToken;
+    this.postLoginToApi();
   } else {
-    alert('error');
+    alert('Error during authentication');
   }
 };
 
@@ -42,6 +45,7 @@ Mdl.prototype.handleLogin = function(response) {
  *    this = workspace
  */
 Mdl.prototype.handleLoginStatus = function(response) {
+
   // The response object is returned with a status field that lets the
   // app know the current login status of the person.
   // Full docs on the response object can be found in the documentation
@@ -51,30 +55,33 @@ Mdl.prototype.handleLoginStatus = function(response) {
     console.log(response.authResponse);
     var authResult = response.authResponse;
     this.social_token = authResult.accessToken;
-    this.postLoginToApi();
   } else if (response.status === 'unknown') {
     // The person is not logged into Facebook, so we're not sure if
     // they are logged into this app or not.
     //'Please log ' + 'into Facebook.';
-    // TODO: #33!  this doesn't work - required a click event (block popup - if not a click)
-    this.authLib.login(this.handleLogin.bind(this));
+    //    this.authLib.login(this.handleLogin.bind(this));
+  } else if (response.status === 'not_authorized') {
+    // The person is logged into Facebook, but not your app.
+    //	    'Please log ' +     'into this app.';
   } else {
-    this.root.afterLogin(new Error(response.status));
-    console.log(response);
-    //    alert(response.status);
+    // OR simply not activate this button
+    console.log('FB auth error: ', response.status);
+    return;
   }
-  //    } else if (response.status === 'not_authorized') {
-  //      // The person is logged into Facebook, but not your app.
-  //      document.getElementById('status').innerHTML = '';
-  //      //	    'Please log ' +     'into this app.';
-  //    } else {
-
-  //    }
+  this.activate();
 };
 
-Mdl.prototype.startAuth = function() {
-  console.log('fb signin');
-  this.authLib.getLoginStatus(this.handleLoginStatus.bind(this));
+/**
+ * Start FB auth
+ */
+Mdl.prototype.startAuth = function(elem) {
+  dhr.disable(elem);  
+  if (this.social_token) {
+    this.postLoginToApi();
+  } else {
+    //required a click event (block popup window - if not a click)
+    this.authLib.login(this.handleLogin.bind(this));
+  }
 };
 
 // https://developers.facebook.com/docs/javascript/reference/FB.init/v2.2
@@ -94,8 +101,7 @@ Mdl.prototype.handleAuthLib = function() {
   });
 
   this.authLib = window.FB;
-
-  this.activate();
+  this.authLib.getLoginStatus(this.handleLoginStatus.bind(this));
 };
 
 /**
@@ -106,8 +112,16 @@ Mdl.prototype.loadAuthLib = function() {
   dhr.loadFbLib(); // fbAsyncInit by default    ;
 };
 
-exports.init = function(dto, root, zpath) {
-  return new Mdl(dto, root, zpath);
+/**
+ * Creates an obj
+ */
+exports.init = function() {
+  // add methods
+  var obj = Object.create(Mdl.prototype);
+  // add props
+  Mdl.apply(obj, arguments);
+  // return created object
+  return obj;
 };
 
 module.exports = exports;
