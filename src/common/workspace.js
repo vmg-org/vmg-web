@@ -17,6 +17,8 @@ var hbrs = require('../vmg-helpers/hbrs');
 var mdlFbIssuer = require('./auth-issuer-fb');
 var mdlGoogIssuer = require('./auth-issuer-goog');
 var mdlDevIssuer = require('./auth-issuer-dev');
+//var mdlAppMenu = require('./app-menu');
+var mdlPopWin = require('./pop-win');
 
 var Mdl = function(cls, markups, zpath) {
   this.doc = window.document;
@@ -32,11 +34,11 @@ var Mdl = function(cls, markups, zpath) {
 
   this.markupAuthNo = hbrs.compile(this.markups.authNo);
 
-  this.markupAuthPopup = hbrs.compile(this.markups.authPopup);
-  this.fnc_open_login_popup = this.zpath + '.openLoginPopup()';
-  this.fnc_close_auth_popup = this.zpath + '.closeAuthPopup()';
-  this.fnc_close_auth_popup_out = this.zpath + '.closeAuthPopupOut(this, event)';
-  this.isAuthPopupLoaded = false;
+  this.authPopWin = mdlPopWin.init(this.markups.authPopup, this.cls.popupScope, this.zpath + '.authPopWin');
+  this.fnc_show_login_choice = this.zpath + '.showLoginChoice()';
+
+  this.menuPopWin = mdlPopWin.init(this.markups.menuPopup, this.cls.popupScope, this.zpath + '.menuPopWin');
+  this.fnc_show_menu_choice = this.zpath + '.showMenuChoice()';
 
   this.authIssuers = null;
   this.loadAuthIssuers();
@@ -94,22 +96,27 @@ Mdl.prototype.loadSid = function(next) {
   next();
 };
 
-Mdl.prototype.openLoginPopup = function() {
-  if (this.isAuthPopupLoaded) {
-    dhr.showElems('.' + this.cls.authPopup);
-    return;
-  }
-  this.isAuthPopupLoaded = true;
+Mdl.prototype.showMenuChoice = function() {
+  // in current realization need open a popup window
+  // in other realization - menu might be in a side-bar
+  this.menuPopWin.showPopup();
+  // load items to the popup (like in login popup)
+};
 
-
-  var htmlAuthPopup = this.markupAuthPopup(this);
-  dhr.html('.' + this.cls.popupScope, htmlAuthPopup);
-
-  //  dhr.showElems('.' + this.cls.authPopup);
+/**
+ * Show login choice
+ *    now - in a popup window (open a popup with this action)
+ */
+Mdl.prototype.showLoginChoice = function() {
+  this.authPopWin.showPopup();
 
   // start load libs for buttons
+  // load only once per page: isLoadStarted
   this.authIssuers.forEach(function(issItem) {
-    issItem.loadAuthLib();
+    if (!issItem.isLoadStarted) {
+      issItem.isLoadStarted = true;
+      issItem.loadAuthLib();
+    }
   });
 
   // draw pre or ready buttons
@@ -121,17 +128,9 @@ Mdl.prototype.buildAuthButtons = function() {
     return issItem.buildHtml();
   }).join('');
 
+  // authButtons places in auth-popup window
+  // but can be moved as separate module on the page
   dhr.html('.' + this.cls.authButtons, htmlButtons);
-};
-
-Mdl.prototype.closeAuthPopup = function() {
-  dhr.hideElems('.' + this.cls.authPopup);
-};
-
-Mdl.prototype.closeAuthPopupOut = function(elem, e) {
-  if (e.currentTarget === e.target) { //.parentElement) {
-    $(elem).hide();
-  }
 };
 
 Mdl.prototype.waitDocReady = function(next) {
@@ -173,11 +172,10 @@ Mdl.prototype.showNoAuthWarning = function(next) {
 };
 
 Mdl.prototype.waitUserLogin = function() {
-
   // get auth-no template
   // add params if need
   // add to auth-scope
-
+  // TODO: #53! for index page - an auth-no block replaced by other block
   var htmlAuthNo = this.markupAuthNo(this);
   var elemAuthNoWrap = dhr.getElem('.' + this.cls.authNoWrap);
   dhr.html(elemAuthNoWrap, htmlAuthNo);
@@ -197,19 +195,25 @@ Mdl.prototype.handleSid = function(next) {
   }
 };
 
+/**
+ * Hide all popups, when user press an Escape key
+ */
+Mdl.prototype.hidePopupsByEscape = function(e) {
+  if (e.keyCode === 27) {
+    this.authPopWin.hidePopup();
+    this.menuPopWin.hidePopup();
+  }
+};
+
+/**
+ * Add events for global elements, like body
+ */
 Mdl.prototype.addEvents = function(next) {
-  var elemMenuCall = dhr.getElem('.' + this.cls.menuCall);
-  dhr.on(elemMenuCall, 'click', pph.turnPopup.bind(null, this.cls.menuPopup));
-
-  dhr.on(this.doc.body, 'keyup', pph.hidePopupByEscape.bind(null, this.cls.menuPopup));
-  dhr.on(this.doc.body, 'keyup', pph.hidePopupByEscape.bind(null, this.cls.authPopup));
-  var elemMenuPopup = dhr.getElem('.' + this.cls.menuPopup);
-  dhr.on(elemMenuPopup, 'click', pph.hidePopupIfOut.bind(null, this.cls.menuPopup));
-
-  var elemClose = dhr.getElem('.' + this.cls.menuViewClose);
-  dhr.on(elemClose, 'click', pph.turnPopup.bind(null, this.cls.menuPopup));
+  dhr.on(this.doc.body, 'keyup', this.hidePopupsByEscape.bind(this));
 
   var elemNotifWrapClose = dhr.getElem('.' + this.cls.notifWrapClose);
+
+  // TODO: #43! change to normal behavior like popups
   dhr.on(elemNotifWrapClose, 'click', pph.turnPopup.bind(null, this.cls.notif));
 
   next();

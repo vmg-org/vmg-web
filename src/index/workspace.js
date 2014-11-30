@@ -17,7 +17,8 @@ ahr.inherits(Mdl, pblWorkspace);
 
 Mdl.prototype.authFlowSelector = function() {
   if (this.userSession) {
-    this.userSession.showAuth(this.last);
+    this.rdr('./explore.html');
+    return;
   } else {
     // show message and apply events and login buttons with authFlow
     this.waitUserLogin();

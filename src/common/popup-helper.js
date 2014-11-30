@@ -10,16 +10,4 @@ exports.turnPopup = function(popupName) {
   }
 };
 
-exports.hidePopupByEscape = function(popupName, e) {
-  if (e.keyCode === 27) {
-    dhr.hideElems('.' + popupName);
-  }
-};
-
-exports.hidePopupIfOut = function(popupName, e) {
-  if (e.currentTarget === e.target) { //.parentElement) {
-    dhr.hideElems('.' + popupName);
-  }
-};
-
 module.exports = exports;
