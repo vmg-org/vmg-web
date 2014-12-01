@@ -5,6 +5,7 @@
 'use strict';
 
 var apiRqst = require('../vmg-helpers/api-rqst');
+var config = require('../config');
 
 // Get top movie templates
 exports.r1001 = function(next) {
@@ -188,17 +189,17 @@ exports.getMovieRecordsTop = function(next) {
   var data = [{
     name: 'requiem about dream',
     upper_name: 'REQUIEM FOR A DREAM',
-    img_preview_url: './css/img/movie-black.png',
+    img_preview_url:  config.STATIC_ENDPOINT + 'img/movie-black.png',
     url_to_watch: './watch.html?v=requiem'
   }, {
     name: 'hard die',
     upper_name: 'DIE HARD',
-    img_preview_url: './css/img/movie-black.png',
+    img_preview_url:  config.STATIC_ENDPOINT + 'img/movie-black.png',
     url_to_watch: './watch.html?v=die-hard'
   }, {
     name: 'Hatiko',
     upper_name: 'HATIKO',
-    img_preview_url: './css/img/movie-black.png',
+    img_preview_url:  config.STATIC_ENDPOINT + 'img/movie-black.png',
     url_to_watch: './watch.html?v=hatiko'
   }];
 

@@ -4,6 +4,7 @@ var dhr = require('../vmg-helpers/dom');
 var lgr = require('../vmg-helpers/lgr');
 var srv = require('../vmg-services/srv');
 var ahr = require('../vmg-helpers/app');
+var config = require('../config');
 
 var handleLoadMovieTemplates = function(next, err, arr) {
   if (err) {
@@ -14,7 +15,7 @@ var handleLoadMovieTemplates = function(next, err, arr) {
   // insert blank images instead empty urls
   ahr.each(arr, function(item) {
     console.log(item);
-    item.preview_img_url = item.preview_img_url || './css/img/movie-black.png';
+    item.preview_img_url = item.preview_img_url || (config.STATIC_ENDPOINT + 'img/movie-black.png');
     item.url_to_watch = './template.html?t=' + item.id;
   });
 

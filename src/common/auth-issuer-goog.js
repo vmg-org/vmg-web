@@ -85,7 +85,7 @@ Mdl.prototype.handleAuthLib = function() {
  * Load Goog auth lib
  */
 Mdl.prototype.loadAuthLib = function() {
-  window.googAsyncInit = this.handleAuthLib.bind(this); //  googHelper.init.bind(this.root, cbk);
+  window.googAsyncInit = this.handleAuthLib.bind(this); 
   dhr.loadGoogLib('googAsyncInit');
 };
 

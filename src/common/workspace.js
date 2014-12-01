@@ -19,6 +19,7 @@ var mdlGoogIssuer = require('./auth-issuer-goog');
 var mdlDevIssuer = require('./auth-issuer-dev');
 //var mdlAppMenu = require('./app-menu');
 var mdlPopWin = require('./pop-win');
+//var mdlAuthSet = require('./auth-set');
 
 var Mdl = function(cls, markups, zpath) {
   this.doc = window.document;
@@ -40,9 +41,23 @@ var Mdl = function(cls, markups, zpath) {
   this.menuPopWin = mdlPopWin.init(this.markups.menuPopup, this.cls.popupScope, this.zpath + '.menuPopWin');
   this.fnc_show_menu_choice = this.zpath + '.showMenuChoice()';
 
+  //  this.authSet = mdlAuthSet.init({
+  //    handleAuthResult: this.fncPostLoginToApi
+  //  });
+
   this.authIssuers = null;
   this.loadAuthIssuers();
-  console.log(this.authIssuers);
+};
+
+/**
+ * Callback from auth-issuer model
+ *   to send login data
+ */
+Mdl.prototype.fncPostLoginToApi = function(id_of_auth_issuer, social_token) {
+  srv.w2001({
+    id_of_auth_issuer: id_of_auth_issuer,
+    social_token: social_token
+  }, this.afterLogin.bind(this));
 };
 
 Mdl.prototype.initAuthIssuer = function(item, ind) {
@@ -57,7 +72,12 @@ Mdl.prototype.initAuthIssuer = function(item, ind) {
     // nothing
     throw new Error('nosuchissuer');
   }
-  var obj = mdlIssuer.init(item, this, this.zpath + '.authIssuers[' + ind + ']');
+  var obj = mdlIssuer.init(item,
+    this.zpath + '.authIssuers[' + ind + ']',
+    this.fncPostLoginToApi.bind(this),
+    this.buildAuthButtons.bind(this),
+    this.markups.authButton,
+    this.markups.authPreButton);
   return obj;
 };
 
@@ -109,7 +129,6 @@ Mdl.prototype.showMenuChoice = function() {
  */
 Mdl.prototype.showLoginChoice = function() {
   this.authPopWin.showPopup();
-
   // start load libs for buttons
   // load only once per page: isLoadStarted
   this.authIssuers.forEach(function(issItem) {

@@ -4,6 +4,8 @@
  */
 'use strict';
 
+var config = require('../config');
+
 var convertToMMSS = function(time) {
   var minutes = Math.floor(time / 60);
   var seconds = time - minutes * 60;
@@ -15,7 +17,7 @@ var Mdl = function(data, root) {
   Object.keys(data).forEach(this.mapKeys.bind(this, data));
 
   this.upper_name = this.name;
-  this.img_preview_url = this.preview_img_url || './css/img/movie-black.png';
+  this.img_preview_url = this.preview_img_url || (config.STATIC_ENDPOINT + 'img/movie-black.png');
   this.url_to_watch = './watch.html?t=' + this.id;
   this.duration_str = convertToMMSS(this.duration_of_episodes * 3);
 };

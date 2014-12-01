@@ -5,15 +5,13 @@
  */
 var hbrs = require('../vmg-helpers/hbrs');
 var ahr = require('../vmg-helpers/app');
-var srv = require('../vmg-services/srv');
 
 /**
  * Model: auth issuer
  *    base model for other providers
  * @constructor
  */
-var Mdl = function(dto, root, zpath) {
-  this.root = root;
+var Mdl = function(dto, zpath, fncPostLoginToApi, fncRedrawSet, tmplAuthButton, tmplAuthPreButton) {
   this.zpath = zpath;
   /**
    * Id of provider, like goog, fb, dev
@@ -61,18 +59,31 @@ var Mdl = function(dto, root, zpath) {
   /**
    * Markup for ready button
    */
-  this.markupAuthButton = hbrs.compile(this.root.markups.authButton);
+  this.markupAuthButton = hbrs.compile(tmplAuthButton);
 
   /**
    * Markup for pre-button (a library not loaded yet)
    */
-  this.markupAuthPreButton = hbrs.compile(this.root.markups.authPreButton);
+  this.markupAuthPreButton = hbrs.compile(tmplAuthPreButton);
 
   /**
    * Text on a button
    * @type {String}
    */
   this.login_with = 'Log in with';
+
+  /**
+   * Function: how to post data to API
+   *    from root
+   * @type {Function}
+   */
+  this.fncPostLoginToApi = fncPostLoginToApi;
+
+  /**
+   * Redraw all buttons, from root
+   * @type {Function}
+   */
+  this.redrawSet = fncRedrawSet;
 };
 
 
@@ -80,10 +91,7 @@ var Mdl = function(dto, root, zpath) {
  * Send a request to API to generate a new session
  */
 Mdl.prototype.postLoginToApi = function() {
-  srv.w2001({
-    id_of_auth_issuer: this.id,
-    social_token: this.social_token
-  }, this.root.afterLogin.bind(this.root));
+  this.fncPostLoginToApi(this.id, this.social_token);
 };
 
 /**
@@ -92,20 +100,6 @@ Mdl.prototype.postLoginToApi = function() {
  */
 Mdl.prototype.loadAuthLib = function() {
   throw new Error('must be implemented by subclass!');
-
-  /*
-    } else if (this.id === 'goog') {
-      // next flow - only after user action (auth)
-
-    } else if (this.id === 'dev') {
-      // we can't send next functions to this handlers, that show buttons now
-
-      // apply context
-      devHelper.init.apply(this.root, [cbk]);
-    } else {
-      throw new Error('no such auth issuer');
-    }
-  */
 };
 
 /** 
@@ -136,7 +130,7 @@ Mdl.prototype.buildHtml = function() {
  */
 Mdl.prototype.activate = function() {
   this.isAuthLibLoaded = true;
-  this.root.buildAuthButtons();
+  this.redrawSet();
 };
 
 /**

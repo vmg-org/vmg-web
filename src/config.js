@@ -1,7 +1,12 @@
 /** @module config */
 
 exports.API_ENDPOINT = 'http://localhost:3000/api/';
+
 //exports.API_ENDPOINT = 'http://ec2-54-77-111-21.eu-west-1.compute.amazonaws.com/api/';
+// at this moment only HTTP, no certificate on the server
+
+//exports.STATIC_ENDPOINT = '//vmg-org.github.io/vmg-static/';
+exports.STATIC_ENDPOINT = 'http://localhost:11111/';
 
 exports.AUTH_STORAGE_KEY = 'user_session_id';
 
