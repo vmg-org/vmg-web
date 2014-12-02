@@ -14,12 +14,9 @@ var mdlUserSession = require('./user-session');
 var pph = require('./popup-helper');
 var lgr = require('../vmg-helpers/lgr');
 var hbrs = require('../vmg-helpers/hbrs');
-var mdlFbIssuer = require('./auth-issuer-fb');
-var mdlGoogIssuer = require('./auth-issuer-goog');
-var mdlDevIssuer = require('./auth-issuer-dev');
 //var mdlAppMenu = require('./app-menu');
 var mdlPopWin = require('./pop-win');
-//var mdlAuthSet = require('./auth-set');
+var mdlAuthSet = require('oauth2-set');
 
 var Mdl = function(cls, markups, zpath) {
   this.doc = window.document;
@@ -41,12 +38,24 @@ var Mdl = function(cls, markups, zpath) {
   this.menuPopWin = mdlPopWin.init(this.markups.menuPopup, this.cls.popupScope, this.zpath + '.menuPopWin');
   this.fnc_show_menu_choice = this.zpath + '.showMenuChoice()';
 
-  //  this.authSet = mdlAuthSet.init({
-  //    handleAuthResult: this.fncPostLoginToApi
-  //  });
-
-  this.authIssuers = null;
-  this.loadAuthIssuers();
+  this.authSet = mdlAuthSet.init({
+    handleAuthResult: this.fncPostLoginToApi.bind(this),
+    zpath: this.zpath + '.authSet',
+    tmplAuthButton: hbrs.compile(this.markups.authButton),
+    tmplAuthPreButton: hbrs.compile(this.markups.authPreButton)
+  }, [{
+    id: 'fb',
+    app_id: config.FB_CLIENT_ID,
+    icon_key: 'b'
+  }, {
+    id: 'goog',
+    app_id: config.GOOG_CLIENT_ID,
+    icon_key: 'c'
+  }, {
+    id: 'dev',
+    app_id: '',
+    icon_key: 'i'
+  }]);
 };
 
 /**
@@ -60,27 +69,6 @@ Mdl.prototype.fncPostLoginToApi = function(id_of_auth_issuer, social_token) {
   }, this.afterLogin.bind(this));
 };
 
-Mdl.prototype.initAuthIssuer = function(item, ind) {
-  var mdlIssuer;
-  if (item.id === 'fb') {
-    mdlIssuer = mdlFbIssuer;
-  } else if (item.id === 'goog') {
-    mdlIssuer = mdlGoogIssuer;
-  } else if (item.id === 'dev') {
-    mdlIssuer = mdlDevIssuer;
-  } else {
-    // nothing
-    throw new Error('nosuchissuer');
-  }
-  var obj = mdlIssuer.init(item,
-    this.zpath + '.authIssuers[' + ind + ']',
-    this.fncPostLoginToApi.bind(this),
-    this.buildAuthButtons.bind(this),
-    this.markups.authButton,
-    this.markups.authPreButton);
-  return obj;
-};
-
 Mdl.prototype.afterLogin = function(err, userSession) {
   this.handleUserSession(function() {
     window.location.reload();
@@ -90,25 +78,6 @@ Mdl.prototype.afterLogin = function(err, userSession) {
     });
 
     cbkAfterLogin();*/
-};
-
-Mdl.prototype.loadAuthIssuers = function() {
-
-  var issData = [{
-    id: 'fb',
-    app_id: config.FB_CLIENT_ID,
-    icon_key: 'b'
-  }, {
-    id: 'goog',
-    app_id: config.GOOG_CLIENT_ID,
-    icon_key: 'c'
-  }, {
-    id: 'dev',
-    app_id: '',
-    icon_key: 'i'
-  }];
-
-  this.authIssuers = issData.map(this.initAuthIssuer.bind(this));
 };
 
 Mdl.prototype.loadSid = function(next) {
@@ -129,27 +98,9 @@ Mdl.prototype.showMenuChoice = function() {
  */
 Mdl.prototype.showLoginChoice = function() {
   this.authPopWin.showPopup();
-  // start load libs for buttons
-  // load only once per page: isLoadStarted
-  this.authIssuers.forEach(function(issItem) {
-    if (!issItem.isLoadStarted) {
-      issItem.isLoadStarted = true;
-      issItem.loadAuthLib();
-    }
-  });
-
-  // draw pre or ready buttons
-  this.buildAuthButtons();
-};
-
-Mdl.prototype.buildAuthButtons = function() {
-  var htmlButtons = this.authIssuers.map(function(issItem) {
-    return issItem.buildHtml();
-  }).join('');
-
-  // authButtons places in auth-popup window
-  // but can be moved as separate module on the page
-  dhr.html('.' + this.cls.authButtons, htmlButtons);
+  // elems generated
+  var elemAuthButtons = dhr.getElem('.' + this.cls.authButtons);
+  this.authSet.fillLoginChoice(elemAuthButtons);
 };
 
 Mdl.prototype.waitDocReady = function(next) {

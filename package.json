@@ -28,6 +28,7 @@
     "through2": "*",
     "tiny-lr": "^0.1.4",
     "vmg-dict": "git://github.com/vmg-org/vmg-dict",
-    "vmg-spec": "git://github.com/vmg-org/vmg-spec"
+    "vmg-spec": "git://github.com/vmg-org/vmg-spec",
+    "oauth2-set": "git://github.com/IvanRave/oauth2-set"
   }
 }
